@@ -1,0 +1,147 @@
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Button } from '@/components/ui/button'
+import { Edit, Trash2, RefreshCcw } from 'lucide-vue-next'
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import DataTableWrapper from '@/components/shared/DataTableWrapper.vue'
+import { api } from '@/lib/api'
+
+const users = ref<any[]>([])
+const loading = ref(true)
+const isDialogOpen = ref(false)
+const isConfirmSyncOpen = ref(false)
+const selectedUser = ref<any>(null)
+const formData = ref({ Id: 0, Nom: '', Email: '', Telephone: '', Nature: 'P', Extranet: 'N', Mobile: 'N' })
+
+const fetchUsers = async () => {
+  loading.value = true
+  try { users.value = await api.admin.getUsers() } 
+  catch (e) { console.error(e) } 
+  finally { loading.value = false }
+}
+
+const openAdd = () => {
+  selectedUser.value = null
+  formData.value = { Id: 0, Nom: '', Email: '', Telephone: '', Nature: 'P', Extranet: 'N', Mobile: 'N' }
+  isDialogOpen.value = true
+}
+
+const openEdit = (user: any) => {
+  selectedUser.value = user
+  formData.value = { ...user }
+  isDialogOpen.value = true
+}
+
+const handleSave = async () => {
+  try {
+    await api.admin.saveUser(formData.value)
+    isDialogOpen.value = false
+    fetchUsers()
+  } catch (e) { console.error(e) }
+}
+
+const handleDelete = async (id: number) => {
+  if (!confirm('Supprimer ?')) return
+  try {
+    await api.admin.deleteUser(id)
+    fetchUsers()
+  } catch (e) { console.error(e) }
+}
+
+const handleSync = async () => {
+  if (!selectedUser.value) return
+  try {
+    await api.admin.syncKeycloak(selectedUser.value.Id)
+    isConfirmSyncOpen.value = false
+    fetchUsers()
+  } catch (e) { console.error(e) }
+}
+
+onMounted(fetchUsers)
+</script>
+
+<template>
+  <DataTableWrapper 
+    title="Utilisateurs" 
+    description="Gérez les accès de vos collaborateurs et clients."
+    :items="users"
+    :loading="loading"
+    add-button-label="Nouveau"
+    @add="openAdd"
+  >
+    <template #default="{ items }">
+      <Table>
+        <TableHeader class="bg-slate-50/50 border-b border-slate-100">
+          <TableRow>
+            <TableHead class="font-black text-slate-900 uppercase tracking-widest text-[10px] py-6">Nom</TableHead>
+            <TableHead class="font-black text-slate-900 uppercase tracking-widest text-[10px]">Email / Tel</TableHead>
+            <TableHead class="font-black text-slate-900 uppercase tracking-widest text-[10px]">Sync</TableHead>
+            <TableHead class="text-right font-black text-slate-900 uppercase tracking-widest text-[10px]">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          <TableRow v-for="user in items" :key="user.Id" class="hover:bg-slate-50/80 border-b border-slate-50">
+            <TableCell class="font-bold text-slate-900 py-4">{{ user.Nom }}</TableCell>
+            <TableCell>
+              <div class="flex flex-col">
+                <span class="text-sm font-bold text-slate-700">{{ user.Email || '-' }}</span>
+                <span class="text-xs text-slate-400 font-medium">{{ user.Telephone || '-' }}</span>
+              </div>
+            </TableCell>
+            <TableCell>
+              <div v-if="user.Id_Auth" class="text-emerald-600 text-xs font-black">OUI</div>
+              <Button v-else variant="ghost" size="sm" class="h-8 gap-2 text-[10px] text-orange-600 font-black hover:bg-orange-50 rounded-xl" @click="selectedUser = user; isConfirmSyncOpen = true">
+                <RefreshCcw class="w-3.5 h-3.5" /> SYNC
+              </Button>
+            </TableCell>
+            <TableCell class="text-right">
+              <div class="flex justify-end gap-2">
+                <Button variant="ghost" size="icon" class="h-10 w-10 rounded-xl hover:bg-slate-100" @click="openEdit(user)"><Edit class="w-4 h-4 text-slate-600" /></Button>
+                <Button variant="ghost" size="icon" class="h-10 w-10 rounded-xl hover:bg-red-50 text-red-500" @click="handleDelete(user.Id)"><Trash2 class="w-4 h-4" /></Button>
+              </div>
+            </TableCell>
+          </TableRow>
+        </TableBody>
+      </Table>
+    </template>
+  </DataTableWrapper>
+
+  <Dialog v-model:open="isDialogOpen">
+    <DialogContent class="sm:max-w-[600px] rounded-[2.5rem] shadow-2xl p-0 overflow-hidden border-none font-['Outfit']">
+      <DialogHeader class="p-10 bg-slate-50/50 border-b border-slate-100">
+        <DialogTitle class="text-2xl font-black text-slate-900">{{ formData.Id ? 'Modifier' : 'Nouveau' }} Utilisateur</DialogTitle>
+      </DialogHeader>
+      <div class="p-10 space-y-6">
+        <div class="grid grid-cols-2 gap-6">
+          <div class="space-y-2"><Label>Nom complet</Label><Input v-model="formData.Nom" class="rounded-xl" /></div>
+          <div class="space-y-2"><Label>Email</Label><Input v-model="formData.Email" class="rounded-xl" /></div>
+        </div>
+        <div class="grid grid-cols-2 gap-6">
+          <div class="space-y-2"><Label>Téléphone</Label><Input v-model="formData.Telephone" class="rounded-xl" /></div>
+          <div class="space-y-2"><Label>Type</Label>
+            <select v-model="formData.Nature" class="w-full border border-slate-200 rounded-xl h-10 px-3 text-sm font-bold bg-white">
+              <option value="P">Poste</option><option value="C">Client</option><option value="A">Adhérent</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <DialogFooter class="p-10 bg-slate-50/50 border-t border-slate-100"><Button @click="handleSave" class="rounded-xl bg-slate-900 px-8">Enregistrer</Button></DialogFooter>
+    </DialogContent>
+  </Dialog>
+
+  <Dialog v-model:open="isConfirmSyncOpen">
+    <DialogContent class="sm:max-w-[400px] rounded-[2rem] p-10 font-['Outfit'] border-none">
+      <div class="text-center space-y-6">
+        <RefreshCcw class="w-12 h-12 text-orange-600 mx-auto" />
+        <DialogTitle class="text-2xl font-black">Synchroniser ?</DialogTitle>
+        <div class="flex gap-4 pt-4">
+          <Button variant="ghost" class="flex-1" @click="isConfirmSyncOpen = false">Non</Button>
+          <Button class="flex-1 bg-orange-600 shadow-xl" @click="handleSync">Oui</Button>
+        </div>
+      </div>
+    </DialogContent>
+  </Dialog>
+</template>

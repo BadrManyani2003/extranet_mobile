@@ -1,0 +1,206 @@
+{
+  "policies": [
+    {
+      "id": 1,
+      "numero": "POL-AUTO-2024-001",
+      "branche": "Automobile",
+      "client": "AXA Assurances",
+      "statut": "Actif",
+      "dateEffet": "01/01/2024",
+      "dateEcheance": "31/12/2024",
+      "primeAnnuelle": 16000,
+      "impayes": 0,
+      "risques": [
+        { "id": 1, "type": "Véhicule", "marque": "Peugeot 3008", "immatriculation": "AB-123-CD", "dateMiseEnCirculation": "15/06/2019", "garanties": [{ "nom": "RC Civile", "capital": 1000000, "franchise": "0 MAD" }, { "nom": "Vol/Incendie", "capital": 250000, "franchise": "500 MAD" }] },
+        { "id": 2, "type": "Véhicule", "marque": "Renault Clio", "immatriculation": "EF-456-GH", "dateMiseEnCirculation": "22/11/2021", "garanties": [{ "nom": "Tous Risques", "capital": 180000, "franchise": "400 MAD" }] },
+        { "id": 3, "type": "Véhicule", "marque": "VW Golf 8", "immatriculation": "IJ-789-KL", "dateMiseEnCirculation": "10/01/2023", "garanties": [{ "nom": "RC", "capital": 1000000, "franchise": "0" }] },
+        { "id": 4, "type": "Véhicule", "marque": "Toyota Yaris", "immatriculation": "MN-012-OP", "dateMiseEnCirculation": "05/05/2022", "garanties": [{ "nom": "RC", "capital": 1000000, "franchise": "0" }] },
+        { "id": 5, "type": "Véhicule", "marque": "Dacia Duster", "immatriculation": "QR-345-ST", "dateMiseEnCirculation": "12/08/2020", "garanties": [{ "nom": "RC", "capital": 1000000, "franchise": "0" }] },
+        { "id": 6, "type": "Véhicule", "marque": "Dacia Duster", "immatriculation": "QR-345-ST", "dateMiseEnCirculation": "12/08/2020", "garanties": [{ "nom": "RC", "capital": 1000000, "franchise": "0" }] },
+        { "id": 7, "type": "Véhicule", "marque": "Dacia Duster", "immatriculation": "QR-345-ST", "dateMiseEnCirculation": "12/08/2020", "garanties": [{ "nom": "RC", "capital": 1000000, "franchise": "0" }] },
+        { "id": 8, "type": "Véhicule", "marque": "Dacia Duster", "immatriculation": "QR-345-ST", "dateMiseEnCirculation": "12/08/2020", "garanties": [{ "nom": "RC", "capital": 1000000, "franchise": "0" }] },
+        { "id": 9, "type": "Véhicule", "marque": "Dacia Duster", "immatriculation": "QR-345-ST", "dateMiseEnCirculation": "12/08/2020", "garanties": [{ "nom": "RC", "capital": 1000000, "franchise": "0" }] },
+        { "id": 10, "type": "Véhicule", "marque": "Dacia Duster", "immatriculation": "QR-345-ST", "dateMiseEnCirculation": "12/08/2020", "garanties": [{ "nom": "RC", "capital": 1000000, "franchise": "0" }] },
+        { "id": 11, "type": "Véhicule", "marque": "Dacia Duster", "immatriculation": "QR-345-ST", "dateMiseEnCirculation": "12/08/2020", "garanties": [{ "nom": "RC", "capital": 1000000, "franchise": "0" }] },
+        { "id": 12, "type": "Véhicule", "marque": "Dacia Duster", "immatriculation": "QR-345-ST", "dateMiseEnCirculation": "12/08/2020", "garanties": [{ "nom": "RC", "capital": 1000000, "franchise": "0" }] },
+        { "id": 13, "type": "Véhicule", "marque": "Dacia Duster", "immatriculation": "QR-345-ST", "dateMiseEnCirculation": "12/08/2020", "garanties": [{ "nom": "RC", "capital": 1000000, "franchise": "0" }] },
+        { "id": 14, "type": "Véhicule", "marque": "Dacia Duster", "immatriculation": "QR-345-ST", "dateMiseEnCirculation": "12/08/2020", "garanties": [{ "nom": "RC", "capital": 1000000, "franchise": "0" }] },
+        { "id": 15, "type": "Véhicule", "marque": "Dacia Duster", "immatriculation": "QR-345-ST", "dateMiseEnCirculation": "12/08/2020", "garanties": [{ "nom": "RC", "capital": 1000000, "franchise": "0" }] }
+      ],
+      "sinistres": [
+        { "numero": "SIN-2024-001", "date": "15/03/2024", "nature": "Bris de glace", "statut": "Clôturé", "objet": "Peugeot 3008", "mtDommage": 350, "mtFrais": 50, "mtRembourse": 300, "observation": "Remplacement du pare-brise avant effectué." },
+        { "numero": "SIN-2024-002", "date": "02/05/2024", "nature": "Accident", "statut": "En cours", "objet": "Renault Clio", "mtDommage": 1200, "mtFrais": 100, "mtRembourse": 0, "observation": "Dossier en attente de l'expertise complémentaire." },
+        { "numero": "SIN-2024-003", "date": "02/05/2024", "nature": "Accident", "statut": "En cours", "objet": "Renault Clio", "mtDommage": 1200, "mtFrais": 100, "mtRembourse": 0, "observation": "Dossier en attente de l'expertise complémentaire." },
+        { "numero": "SIN-2024-004", "date": "02/05/2024", "nature": "Accident", "statut": "En cours", "objet": "Renault Clio", "mtDommage": 1200, "mtFrais": 100, "mtRembourse": 0, "observation": "Dossier en attente de l'expertise complémentaire." },
+        { "numero": "SIN-2024-005", "date": "02/05/2024", "nature": "Accident", "statut": "En cours", "objet": "Renault Clio", "mtDommage": 1200, "mtFrais": 100, "mtRembourse": 0, "observation": "Dossier en attente de l'expertise complémentaire." },
+        { "numero": "SIN-2024-006", "date": "02/05/2024", "nature": "Accident", "statut": "En cours", "objet": "Renault Clio", "mtDommage": 1200, "mtFrais": 100, "mtRembourse": 0, "observation": "Dossier en attente de l'expertise complémentaire." },
+        { "numero": "SIN-2024-015", "date": "02/05/2024", "nature": "Accident", "statut": "En cours", "objet": "Renault Clio", "mtDommage": 1200, "mtFrais": 100, "mtRembourse": 0, "observation": "Dossier en attente de l'expertise complémentaire." }
+      ],
+      "quittances": [
+        { "numero": "QUIT-2024-001", "dateDebut": "01/01/2024", "dateFin": "31/12/2024", "montantNet": 10000, "taxes": 2000, "accessoires": 500, "montantTotal": 12500, "montantImpaye": 0, "statut": "Payée" },
+        { "numero": "QUIT-2024-002", "dateDebut": "15/03/2024", "dateFin": "31/12/2024", "montantNet": 2800, "taxes": 560, "accessoires": 140, "montantTotal": 3500, "montantImpaye": 0, "statut": "Payée" },
+        { "numero": "QUIT-2024-003", "dateDebut": "15/03/2024", "dateFin": "31/12/2024", "montantNet": 2800, "taxes": 560, "accessoires": 140, "montantTotal": 3500, "montantImpaye": 0, "statut": "Payée" },
+        { "numero": "QUIT-2024-004", "dateDebut": "15/03/2024", "dateFin": "31/12/2024", "montantNet": 2800, "taxes": 560, "accessoires": 140, "montantTotal": 3500, "montantImpaye": 0, "statut": "Payée" },
+        { "numero": "QUIT-2024-005", "dateDebut": "15/03/2024", "dateFin": "31/12/2024", "montantNet": 2800, "taxes": 560, "accessoires": 140, "montantTotal": 3500, "montantImpaye": 0, "statut": "Payée" },
+        { "numero": "QUIT-2024-006", "dateDebut": "15/03/2024", "dateFin": "31/12/2024", "montantNet": 2800, "taxes": 560, "accessoires": 140, "montantTotal": 3500, "montantImpaye": 0, "statut": "Payée" },
+        { "numero": "QUIT-2024-007", "dateDebut": "15/03/2024", "dateFin": "31/12/2024", "montantNet": 2800, "taxes": 560, "accessoires": 140, "montantTotal": 3500, "montantImpaye": 0, "statut": "Payée" },
+        { "numero": "QUIT-2024-008", "dateDebut": "15/03/2024", "dateFin": "31/12/2024", "montantNet": 2800, "taxes": 560, "accessoires": 140, "montantTotal": 3500, "montantImpaye": 0, "statut": "Payée" },
+        { "numero": "QUIT-2024-009", "dateDebut": "15/03/2024", "dateFin": "31/12/2024", "montantNet": 2800, "taxes": 560, "accessoires": 140, "montantTotal": 3500, "montantImpaye": 0, "statut": "Payée" },
+        { "numero": "QUIT-2024-010", "dateDebut": "15/03/2024", "dateFin": "31/12/2024", "montantNet": 2800, "taxes": 560, "accessoires": 140, "montantTotal": 3500, "montantImpaye": 0, "statut": "Payée" },
+        { "numero": "QUIT-2024-011", "dateDebut": "15/03/2024", "dateFin": "31/12/2024", "montantNet": 2800, "taxes": 560, "accessoires": 140, "montantTotal": 3500, "montantImpaye": 0, "statut": "Payée" },
+        { "numero": "QUIT-2024-012", "dateDebut": "15/03/2024", "dateFin": "31/12/2024", "montantNet": 2800, "taxes": 560, "accessoires": 140, "montantTotal": 3500, "montantImpaye": 0, "statut": "Payée" },
+        { "numero": "QUIT-2024-013", "dateDebut": "15/03/2024", "dateFin": "31/12/2024", "montantNet": 2800, "taxes": 560, "accessoires": 140, "montantTotal": 3500, "montantImpaye": 0, "statut": "Payée" },
+        { "numero": "QUIT-2024-014", "dateDebut": "15/03/2024", "dateFin": "31/12/2024", "montantNet": 2800, "taxes": 560, "accessoires": 140, "montantTotal": 3500, "montantImpaye": 0, "statut": "Payée" },
+        { "numero": "QUIT-2024-015", "dateDebut": "15/03/2024", "dateFin": "31/12/2024", "montantNet": 2800, "taxes": 560, "accessoires": 140, "montantTotal": 3500, "montantImpaye": 0, "statut": "Payée" }
+      ]
+    },
+    {
+      "id": 2,
+      "numero": "POL-AUTO-FLEET-2024",
+      "branche": "Automobile",
+      "client": "Logistique Nord",
+      "statut": "Actif",
+      "dateEffet": "01/01/2024",
+      "dateEcheance": "31/12/2024",
+      "primeAnnuelle": 50000,
+      "impayes": 6500,
+      "risques": [
+        { "id": 6, "type": "Véhicule", "marque": "Mercedes Sprinter", "immatriculation": "AA-001-BB", "dateMiseEnCirculation": "10/02/2022", "garanties": [{ "nom": "RC Professionnelle", "capital": 5000000, "franchise": "1000 MAD" }] },
+        { "id": 7, "type": "Véhicule", "marque": "Mercedes Sprinter", "immatriculation": "AA-002-BB", "dateMiseEnCirculation": "10/02/2022", "garanties": [{ "nom": "RC Professionnelle", "capital": 5000000, "franchise": "1000 MAD" }] },
+        { "id": 8, "type": "Véhicule", "marque": "Mercedes Sprinter", "immatriculation": "AA-003-BB", "dateMiseEnCirculation": "10/02/2022", "garanties": [{ "nom": "RC Professionnelle", "capital": 5000000, "franchise": "1000 MAD" }] },
+        { "id": 9, "type": "Véhicule", "marque": "Renault Master", "immatriculation": "CC-111-DD", "dateMiseEnCirculation": "15/05/2021", "garanties": [{ "nom": "RC", "capital": 1000000, "franchise": "0" }] },
+        { "id": 10, "type": "Véhicule", "marque": "Renault Master", "immatriculation": "CC-222-DD", "dateMiseEnCirculation": "15/05/2021", "garanties": [{ "nom": "RC", "capital": 1000000, "franchise": "0" }] },
+        { "id": 11, "type": "Véhicule", "marque": "Iveco Daily", "immatriculation": "EE-333-FF", "dateMiseEnCirculation": "01/09/2023", "garanties": [{ "nom": "RC", "capital": 1000000, "franchise": "0" }] },
+        { "id": 12, "type": "Véhicule", "marque": "Iveco Daily", "immatriculation": "EE-444-FF", "dateMiseEnCirculation": "01/09/2023", "garanties": [{ "nom": "RC", "capital": 1000000, "franchise": "0" }] },
+        { "id": 13, "type": "Véhicule", "marque": "Fiat Ducato", "immatriculation": "GG-555-HH", "dateMiseEnCirculation": "20/12/2020", "garanties": [{ "nom": "RC", "capital": 1000000, "franchise": "0" }] },
+        { "id": 14, "type": "Véhicule", "marque": "Ford Transit", "immatriculation": "II-666-JJ", "dateMiseEnCirculation": "05/03/2022", "garanties": [{ "nom": "RC", "capital": 1000000, "franchise": "0" }] },
+        { "id": 15, "type": "Véhicule", "marque": "Ford Transit", "immatriculation": "II-777-JJ", "dateMiseEnCirculation": "05/03/2022", "garanties": [{ "nom": "RC", "capital": 1000000, "franchise": "0" }] }
+      ],
+      "sinistres": [
+        { "numero": "SIN-FL-001", "date": "10/01/2024", "nature": "Vol partiel", "statut": "En cours", "objet": "AA-001-BB", "mtDommage": 2500, "mtFrais": 200, "mtRembourse": 0, "observation": "Plainte déposée au commissariat. En attente du rapport." },
+        { "numero": "SIN-FL-002", "date": "12/02/2024", "nature": "Collision", "statut": "Clôturé", "objet": "CC-111-DD", "mtDommage": 4800, "mtFrais": 300, "mtRembourse": 4500, "observation": "Réparation effectuée chez le garage agréé." }
+      ],
+      "quittances": [
+        { "numero": "QUIT-FL-2024-1", "dateDebut": "01/01/2024", "dateFin": "30/06/2024", "montantNet": 18000, "taxes": 3600, "accessoires": 900, "montantTotal": 22500, "montantImpaye": 1500, "statut": "Partiel" },
+        { "numero": "QUIT-FL-2024-2", "dateDebut": "01/07/2024", "dateFin": "31/12/2024", "montantNet": 18000, "taxes": 3600, "accessoires": 900, "montantTotal": 22500, "montantImpaye": 5000, "statut": "Impayée" }
+      ]
+    },
+    {
+      "id": 4,
+      "numero": "POL-SANTE-GROUPE-100",
+      "branche": "Santé",
+      "client": "Tech Corp",
+      "statut": "Actif",
+      "dateEffet": "01/01/2024",
+      "dateEcheance": "31/12/2024",
+      "primeAnnuelle": 101500,
+      "impayes": 4500,
+      "risques": [
+        { "id": 21, "type": "Adhérent", "nom": "Thomas Bernard", "matricule": "M001", "numAdhesion": "AD001", "personnesACharge": [{ "nom": "Léa Bernard", "lien": "Conjointe", "dateNaissance": "12/05/1988" }, { "nom": "Théo Bernard", "lien": "Enfant", "dateNaissance": "22/10/2015" }] },
+        { "id": 22, "type": "Adhérent", "nom": "Julie Petit", "matricule": "M002", "numAdhesion": "AD002", "personnesACharge": [{ "nom": "Marc Petit", "lien": "Enfant", "dateNaissance": "05/03/2018" }] },
+        { "id": 23, "type": "Adhérent", "nom": "Nicolas Dubois", "matricule": "M003", "numAdhesion": "AD003", "personnesACharge": [] },
+        { "id": 24, "type": "Adhérent", "nom": "Lea Moreau", "matricule": "M004", "numAdhesion": "AD004", "personnesACharge": [] },
+        { "id": 25, "type": "Adhérent", "nom": "Kevin Laurent", "matricule": "M005", "numAdhesion": "AD005", "personnesACharge": [] },
+        { "id": 26, "type": "Adhérent", "nom": "Camille Simon", "matricule": "M006", "numAdhesion": "AD006", "personnesACharge": [] },
+        { "id": 27, "type": "Adhérent", "nom": "Benoit Michel", "matricule": "M007", "numAdhesion": "AD007", "personnesACharge": [] },
+        { "id": 28, "type": "Adhérent", "nom": "Sandrine Garcia", "matricule": "M008", "numAdhesion": "AD008", "personnesACharge": [] },
+        { "id": 29, "type": "Adhérent", "nom": "Marc Lefebvre", "matricule": "M009", "numAdhesion": "AD009", "personnesACharge": [] },
+        { "id": 30, "type": "Adhérent", "nom": "Sophie Legrand", "matricule": "M010", "numAdhesion": "AD010", "personnesACharge": [] },
+        { "id": 31, "type": "Adhérent", "nom": "David Roux", "matricule": "M011", "numAdhesion": "AD011", "personnesACharge": [] },
+        { "id": 32, "type": "Adhérent", "nom": "Marine Muller", "matricule": "M012", "numAdhesion": "AD012", "personnesACharge": [] },
+        { "id": 33, "type": "Adhérent", "nom": "Julien Lambert", "matricule": "M013", "numAdhesion": "AD013", "personnesACharge": [] },
+        { "id": 34, "type": "Adhérent", "nom": "Audrey Faure", "matricule": "M014", "numAdhesion": "AD014", "personnesACharge": [] },
+        { "id": 35, "type": "Adhérent", "nom": "Sebastien Giraud", "matricule": "M015", "numAdhesion": "AD015", "personnesACharge": [] }
+      ],
+      "sinistres": [
+        { "numero": "SIN-ST-001", "date": "05/01/2024", "nature": "Hospitalisation", "statut": "Clôturé", "objet": "Thomas Bernard", "mtDommage": 4500, "mtFrais": 0, "mtRembourse": 4000, "observation": "Prise en charge directe effectuée." },
+        { "numero": "SIN-ST-002", "date": "12/02/2024", "nature": "Dentaire", "statut": "Clôturé", "objet": "Julie Petit", "mtDommage": 800, "mtFrais": 0, "mtRembourse": 600, "observation": "Soins conservateurs." },
+        { "numero": "SIN-ST-003", "date": "15/03/2024", "nature": "Optique", "statut": "En cours", "objet": "Nicolas Dubois", "mtDommage": 650, "mtFrais": 0, "mtRembourse": 0, "observation": "En attente de la facture originale." }
+      ],
+      "quittances": [
+        { "numero": "QUIT-ST-2024-1", "dateDebut": "01/01/2024", "dateFin": "31/12/2024", "montantNet": 70000, "taxes": 14000, "accessoires": 1000, "montantTotal": 85000, "montantImpaye": 0, "statut": "Payée" },
+        { "numero": "QUIT-ST-2024-2", "dateDebut": "01/01/2024", "dateFin": "31/12/2024", "montantNet": 10000, "taxes": 1800, "accessoires": 200, "montantTotal": 12000, "montantImpaye": 0, "statut": "Payée" },
+        { "numero": "QUIT-ST-2024-3", "dateDebut": "01/01/2024", "dateFin": "31/12/2024", "montantNet": 3500, "taxes": 700, "accessoires": 300, "montantTotal": 4500, "montantImpaye": 4500, "statut": "Impayée" }
+      ]
+    },
+    {
+      "id": 6,
+      "numero": "POL-TRC-2024-500",
+      "branche": "Tout Risque Chantier",
+      "client": "Grands Projets BTP",
+      "statut": "Actif",
+      "dateEffet": "01/03/2024",
+      "dateEcheance": "28/02/2025",
+      "primeAnnuelle": 150000,
+      "impayes": 40000,
+      "risques": [
+        { "id": 101, "type": "Chantier", "nom": "Extension Tramway Casablanca", "adresse": "Boulevard Zerktouni, Casablanca", "valeurProjet": 45000000, "garanties": [{ "nom": "Dommages à l'ouvrage", "capital": 45000000, "franchise": "50000 MAD" }, { "nom": "RC Civile Chantier", "capital": 10000000, "franchise": "10000 MAD" }] },
+        { "id": 102, "type": "Engin", "nom": "Grue à tour Potain MC 310", "matricule": "G-4455", "valeur": 1200000, "garanties": [{ "nom": "Bris de machine", "capital": 1200000, "franchise": "5000 MAD" }] },
+        { "id": 103, "type": "Engin", "nom": "Pelle hydraulique CAT 320", "matricule": "P-8899", "valeur": 850000, "garanties": [{ "nom": "Bris de machine", "capital": 850000, "franchise": "3000 MAD" }] }
+      ],
+      "sinistres": [
+        { "numero": "SIN-TRC-001", "date": "15/04/2024", "nature": "Effondrement échafaudage", "statut": "En cours", "objet": "Chantier Tramway", "mtDommage": 150000, "mtFrais": 5000, "mtRembourse": 0, "observation": "Expertise technique en cours pour déterminer les responsabilités." }
+      ],
+      "quittances": [
+        { "numero": "QUIT-TRC-2024-1", "dateDebut": "01/03/2024", "dateFin": "31/08/2024", "montantNet": 60000, "taxes": 12000, "accessoires": 3000, "montantTotal": 75000, "montantImpaye": 15000, "statut": "Partiel" },
+        { "numero": "QUIT-TRC-2024-2", "dateDebut": "01/09/2024", "dateFin": "28/02/2025", "montantNet": 60000, "taxes": 12000, "accessoires": 3000, "montantTotal": 75000, "montantImpaye": 25000, "statut": "Impayée" }
+      ]
+    },
+    {
+      "id": 5,
+      "numero": "POL-SANTE-INDIV-50",
+      "branche": "Santé",
+      "client": "Karim Mansouri",
+      "statut": "Actif",
+      "dateEffet": "01/02/2024",
+      "dateEcheance": "31/01/2025",
+      "primeAnnuelle": 18000,
+      "impayes": 4000,
+      "risques": [
+        { "id": 36, "type": "Adhérent", "nom": "Karim Mansouri", "matricule": "K001", "numAdhesion": "KA001", "personnesACharge": [{ "nom": "Salma Mansouri", "lien": "Conjointe", "dateNaissance": "15/06/1985" }, { "nom": "Yassine Mansouri", "lien": "Enfant", "dateNaissance": "10/01/2012" }] },
+        { "id": 37, "type": "Adhérent", "nom": "Salma Mansouri", "matricule": "K002", "numAdhesion": "KA002", "personnesACharge": [] },
+        { "id": 38, "type": "Adhérent", "nom": "Yassine Mansouri", "matricule": "K003", "numAdhesion": "KA003", "personnesACharge": [] },
+        { "id": 39, "type": "Adhérent", "nom": "Ines Mansouri", "matricule": "K004", "numAdhesion": "KA004", "personnesACharge": [] },
+        { "id": 40, "type": "Adhérent", "nom": "Lina Mansouri", "matricule": "K005", "numAdhesion": "KA005", "personnesACharge": [] },
+        { "id": 41, "type": "Adhérent", "nom": "Ahmed Mansouri", "matricule": "K006", "numAdhesion": "KA006", "personnesACharge": [] },
+        { "id": 42, "type": "Adhérent", "nom": "Zineb Mansouri", "matricule": "K007", "numAdhesion": "KA007", "personnesACharge": [] },
+        { "id": 43, "type": "Adhérent", "nom": "Omar Mansouri", "matricule": "K008", "numAdhesion": "KA008", "personnesACharge": [] },
+        { "id": 44, "type": "Adhérent", "nom": "Hiba Mansouri", "matricule": "K009", "numAdhesion": "KA009", "personnesACharge": [] },
+        { "id": 45, "type": "Adhérent", "nom": "Rayan Mansouri", "matricule": "K010", "numAdhesion": "KA010", "personnesACharge": [] },
+        { "id": 46, "type": "Adhérent", "nom": "Nour Mansouri", "matricule": "K011", "numAdhesion": "KA011", "personnesACharge": [] },
+        { "id": 47, "type": "Adhérent", "nom": "Adam Mansouri", "matricule": "K012", "numAdhesion": "KA012", "personnesACharge": [] },
+        { "id": 48, "type": "Adhérent", "nom": "Sami Mansouri", "matricule": "K013", "numAdhesion": "KA013", "personnesACharge": [] },
+        { "id": 49, "type": "Adhérent", "nom": "Kenzi Mansouri", "matricule": "K014", "numAdhesion": "KA014", "personnesACharge": [] },
+        { "id": 50, "type": "Adhérent", "nom": "Lara Mansouri", "matricule": "K015", "numAdhesion": "KA015", "personnesACharge": [] }
+      ],
+      "sinistres": [
+        { "numero": "SIN-KA-001", "date": "10/03/2024", "nature": "Consultation", "statut": "Clôturé", "objet": "Karim Mansouri", "mtDommage": 300, "mtFrais": 0, "mtRembourse": 210, "observation": "Remboursement effectué par virement." },
+        { "numero": "SIN-KA-002", "date": "15/04/2024", "nature": "Pharmacie", "statut": "En cours", "objet": "Salma Mansouri", "mtDommage": 450, "mtFrais": 0, "mtRembourse": 0, "observation": "Manque l'ordonnance médicale." }
+      ],
+      "quittances": [
+        { "numero": "QUIT-KA-2024-1", "dateDebut": "01/02/2024", "dateFin": "30/04/2024", "montantNet": 4800, "taxes": 960, "accessoires": 240, "montantTotal": 6000, "montantImpaye": 1000, "statut": "Partiel" },
+        { "numero": "QUIT-KA-2024-2", "dateDebut": "01/05/2024", "dateFin": "31/07/2024", "montantNet": 4800, "taxes": 960, "accessoires": 240, "montantTotal": 6000, "montantImpaye": 0, "statut": "Payée" },
+        { "numero": "QUIT-KA-2024-3", "dateDebut": "01/08/2024", "dateFin": "31/10/2024", "montantNet": 4800, "taxes": 960, "accessoires": 240, "montantTotal": 6000, "montantImpaye": 3000, "statut": "Impayée" }
+      ]
+    }
+  ],
+  "unpaid": [
+    { "id": 1, "police": "POL-AUTO-FLEET-2024", "branche": "Automobile", "numero": "QUIT-FL-2024-1", "dateDebut": "01/01/2024", "dateFin": "30/06/2024", "montantTotal": 22500, "montantImpaye": 1500 },
+    { "id": 101, "police": "POL-AUTO-FLEET-2024", "branche": "Automobile", "numero": "QUIT-FL-2024-2", "dateDebut": "01/07/2024", "dateFin": "31/12/2024", "montantTotal": 22500, "montantImpaye": 5000 },
+    { "id": 102, "police": "POL-SANTE-GROUPE-100", "branche": "Santé", "numero": "QUIT-ST-2024-3", "dateDebut": "01/01/2024", "dateFin": "31/12/2024", "montantTotal": 4500, "montantImpaye": 4500 },
+    { "id": 4, "police": "POL-TRC-2024-500", "branche": "Tout Risque Chantier", "numero": "QUIT-TRC-2024-1", "dateDebut": "01/03/2024", "dateFin": "31/08/2024", "montantTotal": 75000, "montantImpaye": 15000 },
+    { "id": 103, "police": "POL-TRC-2024-500", "branche": "Tout Risque Chantier", "numero": "QUIT-TRC-2024-2", "dateDebut": "01/09/2024", "dateFin": "28/02/2025", "montantTotal": 75000, "montantImpaye": 25000 },
+    { "id": 3, "police": "POL-SANTE-INDIV-50", "branche": "Santé", "numero": "QUIT-KA-2024-1", "dateDebut": "01/02/2024", "dateFin": "30/04/2024", "montantTotal": 6000, "montantImpaye": 1000 },
+    { "id": 104, "police": "POL-SANTE-INDIV-50", "branche": "Santé", "numero": "QUIT-KA-2024-3", "dateDebut": "01/08/2024", "dateFin": "31/10/2024", "montantTotal": 6000, "montantImpaye": 3000 }
+  ],
+  "stats": [
+    { "id": 1, "title": "total_policies", "value": "3", "change": "+0", "icon": "ShieldCheck", "color": "text-slate-900", "bg": "bg-slate-100" },
+    { "id": 2, "title": "pending_claims", "value": "1", "change": "-2", "icon": "AlertTriangle", "color": "text-slate-600", "bg": "bg-slate-50" },
+    { "id": 3, "title": "total_unpaid", "value": "4,500 MAD", "change": "-15%", "icon": "CreditCard", "color": "text-slate-900", "bg": "bg-slate-200" }
+  ],
+  "messages": [
+    { "id": 1, "text": "Bonjour, j'ai une question sur ma police flotte.", "sender": "user", "time": "09:00" },
+    { "id": 2, "text": "Bonjour ! Je vous écoute, que puis-je faire pour vous ?", "sender": "admin", "time": "09:02" },
+    { "id": 3, "text": "Le montant de l'impayé sur QUIT-FL-2024-1 est de 1500 MAD, est-ce normal ?", "sender": "user", "time": "09:05" }
+  ]
+}
