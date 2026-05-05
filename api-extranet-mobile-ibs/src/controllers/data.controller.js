@@ -1,14 +1,21 @@
 const db = require('../utils/db');
 const response = require('../utils/response');
 
-const formatPolices = async (polices) => {
+const getCommonParams = (req) => ({
+    FK_User_Id: req.user?.id || req.body.userId || 1,
+    Token: req.headers.authorization?.split(' ')[1] || '',
+    Source: req.headers['x-source'] || 'Mobile'
+});
+
+const formatPolices = async (req, polices) => {
+    const common = getCommonParams(req);
     return Promise.all(polices.map(async (p) => {
         const [risques, sinistres, quittances] = await Promise.all([
             p.Branche === 'Santé' 
-                ? db.execute('ps_GetAdherentsByUser', { FK_User_Id: p.IdUser || 1 })
-                : db.execute('ps_GetRisquesByPolice', { FK_Police_Id: p.IdPolice }),
-            db.execute('ps_GetSinistresByPolice', { FK_Police_Id: p.IdPolice }),
-            db.execute('ps_GetQuittancesByPolice', { FK_Police_Id: p.IdPolice })
+                ? db.execute('ps_GetAdherents', { ...common })
+                : db.execute('ps_GetRisques', { ...common, FK_Police_Id: p.IdPolice }),
+            db.execute('ps_GetSinistres', { ...common, FK_Police_Id: p.IdPolice }),
+            db.execute('ps_GetQuittances', { ...common, FK_Police_Id: p.IdPolice })
         ]);
 
         return {
@@ -76,30 +83,30 @@ const formatRisques = (data, branche) => {
 
 const getPolices = async (req, res) => {
     try {
-        const userId = req.user?.id || req.body.userId || 1;
-        const polices = await db.execute('ps_GetPolicesByUser', { FK_User_Id: userId });
-        const enriched = await formatPolices(polices);
+        const common = getCommonParams(req);
+        const polices = await db.execute('ps_GetPolices', { ...common });
+        const enriched = await formatPolices(req, polices);
         res.json(enriched);
     } catch (error) { response.error(res, error); }
 };
 
 const getGlobalStats = async (req, res) => {
     try {
-        const userId = req.user?.id || req.body.userId || 1;
-        const stats = await db.execute('ps_GetGlobalStatsByUser', { FK_User_Id: userId });
+        const common = getCommonParams(req);
+        const stats = await db.execute('ps_GetStats', { ...common });
         const s = stats[0];
         res.json([
-            { id: 1, title: 'total_policies', value: s.TotalPolices.toString(), change: '+2%', icon: 'ShieldCheck', color: 'text-slate-900', bg: 'bg-slate-100' },
-            { id: 2, title: 'pending_claims', value: s.SinistresEnCours.toString(), change: '0%', icon: 'Activity', color: 'text-slate-600', bg: 'bg-slate-50' },
-            { id: 3, title: 'total_unpaid', value: `${s.TotalImpayes.toLocaleString()} MAD`, change: '-5%', icon: 'AlertCircle', color: 'text-slate-900', bg: 'bg-slate-200' }
+            { id: 1, title: 'total_policies', value: s.TotalPolices?.toString() || '0', change: '+2%', icon: 'ShieldCheck', color: 'text-slate-900', bg: 'bg-slate-100' },
+            { id: 2, title: 'pending_claims', value: s.SinistresEnCours?.toString() || '0', change: '0%', icon: 'Activity', color: 'text-slate-600', bg: 'bg-slate-50' },
+            { id: 3, title: 'total_unpaid', value: `${(s.TotalImpayes || 0).toLocaleString()} MAD`, change: '-5%', icon: 'AlertCircle', color: 'text-slate-900', bg: 'bg-slate-200' }
         ]);
     } catch (error) { response.error(res, error); }
 };
 
 const getUnpaid = async (req, res) => {
     try {
-        const userId = req.user?.id || req.body.userId || 1;
-        const data = await db.execute('ps_GetQuittancesByUser', { FK_User_Id: userId });
+        const common = getCommonParams(req);
+        const data = await db.execute('ps_GetQuittances', { ...common });
         const unpaid = data.filter(q => q.Solde > 0).map((q, idx) => ({
             id: idx + 1,
             police: q.NumeroPolice,
@@ -113,8 +120,8 @@ const getUnpaid = async (req, res) => {
 
 const getReclamations = async (req, res) => {
     try {
-        const userId = req.user?.id || req.body.userId || 1;
-        const data = await db.execute('ps_GetReclamationsByUser', { FK_User_Id: userId });
+        const common = getCommonParams(req);
+        const data = await db.execute('ps_GetReclamations', { ...common });
         res.json(data.map(r => ({
             id: r.IdReclamation,
             sujet: r.Sujet,
@@ -131,7 +138,8 @@ const getMessages = async (req, res) => {
         const { id } = req.params;
         if (!id) return res.status(400).json({ message: 'ID requis' });
         
-        const messages = await db.execute('ps_GetReclamationDetail', { IdReclamation: id });
+        const common = getCommonParams(req);
+        const messages = await db.execute('ps_GetReclamations', { ...common, IdReclamation: id });
         res.json(messages.map(m => ({
             id: m.IdMessage,
             text: m.Message,
@@ -143,17 +151,19 @@ const getMessages = async (req, res) => {
 
 const createReclamation = async (req, res) => {
     try {
-        const userId = req.user?.id || req.body.userId || 1;
+        const common = getCommonParams(req);
         const { sujet, nature, message } = req.body;
         
-        const result = await db.execute('ps_CreateReclamation', { 
-            FK_User_Client: userId, Sujet: sujet, Nature: nature 
+        const result = await db.execute('ps_ManageReclamation', { 
+            ...common, Action: 'CREATE', Sujet: sujet, Nature: nature 
         });
         const newId = result[0].NewId;
         
-        await db.execute('ps_AddMessageReclamation', { 
-            FK_Reclamation_Id: newId, FK_User_Id: userId, Nature: 'C', Message: message 
-        });
+        if (message) {
+            await db.execute('ps_ManageReclamation', { 
+                ...common, Action: 'ADD_MESSAGE', IdReclamation: newId, NatureMessage: 'C', Message: message 
+            });
+        }
         
         res.json({ success: true, id: newId });
     } catch (error) { response.error(res, error); }
@@ -161,14 +171,15 @@ const createReclamation = async (req, res) => {
 
 const sendMessage = async (req, res) => {
     try {
-        const userId = req.user?.id || req.body.userId || 1;
+        const common = getCommonParams(req);
         const { id } = req.params;
         const { message } = req.body;
         
-        await db.execute('ps_AddMessageReclamation', { 
-            FK_Reclamation_Id: id, 
-            FK_User_Id: userId, 
-            Nature: 'C', 
+        await db.execute('ps_ManageReclamation', { 
+            ...common,
+            Action: 'ADD_MESSAGE',
+            IdReclamation: id, 
+            NatureMessage: 'C', 
             Message: message 
         });
         

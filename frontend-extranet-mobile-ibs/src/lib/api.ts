@@ -4,7 +4,8 @@ const BASE_URL = 'http://localhost:5000/api'
 
 const getHeaders = async () => {
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/json',
+    'x-source': 'Mobile'
   }
   
   try {

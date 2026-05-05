@@ -1,16 +1,16 @@
 const dataQueries = {
-    getPolices: 'EXEC ps_GetPolicesByUser $1',
-    getQuittances: 'EXEC ps_GetQuittancesByUser $1',
-    getSinistres: 'EXEC ps_GetSinistresByUser $1',
-    getAdherents: 'EXEC ps_GetAdherentsByUser $1',
-    getRisques: 'EXEC ps_GetRisquesByPolice $1',
-    getStats: 'EXEC ps_GetStatsByPolice $1',
-    getPersACharge: 'EXEC ps_GetPersAChargeByAdherent $1',
-    getPolicesParent: 'EXEC ps_GetPolicesByClientParent $1',
-    getQuittancesByPolice: 'EXEC ps_GetQuittancesByPolice $1',
-    getSinistresByPolice: 'EXEC ps_GetSinistresByPolice $1',
-    getGlobalStats: 'EXEC ps_GetGlobalStatsByUser $1',
-    getReclamationsByUser: 'EXEC ps_GetReclamationsByUser $1'
+    getPolices: 'EXEC ps_GetPolices @FK_User_Id=$1, @Token=$2, @Source=$3',
+    getQuittances: 'EXEC ps_GetQuittances @FK_User_Id=$1, @Token=$2, @Source=$3',
+    getSinistres: 'EXEC ps_GetSinistres @FK_User_Id=$1, @Token=$2, @Source=$3',
+    getAdherents: 'EXEC ps_GetAdherents @FK_User_Id=$1, @Token=$2, @Source=$3',
+    getRisques: 'EXEC ps_GetRisques @FK_User_Id=$1, @Token=$2, @Source=$3, @FK_Police_Id=$4',
+    getStats: 'EXEC ps_GetStats @FK_User_Id=$1, @Token=$2, @Source=$3, @FK_Police_Id=$4',
+    getPersACharge: 'EXEC ps_GetAdherents @FK_User_Id=$1, @Token=$2, @Source=$3, @FK_Adherent_Id=$4',
+    getPolicesParent: 'EXEC ps_GetPolices @FK_User_Id=$1, @Token=$2, @Source=$3, @ParentMode=1',
+    getQuittancesByPolice: 'EXEC ps_GetQuittances @FK_User_Id=$1, @Token=$2, @Source=$3, @FK_Police_Id=$4',
+    getSinistresByPolice: 'EXEC ps_GetSinistres @FK_User_Id=$1, @Token=$2, @Source=$3, @FK_Police_Id=$4',
+    getGlobalStats: 'EXEC ps_GetStats @FK_User_Id=$1, @Token=$2, @Source=$3',
+    getReclamationsByUser: 'EXEC ps_GetReclamations @FK_User_Id=$1, @Token=$2, @Source=$3'
 };
 
 module.exports = dataQueries;
