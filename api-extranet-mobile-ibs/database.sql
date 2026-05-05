@@ -239,68 +239,10 @@ GO
 CREATE OR ALTER PROCEDURE dbo.ps_GetPolices
     @FK_User_Id   INT,
     @Token        VARCHAR(1000),
-    @Source       VARCHAR(50),
-    @FK_Police_Id INT = NULL,
-    @ParentMode   BIT = 0
+    @Source       VARCHAR(50)
 AS
 BEGIN
     SET NOCOUNT ON;
-
-    IF @Source NOT IN ('Cabinet', 'Extranet', 'Mobile')
-    BEGIN
-        RAISERROR('Source invalide.', 16, 1);
-        RETURN;
-    END
-
-    IF @ParentMode = 1
-    BEGIN
-        SELECT DISTINCT
-            p.Id                  AS IdPolice,
-            p.Police              AS NumeroPolice,
-            p.Branche,
-            p.Module,
-            p.DateEcheance,
-            p.Statut,
-            cEnfant.Id            AS IdClientEnfant,
-            cEnfant.RaisonSociale AS ClientEnfant,
-            cParent.Id            AS IdClientParent,
-            cParent.RaisonSociale AS ClientParent,
-            cp.RaisonSociale      AS Compagnie
-        FROM dbo.Clients cParent
-        INNER JOIN dbo.Clients    cEnfant ON cEnfant.Fk_Client_Id = cParent.Id
-        INNER JOIN dbo.Polices    p       ON p.Fk_Client_Id       = cEnfant.Id
-        INNER JOIN dbo.Compagnies cp      ON cp.Id                = p.FK_Compagnie_Id
-        WHERE @Source = 'Cabinet'
-           OR (@Source = 'Extranet' AND EXISTS (
-                SELECT 1 FROM dbo.UsersXClients uxc
-                WHERE uxc.FK_User_Id = @FK_User_Id AND uxc.FK_Client_Id = cParent.Id
-           ))
-        ORDER BY cEnfant.RaisonSociale, p.DateEcheance DESC;
-        RETURN;
-    END
-
-    IF @FK_Police_Id IS NOT NULL
-    BEGIN
-        SELECT
-            p.Id                                                                           AS IdPolice,
-            p.Police                                                                       AS NumeroPolice,
-            p.Branche,
-            p.DateEcheance,
-            p.Statut                                                                       AS StatutPolice,
-            c.RaisonSociale                                                                AS Client,
-            cp.RaisonSociale                                                               AS Compagnie,
-            (SELECT COUNT(*)        FROM dbo.Adherents a  WHERE a.FK_Police_Id  = p.Id)   AS NombreAdherents,
-            (SELECT COUNT(*)        FROM dbo.Risques r    WHERE r.FK_Police_Id  = p.Id)   AS NombreRisques,
-            (SELECT COUNT(*)        FROM dbo.Sinistres s  WHERE s.FK_Police_Id  = p.Id)   AS NombreSinistresTotal,
-            (SELECT COUNT(*)        FROM dbo.Sinistres s  WHERE s.FK_Police_Id  = p.Id AND s.Statut = 'E') AS NombreSinistresEnCours,
-            (SELECT ISNULL(SUM(q.Montant), 0) FROM dbo.Quittances q WHERE q.FK_Police_Id = p.Id)           AS PrimeTotale
-        FROM dbo.Polices    p
-        INNER JOIN dbo.Clients    c  ON c.Id  = p.Fk_Client_Id
-        INNER JOIN dbo.Compagnies cp ON cp.Id = p.FK_Compagnie_Id
-        WHERE p.Id = @FK_Police_Id;
-        RETURN;
-    END
-
     SELECT DISTINCT
         p.Id              AS IdPolice,
         p.Police          AS NumeroPolice,
@@ -323,6 +265,38 @@ BEGIN
        ))
        OR (@Source = 'Mobile' AND c.FK_User_Id = @FK_User_Id AND c.Particulier = 'O')
     ORDER BY p.DateEcheance DESC;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE dbo.ps_GetPolicesParent
+    @FK_User_Id   INT,
+    @Token        VARCHAR(1000),
+    @Source       VARCHAR(50)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT DISTINCT
+        p.Id                  AS IdPolice,
+        p.Police              AS NumeroPolice,
+        p.Branche,
+        p.Module,
+        p.DateEcheance,
+        p.Statut,
+        cEnfant.Id            AS IdClientEnfant,
+        cEnfant.RaisonSociale AS ClientEnfant,
+        cParent.Id            AS IdClientParent,
+        cParent.RaisonSociale AS ClientParent,
+        cp.RaisonSociale      AS Compagnie
+    FROM dbo.Clients cParent
+    INNER JOIN dbo.Clients    cEnfant ON cEnfant.Fk_Client_Id = cParent.Id
+    INNER JOIN dbo.Polices    p       ON p.Fk_Client_Id       = cEnfant.Id
+    INNER JOIN dbo.Compagnies cp      ON cp.Id                = p.FK_Compagnie_Id
+    WHERE @Source = 'Cabinet'
+       OR (@Source = 'Extranet' AND EXISTS (
+            SELECT 1 FROM dbo.UsersXClients uxc
+            WHERE uxc.FK_User_Id = @FK_User_Id AND uxc.FK_Client_Id = cParent.Id
+       ))
+    ORDER BY cEnfant.RaisonSociale, p.DateEcheance DESC;
 END;
 GO
 
@@ -364,37 +338,10 @@ CREATE OR ALTER PROCEDURE dbo.ps_GetAdherents
     @FK_User_Id     INT,
     @Token          VARCHAR(1000),
     @Source         VARCHAR(50),
-    @FK_Adherent_Id INT  = NULL,
-    @Nom            VARCHAR(255) = NULL,
-    @Actif          CHAR(1)      = NULL
+    @FK_Police_Id   INT = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
-
-    IF @Source NOT IN ('Cabinet', 'Extranet', 'Mobile')
-    BEGIN
-        RAISERROR('Source invalide.', 16, 1);
-        RETURN;
-    END
-
-    IF @FK_Adherent_Id IS NOT NULL
-    BEGIN
-        SELECT
-            pac.Id           AS IdPersACharge,
-            pac.Nom,
-            pac.Lien,
-            pac.DateNaissance,
-            pac.DateAdhesion,
-            a.Nom            AS NomAdherent,
-            a.NumAdhesion,
-            a.Matricule
-        FROM dbo.PersACharge pac
-        INNER JOIN dbo.Adherents a ON a.Id = pac.FK_Adherent_Id
-        WHERE pac.FK_Adherent_Id = @FK_Adherent_Id
-        ORDER BY pac.Lien, pac.Nom;
-        RETURN;
-    END
-
     SELECT DISTINCT
         a.Id            AS IdAdherent,
         a.Nom           AS NomAdherent,
@@ -410,8 +357,7 @@ BEGIN
     INNER JOIN dbo.Polices  p ON a.FK_Police_Id = p.Id
     INNER JOIN dbo.Clients  c ON p.Fk_Client_Id = c.Id
     LEFT  JOIN dbo.sysUser  u ON a.FK_User_Id   = u.Id
-    WHERE (@Nom   IS NULL OR a.Nom  LIKE '%' + @Nom   + '%')
-      AND (@Actif IS NULL OR a.Actif = @Actif)
+    WHERE (@FK_Police_Id IS NULL OR a.FK_Police_Id = @FK_Police_Id)
       AND (
             @Source = 'Cabinet'
          OR (@Source = 'Extranet' AND EXISTS (
@@ -427,21 +373,37 @@ BEGIN
 END;
 GO
 
-CREATE OR ALTER PROCEDURE dbo.ps_GetSinistres
-    @FK_User_Id   INT,
-    @Token        VARCHAR(1000),
-    @Source       VARCHAR(50),
-    @FK_Police_Id INT = NULL
+CREATE OR ALTER PROCEDURE dbo.ps_GetAdherentDetails
+    @FK_User_Id     INT,
+    @Token          VARCHAR(1000),
+    @Source         VARCHAR(50),
+    @FK_Adherent_Id INT
 AS
 BEGIN
     SET NOCOUNT ON;
+    SELECT
+        pac.Id           AS IdPersACharge,
+        pac.Nom,
+        pac.Lien,
+        pac.DateNaissance,
+        pac.DateAdhesion,
+        a.Nom            AS NomAdherent,
+        a.NumAdhesion,
+        a.Matricule
+    FROM dbo.PersACharge pac
+    INNER JOIN dbo.Adherents a ON a.Id = pac.FK_Adherent_Id
+    WHERE pac.FK_Adherent_Id = @FK_Adherent_Id
+    ORDER BY pac.Lien, pac.Nom;
+END;
+GO
 
-    IF @Source NOT IN ('Cabinet', 'Extranet', 'Mobile')
-    BEGIN
-        RAISERROR('Source invalide.', 16, 1);
-        RETURN;
-    END
-
+CREATE OR ALTER PROCEDURE dbo.ps_GetSinistres
+    @FK_User_Id   INT,
+    @Token        VARCHAR(1000),
+    @Source       VARCHAR(50)
+AS
+BEGIN
+    SET NOCOUNT ON;
     SELECT DISTINCT
         s.Id              AS IdSinistre,
         s.NumeroSin,
@@ -462,8 +424,7 @@ BEGIN
     INNER JOIN dbo.Risques  r ON r.Id = s.FK_Risque_Id
     INNER JOIN dbo.Polices  p ON p.Id = s.FK_Police_Id
     INNER JOIN dbo.Clients  c ON c.Id = p.Fk_Client_Id
-    WHERE (@FK_Police_Id IS NULL OR s.FK_Police_Id = @FK_Police_Id)
-      AND (
+    WHERE (
             @Source = 'Cabinet'
          OR (@Source = 'Extranet' AND EXISTS (
                 SELECT 1 FROM dbo.UsersXClients uxc
@@ -478,21 +439,39 @@ BEGIN
 END;
 GO
 
-CREATE OR ALTER PROCEDURE dbo.ps_GetQuittances
+CREATE OR ALTER PROCEDURE dbo.ps_GetSinistresByPolice
     @FK_User_Id   INT,
     @Token        VARCHAR(1000),
     @Source       VARCHAR(50),
-    @FK_Police_Id INT = NULL
+    @FK_Police_Id INT
 AS
 BEGIN
     SET NOCOUNT ON;
+    SELECT
+        s.Id              AS IdSinistre,
+        s.NumeroSin,
+        s.DateSin,
+        s.Statut,
+        s.MT_Dommages,
+        s.MT_Franchise,
+        s.MT_Indemnite,
+        r.Libelle         AS Risque,
+        p.Branche
+    FROM dbo.Sinistres s
+    INNER JOIN dbo.Risques r ON r.Id = s.FK_Risque_Id
+    INNER JOIN dbo.Polices p ON p.Id = s.FK_Police_Id
+    WHERE s.FK_Police_Id = @FK_Police_Id
+    ORDER BY s.DateSin DESC;
+END;
+GO
 
-    IF @Source NOT IN ('Cabinet', 'Extranet', 'Mobile')
-    BEGIN
-        RAISERROR('Source invalide.', 16, 1);
-        RETURN;
-    END
-
+CREATE OR ALTER PROCEDURE dbo.ps_GetQuittances
+    @FK_User_Id   INT,
+    @Token        VARCHAR(1000),
+    @Source       VARCHAR(50)
+AS
+BEGIN
+    SET NOCOUNT ON;
     SELECT DISTINCT
         q.Id             AS IdQuittance,
         q.NumQuittance,
@@ -509,8 +488,7 @@ BEGIN
     INNER JOIN dbo.Polices    p  ON p.Id  = q.FK_Police_Id
     INNER JOIN dbo.Clients    c  ON c.Id  = p.Fk_Client_Id
     INNER JOIN dbo.Compagnies cp ON cp.Id = p.FK_Compagnie_Id
-    WHERE (@FK_Police_Id IS NULL OR q.FK_Police_Id = @FK_Police_Id)
-      AND (
+    WHERE (
             @Source = 'Cabinet'
          OR (@Source = 'Extranet' AND EXISTS (
                 SELECT 1 FROM dbo.UsersXClients uxc
@@ -522,43 +500,34 @@ BEGIN
 END;
 GO
 
-CREATE OR ALTER PROCEDURE dbo.ps_GetStats
+CREATE OR ALTER PROCEDURE dbo.ps_GetQuittancesByPolice
     @FK_User_Id   INT,
     @Token        VARCHAR(1000),
     @Source       VARCHAR(50),
-    @FK_Police_Id INT = NULL
+    @FK_Police_Id INT
 AS
 BEGIN
     SET NOCOUNT ON;
+    SELECT
+        q.Id             AS IdQuittance,
+        q.NumQuittance,
+        q.DateDu,
+        q.DateAu,
+        q.Montant,
+        q.Solde
+    FROM dbo.Quittances q
+    WHERE q.FK_Police_Id = @FK_Police_Id
+    ORDER BY q.DateDu DESC;
+END;
+GO
 
-    IF @Source NOT IN ('Cabinet', 'Extranet', 'Mobile')
-    BEGIN
-        RAISERROR('Source invalide.', 16, 1);
-        RETURN;
-    END
-
-    IF @FK_Police_Id IS NOT NULL
-    BEGIN
-        SELECT
-            p.Id                                                                                   AS IdPolice,
-            p.Police                                                                               AS NumeroPolice,
-            p.Branche,
-            p.DateEcheance,
-            p.Statut                                                                               AS StatutPolice,
-            c.RaisonSociale                                                                        AS Client,
-            cp.RaisonSociale                                                                       AS Compagnie,
-            (SELECT COUNT(*)        FROM dbo.Adherents a WHERE a.FK_Police_Id = p.Id)              AS NombreAdherents,
-            (SELECT COUNT(*)        FROM dbo.Risques   r WHERE r.FK_Police_Id = p.Id)              AS NombreRisques,
-            (SELECT COUNT(*)        FROM dbo.Sinistres s WHERE s.FK_Police_Id = p.Id)              AS NombreSinistresTotal,
-            (SELECT COUNT(*)        FROM dbo.Sinistres s WHERE s.FK_Police_Id = p.Id AND s.Statut = 'E') AS NombreSinistresEnCours,
-            (SELECT ISNULL(SUM(q.Montant), 0) FROM dbo.Quittances q WHERE q.FK_Police_Id = p.Id)  AS PrimeTotale
-        FROM dbo.Polices    p
-        INNER JOIN dbo.Clients    c  ON c.Id  = p.Fk_Client_Id
-        INNER JOIN dbo.Compagnies cp ON cp.Id = p.FK_Compagnie_Id
-        WHERE p.Id = @FK_Police_Id;
-        RETURN;
-    END
-
+CREATE OR ALTER PROCEDURE dbo.ps_GetStats
+    @FK_User_Id   INT,
+    @Token        VARCHAR(1000),
+    @Source       VARCHAR(50)
+AS
+BEGIN
+    SET NOCOUNT ON;
     SELECT
         (
             SELECT COUNT(DISTINCT p.Id)
@@ -598,39 +567,41 @@ BEGIN
 END;
 GO
 
-CREATE OR ALTER PROCEDURE dbo.ps_GetReclamations
-    @FK_User_Id    INT,
-    @Token         VARCHAR(1000),
-    @Source        VARCHAR(50),
-    @IdReclamation INT = NULL
+CREATE OR ALTER PROCEDURE dbo.ps_GetStatsByPolice
+    @FK_User_Id   INT,
+    @Token        VARCHAR(1000),
+    @Source       VARCHAR(50),
+    @FK_Police_Id INT
 AS
 BEGIN
     SET NOCOUNT ON;
+    SELECT
+        p.Id                                                                                   AS IdPolice,
+        p.Police                                                                               AS NumeroPolice,
+        p.Branche,
+        p.DateEcheance,
+        p.Statut                                                                               AS StatutPolice,
+        c.RaisonSociale                                                                        AS Client,
+        cp.RaisonSociale                                                                       AS Compagnie,
+        (SELECT COUNT(*)        FROM dbo.Adherents a WHERE a.FK_Police_Id = p.Id)              AS NombreAdherents,
+        (SELECT COUNT(*)        FROM dbo.Risques   r WHERE r.FK_Police_Id = p.Id)              AS NombreRisques,
+        (SELECT COUNT(*)        FROM dbo.Sinistres s WHERE s.FK_Police_Id = p.Id)              AS NombreSinistresTotal,
+        (SELECT COUNT(*)        FROM dbo.Sinistres s WHERE s.FK_Police_Id = p.Id AND s.Statut = 'E') AS NombreSinistresEnCours,
+        (SELECT ISNULL(SUM(q.Montant), 0) FROM dbo.Quittances q WHERE q.FK_Police_Id = p.Id)  AS PrimeTotale
+    FROM dbo.Polices    p
+    INNER JOIN dbo.Clients    c  ON c.Id  = p.Fk_Client_Id
+    INNER JOIN dbo.Compagnies cp ON cp.Id = p.FK_Compagnie_Id
+    WHERE p.Id = @FK_Police_Id;
+END;
+GO
 
-    IF @IdReclamation IS NOT NULL
-    BEGIN
-        SELECT
-            r.Id              AS IdReclamation,
-            r.DateReclamation,
-            r.Sujet,
-            r.Statut,
-            r.DateStatut,
-            r.Nature,
-            u.Nom             AS UserDeclarant,
-            rd.Id             AS IdMessage,
-            rd.DateMessage,
-            rd.Nature         AS NatureMessage,
-            rd.Message,
-            uMsg.Nom          AS AuteurMessage
-        FROM dbo.ReclamationsIdt   r
-        INNER JOIN dbo.sysUser          u    ON u.Id                 = r.FK_User_Client
-        LEFT  JOIN dbo.ReclamationsDet  rd   ON rd.FK_Reclamation_Id = r.Id
-        LEFT  JOIN dbo.sysUser          uMsg ON uMsg.Id              = rd.FK_User_Id
-        WHERE r.Id = @IdReclamation
-        ORDER BY rd.DateMessage ASC;
-        RETURN;
-    END
-
+CREATE OR ALTER PROCEDURE dbo.ps_GetReclamations
+    @FK_User_Id    INT,
+    @Token         VARCHAR(1000),
+    @Source        VARCHAR(50)
+AS
+BEGIN
+    SET NOCOUNT ON;
     SELECT
         r.Id              AS IdReclamation,
         r.DateReclamation,
@@ -647,242 +618,209 @@ BEGIN
 END;
 GO
 
-CREATE OR ALTER PROCEDURE dbo.ps_ManageReclamation
+CREATE OR ALTER PROCEDURE dbo.ps_GetReclamationDetails
     @FK_User_Id        INT,
     @Token             VARCHAR(1000),
     @Source            VARCHAR(50),
-    @Action            VARCHAR(20),
-    @IdReclamation     INT           = NULL,
-    @Sujet             VARCHAR(255)  = NULL,
-    @Nature            CHAR(1)       = NULL,
-    @NouveauStatut     CHAR(1)       = NULL,
-    @Message           VARCHAR(2000) = NULL,
-    @NatureMessage     CHAR(1)       = NULL,
-    @NewId             INT           OUTPUT
+    @FK_Reclamation_Id INT
 AS
 BEGIN
     SET NOCOUNT ON;
+    SELECT
+        r.Id              AS IdReclamation,
+        r.DateReclamation,
+        r.Sujet,
+        r.Statut,
+        r.DateStatut,
+        r.Nature,
+        u.Nom             AS UserDeclarant,
+        rd.Id             AS IdMessage,
+        rd.DateMessage,
+        rd.Nature         AS NatureMessage,
+        rd.Message,
+        uMsg.Nom          AS AuteurMessage
+    FROM dbo.ReclamationsIdt   r
+    INNER JOIN dbo.sysUser          u    ON u.Id                 = r.FK_User_Client
+    LEFT  JOIN dbo.ReclamationsDet  rd   ON rd.FK_Reclamation_Id = r.Id
+    LEFT  JOIN dbo.sysUser          uMsg ON uMsg.Id              = rd.FK_User_Id
+    WHERE r.Id = @FK_Reclamation_Id
+    ORDER BY rd.DateMessage ASC;
+END;
+GO
 
-    SET @NewId = NULL;
+CREATE OR ALTER PROCEDURE dbo.ps_CreateReclamation
+    @FK_User_Id    INT,
+    @Token         VARCHAR(1000),
+    @Source        VARCHAR(50),
+    @Sujet         VARCHAR(255),
+    @Nature        CHAR(1),
+    @NewId         INT OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    INSERT INTO dbo.ReclamationsIdt (FK_User_Client, DateReclamation, Sujet, Statut, DateStatut, Nature)
+    VALUES (@FK_User_Id, GETDATE(), @Sujet, 'E', GETDATE(), @Nature);
+    SET @NewId = SCOPE_IDENTITY();
+END;
+GO
 
-    IF @Action NOT IN ('CREATE', 'ADD_MESSAGE', 'UPDATE_STATUT', 'DELETE')
+CREATE OR ALTER PROCEDURE dbo.ps_AddMessageReclamation
+    @FK_User_Id        INT,
+    @Token             VARCHAR(1000),
+    @Source            VARCHAR(50),
+    @FK_Reclamation_Id INT,
+    @Message           VARCHAR(2000),
+    @NatureMessage     CHAR(1)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    INSERT INTO dbo.ReclamationsDet (FK_Reclamation_Id, FK_User_Id, DateMessage, Nature, Message)
+    VALUES (@FK_Reclamation_Id, @FK_User_Id, GETDATE(), @NatureMessage, @Message);
+END;
+GO
+
+CREATE OR ALTER PROCEDURE dbo.ps_UpdateStatutReclamation
+    @FK_User_Id        INT,
+    @Token             VARCHAR(1000),
+    @Source            VARCHAR(50),
+    @FK_Reclamation_Id INT,
+    @NouveauStatut     CHAR(1)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    UPDATE dbo.ReclamationsIdt
+    SET Statut = @NouveauStatut, DateStatut = GETDATE()
+    WHERE Id = @FK_Reclamation_Id;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE dbo.ps_DeleteReclamation
+    @FK_User_Id        INT,
+    @Token             VARCHAR(1000),
+    @Source            VARCHAR(50),
+    @FK_Reclamation_Id INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DELETE FROM dbo.ReclamationsDet WHERE FK_Reclamation_Id = @FK_Reclamation_Id;
+    DELETE FROM dbo.ReclamationsIdt WHERE Id                = @FK_Reclamation_Id;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE dbo.ps_GetUsers
+    @FK_User_Id INT,
+    @Token      VARCHAR(1000),
+    @Source     VARCHAR(50)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT Id, Id_Auth, Nom, Telephone, Email, Nature, Extranet, Mobile
+    FROM dbo.sysUser
+    ORDER BY Nom;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE dbo.ps_SaveUser
+    @FK_User_Id    INT,
+    @Token         VARCHAR(1000),
+    @Source        VARCHAR(50),
+    @FK_Target_Id  INT,
+    @Id_Auth       VARCHAR(255),
+    @Nom           VARCHAR(255),
+    @Telephone     VARCHAR(20),
+    @Email         VARCHAR(255),
+    @Nature        CHAR(1),
+    @Extranet      CHAR(1),
+    @Mobile        CHAR(1)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    IF @FK_Target_Id = 0
     BEGIN
-        RAISERROR('Action invalide.', 16, 1);
-        RETURN;
+        INSERT INTO dbo.sysUser (Id_Auth, Nom, Telephone, Email, Nature, Extranet, Mobile)
+        VALUES (@Id_Auth, @Nom, @Telephone, @Email, @Nature, @Extranet, @Mobile);
+        SELECT SCOPE_IDENTITY() AS NewId;
     END
-
-    IF @Action = 'CREATE'
+    ELSE
     BEGIN
-        IF @Sujet IS NULL OR @Nature IS NULL
-        BEGIN
-            RAISERROR('Sujet et Nature sont obligatoires pour la creation.', 16, 1);
-            RETURN;
-        END
-        INSERT INTO dbo.ReclamationsIdt (FK_User_Client, DateReclamation, Sujet, Statut, DateStatut, Nature)
-        VALUES (@FK_User_Id, GETDATE(), @Sujet, 'E', GETDATE(), @Nature);
-        SET @NewId = SCOPE_IDENTITY();
-        RETURN;
-    END
-
-    IF @IdReclamation IS NULL OR NOT EXISTS (SELECT 1 FROM dbo.ReclamationsIdt WHERE Id = @IdReclamation)
-    BEGIN
-        RAISERROR('Reclamation introuvable.', 16, 1);
-        RETURN;
-    END
-
-    IF @Action = 'ADD_MESSAGE'
-    BEGIN
-        IF @Message IS NULL
-        BEGIN
-            RAISERROR('Message obligatoire.', 16, 1);
-            RETURN;
-        END
-        INSERT INTO dbo.ReclamationsDet (FK_Reclamation_Id, FK_User_Id, DateMessage, Nature, Message)
-        VALUES (@IdReclamation, @FK_User_Id, GETDATE(), @NatureMessage, @Message);
-        SET @NewId = SCOPE_IDENTITY();
-        RETURN;
-    END
-
-    IF @Action = 'UPDATE_STATUT'
-    BEGIN
-        IF @NouveauStatut NOT IN ('E', 'T', 'C')
-        BEGIN
-            RAISERROR('Statut invalide. Valeurs acceptees : E, T, C.', 16, 1);
-            RETURN;
-        END
-        UPDATE dbo.ReclamationsIdt
-        SET Statut = @NouveauStatut, DateStatut = GETDATE()
-        WHERE Id = @IdReclamation;
-        RETURN;
-    END
-
-    IF @Action = 'DELETE'
-    BEGIN
-        IF NOT EXISTS (SELECT 1 FROM dbo.ReclamationsIdt WHERE Id = @IdReclamation AND Statut = 'E')
-        BEGIN
-            RAISERROR('Suppression impossible : reclamation introuvable ou deja traitee/cloturee.', 16, 1);
-            RETURN;
-        END
-        DELETE FROM dbo.ReclamationsDet WHERE FK_Reclamation_Id = @IdReclamation;
-        DELETE FROM dbo.ReclamationsIdt WHERE Id                = @IdReclamation;
-        RETURN;
+        UPDATE dbo.sysUser
+        SET Id_Auth = @Id_Auth, Nom = @Nom, Telephone = @Telephone,
+            Email = @Email, Nature = @Nature, Extranet = @Extranet, Mobile = @Mobile
+        WHERE Id = @FK_Target_Id;
+        SELECT @FK_Target_Id AS NewId;
     END
 END;
 GO
 
-CREATE OR ALTER PROCEDURE dbo.ps_ManageUser
-    @FK_User_Id INT,
-    @Token      VARCHAR(1000),
-    @Source     VARCHAR(50),
-    @Action     VARCHAR(20),
-    @Id         INT           = 0,
-    @Id_Auth    VARCHAR(255)  = NULL,
-    @Nom        VARCHAR(255)  = NULL,
-    @Telephone  VARCHAR(255)  = NULL,
-    @Email      VARCHAR(255)  = NULL,
-    @Nature     CHAR(1)       = 'C',
-    @Extranet   CHAR(1)       = 'N',
-    @Mobile     CHAR(1)       = 'N',
-    @FilterNom  VARCHAR(255)  = NULL,
-    @FilterNature CHAR(1)     = NULL
+CREATE OR ALTER PROCEDURE dbo.ps_DeleteUser
+    @FK_User_Id    INT,
+    @Token         VARCHAR(1000),
+    @Source        VARCHAR(50),
+    @FK_Delete_Id  INT
 AS
 BEGIN
     SET NOCOUNT ON;
-
-    IF @Action NOT IN ('GET', 'SAVE', 'DELETE')
-    BEGIN
-        RAISERROR('Action invalide.', 16, 1);
-        RETURN;
-    END
-
-    IF @Action = 'GET'
-    BEGIN
-        SELECT Id, Id_Auth, Nom, Telephone, Email, Nature, Extranet, Mobile
-        FROM dbo.sysUser
-        WHERE (@FilterNom    IS NULL OR Nom    LIKE '%' + @FilterNom    + '%')
-          AND (@FilterNature IS NULL OR Nature = @FilterNature)
-        ORDER BY Nom;
-        RETURN;
-    END
-
-    IF @Action = 'SAVE'
-    BEGIN
-        IF @Nom IS NULL
-        BEGIN
-            RAISERROR('Nom obligatoire.', 16, 1);
-            RETURN;
-        END
-        IF @Nature NOT IN ('A', 'C')
-        BEGIN
-            RAISERROR('Nature invalide. Valeurs attendues : A (Cabinet), C (Client).', 16, 1);
-            RETURN;
-        END
-        IF @Extranet NOT IN ('O', 'N') OR @Mobile NOT IN ('O', 'N')
-        BEGIN
-            RAISERROR('Extranet et Mobile doivent etre O ou N.', 16, 1);
-            RETURN;
-        END
-        IF @Id = 0
-        BEGIN
-            INSERT INTO dbo.sysUser (Id_Auth, Nom, Telephone, Email, Nature, Extranet, Mobile)
-            VALUES (@Id_Auth, @Nom, @Telephone, @Email, @Nature, @Extranet, @Mobile);
-            SELECT SCOPE_IDENTITY() AS NewId;
-        END
-        ELSE
-        BEGIN
-            UPDATE dbo.sysUser
-            SET Id_Auth = @Id_Auth, Nom = @Nom, Telephone = @Telephone,
-                Email = @Email, Nature = @Nature, Extranet = @Extranet, Mobile = @Mobile
-            WHERE Id = @Id;
-            SELECT @Id AS NewId;
-        END
-        RETURN;
-    END
-
-    IF @Action = 'DELETE'
-    BEGIN
-        IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @Id)
-        BEGIN
-            RAISERROR('Utilisateur introuvable.', 16, 1);
-            RETURN;
-        END
-        DELETE FROM dbo.Roles            WHERE FK_User_Id = @Id;
-        DELETE FROM dbo.Postes_Autorises WHERE FK_User_Id = @Id;
-        DELETE FROM dbo.UsersXClients    WHERE FK_User_Id = @Id;
-        DELETE FROM dbo.sysUser          WHERE Id         = @Id;
-        RETURN;
-    END
+    DELETE FROM dbo.Roles            WHERE FK_User_Id = @FK_Delete_Id;
+    DELETE FROM dbo.Postes_Autorises WHERE FK_User_Id = @FK_Delete_Id;
+    DELETE FROM dbo.UsersXClients    WHERE FK_User_Id = @FK_Delete_Id;
+    DELETE FROM dbo.sysUser          WHERE Id         = @FK_Delete_Id;
 END;
 GO
 
 CREATE OR ALTER PROCEDURE dbo.ps_GetClients
-    @FK_User_Id    INT,
-    @Token         VARCHAR(1000),
-    @Source        VARCHAR(50),
-    @RaisonSociale VARCHAR(255) = NULL,
-    @Particulier   CHAR(1)      = NULL
+    @FK_User_Id   INT,
+    @Token        VARCHAR(1000),
+    @Source       VARCHAR(50)
 AS
 BEGIN
     SET NOCOUNT ON;
-
-    SELECT c.*, u.Nom AS UserNom
-    FROM dbo.Clients  c
-    LEFT JOIN dbo.sysUser u ON c.FK_User_Id = u.Id
-    WHERE (@RaisonSociale IS NULL OR c.RaisonSociale LIKE '%' + @RaisonSociale + '%')
-      AND (@Particulier   IS NULL OR c.Particulier = @Particulier)
+    SELECT DISTINCT
+        c.Id,
+        c.RaisonSociale,
+        c.Particulier,
+        c.Email,
+        c.Adresse,
+        cParent.RaisonSociale AS ParentClient,
+        u.Nom                 AS UserNom
+    FROM dbo.Clients c
+    LEFT JOIN dbo.Clients cParent ON c.Fk_Client_Id = cParent.Id
+    LEFT JOIN dbo.sysUser u       ON c.FK_User_Id   = u.Id
     ORDER BY c.RaisonSociale;
 END;
 GO
 
-CREATE OR ALTER PROCEDURE dbo.ps_CreateUserFromEntity
-    @FK_User_Id INT,
-    @Token      VARCHAR(1000),
-    @Source     VARCHAR(50),
-    @EntityType VARCHAR(10),
-    @EntityId   INT
+CREATE OR ALTER PROCEDURE dbo.ps_CreateUserFromClient
+    @FK_User_Id   INT,
+    @Token        VARCHAR(1000),
+    @Source       VARCHAR(50),
+    @FK_Client_Id INT
 AS
 BEGIN
     SET NOCOUNT ON;
+    DECLARE @Nom VARCHAR(255), @Email VARCHAR(255), @NewUserId INT;
+    SELECT @Nom = RaisonSociale, @Email = Email FROM dbo.Clients WHERE Id = @FK_Client_Id;
+    IF @Nom IS NULL RETURN;
+    INSERT INTO dbo.sysUser (Nom, Email, Nature, Extranet, Mobile) VALUES (@Nom, @Email, 'C', 'O', 'N');
+    SET @NewUserId = SCOPE_IDENTITY();
+    UPDATE dbo.Clients SET FK_User_Id = @NewUserId WHERE Id = @FK_Client_Id;
+    SELECT * FROM dbo.sysUser WHERE Id = @NewUserId;
+END;
+GO
 
-    IF @EntityType NOT IN ('CLIENT', 'ADHERENT')
-    BEGIN
-        RAISERROR('EntityType invalide. Valeurs acceptees : CLIENT, ADHERENT.', 16, 1);
-        RETURN;
-    END
-
-    DECLARE @Nom    VARCHAR(255);
-    DECLARE @Email  VARCHAR(255);
-    DECLARE @Nature CHAR(1);
-    DECLARE @Extran CHAR(1);
-    DECLARE @Mob    CHAR(1);
-    DECLARE @UserId INT;
-
-    IF @EntityType = 'CLIENT'
-    BEGIN
-        SELECT @Nom = RaisonSociale, @Email = Email FROM dbo.Clients WHERE Id = @EntityId;
-        SET @Nature = 'C'; SET @Extran = 'O'; SET @Mob = 'N';
-    END
-    ELSE
-    BEGIN
-        SELECT @Nom = Nom, @Email = Email FROM dbo.Adherents WHERE Id = @EntityId;
-        SET @Nature = 'C'; SET @Extran = 'N'; SET @Mob = 'O';
-    END
-
-    IF @Nom IS NULL
-    BEGIN
-        RAISERROR('Entite introuvable.', 16, 1);
-        RETURN;
-    END
-
-    INSERT INTO dbo.sysUser (Nom, Email, Nature, Extranet, Mobile)
-    VALUES (@Nom, @Email, @Nature, @Extran, @Mob);
-    SET @UserId = SCOPE_IDENTITY();
-
-    IF @EntityType = 'CLIENT'
-        UPDATE dbo.Clients   SET FK_User_Id = @UserId WHERE Id = @EntityId;
-    ELSE
-        UPDATE dbo.Adherents SET FK_User_Id = @UserId WHERE Id = @EntityId;
-
-    SELECT * FROM dbo.sysUser WHERE Id = @UserId;
+CREATE OR ALTER PROCEDURE dbo.ps_CreateUserFromAdherent
+    @FK_User_Id     INT,
+    @Token          VARCHAR(1000),
+    @Source         VARCHAR(50),
+    @FK_Adherent_Id INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DECLARE @Nom VARCHAR(255), @Email VARCHAR(255), @NewUserId INT;
+    SELECT @Nom = Nom, @Email = Email FROM dbo.Adherents WHERE Id = @FK_Adherent_Id;
+    IF @Nom IS NULL RETURN;
+    INSERT INTO dbo.sysUser (Nom, Email, Nature, Extranet, Mobile) VALUES (@Nom, @Email, 'C', 'N', 'O');
+    SET @NewUserId = SCOPE_IDENTITY();
+    UPDATE dbo.Adherents SET FK_User_Id = @NewUserId WHERE Id = @FK_Adherent_Id;
+    SELECT * FROM dbo.sysUser WHERE Id = @NewUserId;
 END;
 GO

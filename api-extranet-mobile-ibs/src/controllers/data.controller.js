@@ -12,10 +12,10 @@ const formatPolices = async (req, polices) => {
     return Promise.all(polices.map(async (p) => {
         const [risques, sinistres, quittances] = await Promise.all([
             p.Branche === 'Santé' 
-                ? db.execute('ps_GetAdherents', { ...common })
+                ? db.execute('ps_GetAdherents', { ...common, FK_Police_Id: p.IdPolice })
                 : db.execute('ps_GetRisques', { ...common, FK_Police_Id: p.IdPolice }),
-            db.execute('ps_GetSinistres', { ...common, FK_Police_Id: p.IdPolice }),
-            db.execute('ps_GetQuittances', { ...common, FK_Police_Id: p.IdPolice })
+            db.execute('ps_GetSinistresByPolice', { ...common, FK_Police_Id: p.IdPolice }),
+            db.execute('ps_GetQuittancesByPolice', { ...common, FK_Police_Id: p.IdPolice })
         ]);
 
         return {
@@ -139,7 +139,7 @@ const getMessages = async (req, res) => {
         if (!id) return res.status(400).json({ message: 'ID requis' });
         
         const common = getCommonParams(req);
-        const messages = await db.execute('ps_GetReclamations', { ...common, IdReclamation: id });
+        const messages = await db.execute('ps_GetReclamationDetails', { ...common, FK_Reclamation_Id: id });
         res.json(messages.map(m => ({
             id: m.IdMessage,
             text: m.Message,
@@ -154,14 +154,14 @@ const createReclamation = async (req, res) => {
         const common = getCommonParams(req);
         const { sujet, nature, message } = req.body;
         
-        const result = await db.execute('ps_ManageReclamation', { 
-            ...common, Action: 'CREATE', Sujet: sujet, Nature: nature 
+        const result = await db.execute('ps_CreateReclamation', { 
+            ...common, Sujet: sujet, Nature: nature 
         });
         const newId = result[0].NewId;
         
         if (message) {
-            await db.execute('ps_ManageReclamation', { 
-                ...common, Action: 'ADD_MESSAGE', IdReclamation: newId, NatureMessage: 'C', Message: message 
+            await db.execute('ps_AddMessageReclamation', { 
+                ...common, FK_Reclamation_Id: newId, NatureMessage: 'C', Message: message 
             });
         }
         
@@ -175,10 +175,9 @@ const sendMessage = async (req, res) => {
         const { id } = req.params;
         const { message } = req.body;
         
-        await db.execute('ps_ManageReclamation', { 
+        await db.execute('ps_AddMessageReclamation', { 
             ...common,
-            Action: 'ADD_MESSAGE',
-            IdReclamation: id, 
+            FK_Reclamation_Id: id, 
             NatureMessage: 'C', 
             Message: message 
         });

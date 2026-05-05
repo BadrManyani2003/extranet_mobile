@@ -20,10 +20,7 @@ const getCommonParams = (req) => ({
 const getUsers = async (req, res) => {
     try {
         const common = getCommonParams(req);
-        const { nom = null, nature = null } = req.body;
-        const data = await db.execute('ps_ManageUser', { 
-            ...common, Action: 'GET', FilterNom: nom, FilterNature: nature 
-        });
+        const data = await db.execute('ps_GetUsers', { ...common });
         res.json({ success: true, data });
     } catch (error) { handleError(res, error); }
 };
@@ -32,9 +29,9 @@ const saveUser = async (req, res) => {
     try {
         const common = getCommonParams(req);
         const { Id, Id_Auth, Nom, Telephone, Email, Nature, Extranet, Mobile } = req.body;
-        await db.execute('ps_ManageUser', { 
-            ...common, Action: 'SAVE',
-            Id: Id || 0, Id_Auth, Nom, Telephone, Email, Nature, Extranet, Mobile 
+        await db.execute('ps_SaveUser', { 
+            ...common, 
+            FK_Target_Id: Id || 0, Id_Auth, Nom, Telephone, Email, Nature, Extranet, Mobile 
         });
         res.json({ success: true, message: 'Utilisateur enregistré.' });
     } catch (error) { handleError(res, error); }
@@ -43,7 +40,7 @@ const saveUser = async (req, res) => {
 const deleteUser = async (req, res) => {
     try {
         const common = getCommonParams(req);
-        await db.execute('ps_ManageUser', { ...common, Action: 'DELETE', Id: req.body.id });
+        await db.execute('ps_DeleteUser', { ...common, FK_Delete_Id: req.body.id });
         res.json({ success: true, message: 'Utilisateur supprimé.' });
     } catch (error) { handleError(res, error); }
 };
@@ -74,11 +71,7 @@ const syncKeycloak = async (req, res) => {
 const getClients = async (req, res) => {
     try {
         const common = getCommonParams(req);
-        const data = await db.execute('ps_GetClients', { 
-            ...common,
-            RaisonSociale: req.body.nom, 
-            Particulier: req.body.particulier 
-        });
+        const data = await db.execute('ps_GetClients', { ...common });
         res.json({ success: true, data });
     } catch (error) { handleError(res, error); }
 };
@@ -86,8 +79,8 @@ const getClients = async (req, res) => {
 const createUserFromClient = async (req, res) => {
     try {
         const common = getCommonParams(req);
-        const data = await db.execute('ps_CreateUserFromEntity', { 
-            ...common, EntityType: 'CLIENT', EntityId: req.body.clientId 
+        const data = await db.execute('ps_CreateUserFromClient', { 
+            ...common, FK_Client_Id: req.body.clientId 
         });
         res.json({ success: true, data: data[0] });
     } catch (error) { handleError(res, error); }
@@ -97,11 +90,7 @@ const createUserFromClient = async (req, res) => {
 const getAdherents = async (req, res) => {
     try {
         const common = getCommonParams(req);
-        const data = await db.execute('ps_GetAdherents', { 
-            ...common,
-            Nom: req.body.nom, 
-            Actif: req.body.actif 
-        });
+        const data = await db.execute('ps_GetAdherents', { ...common });
         res.json({ success: true, data });
     } catch (error) { handleError(res, error); }
 };
@@ -109,8 +98,8 @@ const getAdherents = async (req, res) => {
 const createUserFromAdherent = async (req, res) => {
     try {
         const common = getCommonParams(req);
-        const data = await db.execute('ps_CreateUserFromEntity', { 
-            ...common, EntityType: 'ADHERENT', EntityId: req.body.adherentId 
+        const data = await db.execute('ps_CreateUserFromAdherent', { 
+            ...common, FK_Adherent_Id: req.body.adherentId 
         });
         res.json({ success: true, data: data[0] });
     } catch (error) { handleError(res, error); }
@@ -144,17 +133,15 @@ const sendReply = async (req, res) => {
     try {
         const common = getCommonParams(req);
         const { id, message } = req.body;
-        await db.execute('ps_ManageReclamation', { 
+        await db.execute('ps_AddMessageReclamation', { 
             ...common,
-            Action: 'ADD_MESSAGE',
-            IdReclamation: id, 
+            FK_Reclamation_Id: id, 
             NatureMessage: 'A', 
             Message: message 
         });
-        await db.execute('ps_ManageReclamation', { 
+        await db.execute('ps_UpdateStatutReclamation', { 
             ...common,
-            Action: 'UPDATE_STATUT',
-            IdReclamation: id, 
+            FK_Reclamation_Id: id, 
             NouveauStatut: 'T' 
         });
         res.json({ success: true, message: 'Réponse envoyée.' });
