@@ -10,7 +10,8 @@ import {
   LayoutDashboard,
   ArrowUpRight,
   ArrowDownRight,
-  Calendar
+  Calendar,
+  ShieldCheck
 } from 'lucide-vue-next'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { api } from '@/lib/api'
@@ -167,7 +168,6 @@ onMounted(async () => {
       api.data.getPolices()
     ])
     statistiques.value = statsRes
-    console.log('Stats received:', statsRes)
     contrats.value = contratsRes
   } catch (error) {
     console.error('Erreur lors de la récupération des données du tableau de bord:', error)

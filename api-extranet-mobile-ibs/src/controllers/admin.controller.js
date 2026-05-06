@@ -1,14 +1,6 @@
 const db = require('../utils/db');
+const response = require('../utils/response');
 const keycloakService = require('../services/keycloak.service');
-
-const handleError = (res, error) => {
-    console.error('API Error:', error.message);
-    res.status(500).json({ 
-        success: false, 
-        message: 'Une erreur technique est survenue.',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined 
-    });
-};
 
 const getCommonParams = (req) => ({
     FK_User_Id: req.user?.id || 1,
@@ -16,13 +8,12 @@ const getCommonParams = (req) => ({
     Source: req.headers['x-source'] || 'Cabinet'
 });
 
-
 const getUsers = async (req, res) => {
     try {
         const common = getCommonParams(req);
         const data = await db.execute('ps_GetUsers', { ...common });
-        res.json({ success: true, data });
-    } catch (error) { handleError(res, error); }
+        response.success(res, data);
+    } catch (error) { response.error(res, error); }
 };
 
 const saveUser = async (req, res) => {
@@ -33,16 +24,16 @@ const saveUser = async (req, res) => {
             ...common, 
             FK_Target_Id: Id || 0, Id_Auth, Nom, Telephone, Email, Nature, Extranet, Mobile 
         });
-        res.json({ success: true, message: 'Utilisateur enregistré.' });
-    } catch (error) { handleError(res, error); }
+        response.success(res, null, 'Utilisateur enregistré.');
+    } catch (error) { response.error(res, error); }
 };
 
 const deleteUser = async (req, res) => {
     try {
         const common = getCommonParams(req);
         await db.execute('ps_DeleteUser', { ...common, FK_Delete_Id: req.body.id });
-        res.json({ success: true, message: 'Utilisateur supprimé.' });
-    } catch (error) { handleError(res, error); }
+        response.success(res, null, 'Utilisateur supprimé.');
+    } catch (error) { response.error(res, error); }
 };
 
 const syncKeycloak = async (req, res) => {
@@ -53,27 +44,26 @@ const syncKeycloak = async (req, res) => {
         if (!users.length) return res.status(404).json({ message: 'Non trouvé.' });
         
         const user = users[0];
-        if (user.Id_Auth) return res.json({ success: true, keycloakId: user.Id_Auth });
+        if (user.Id_Auth) return response.success(res, { keycloakId: user.Id_Auth });
 
         const token = await keycloakService.getAdminToken();
         const keycloakId = await keycloakService.createUser(token, user);
 
         if (keycloakId) {
             await db.query('UPDATE sysUser SET Id_Auth = @1 WHERE Id = @0', [id, keycloakId]);
-            res.json({ success: true, keycloakId });
+            response.success(res, { keycloakId });
         } else {
             throw new Error('Sync failed');
         }
-    } catch (error) { handleError(res, error); }
+    } catch (error) { response.error(res, error); }
 };
-
 
 const getClients = async (req, res) => {
     try {
         const common = getCommonParams(req);
         const data = await db.execute('ps_GetClients', { ...common });
-        res.json({ success: true, data });
-    } catch (error) { handleError(res, error); }
+        response.success(res, data);
+    } catch (error) { response.error(res, error); }
 };
 
 const createUserFromClient = async (req, res) => {
@@ -82,17 +72,16 @@ const createUserFromClient = async (req, res) => {
         const data = await db.execute('ps_CreateUserFromClient', { 
             ...common, FK_Client_Id: req.body.clientId 
         });
-        res.json({ success: true, data: data[0] });
-    } catch (error) { handleError(res, error); }
+        response.success(res, data[0]);
+    } catch (error) { response.error(res, error); }
 };
-
 
 const getAdherents = async (req, res) => {
     try {
         const common = getCommonParams(req);
         const data = await db.execute('ps_GetAdherents', { ...common });
-        res.json({ success: true, data });
-    } catch (error) { handleError(res, error); }
+        response.success(res, data);
+    } catch (error) { response.error(res, error); }
 };
 
 const createUserFromAdherent = async (req, res) => {
@@ -101,32 +90,24 @@ const createUserFromAdherent = async (req, res) => {
         const data = await db.execute('ps_CreateUserFromAdherent', { 
             ...common, FK_Adherent_Id: req.body.adherentId 
         });
-        res.json({ success: true, data: data[0] });
-    } catch (error) { handleError(res, error); }
+        response.success(res, data[0]);
+    } catch (error) { response.error(res, error); }
 };
 
 const getReclamations = async (req, res) => {
     try {
-        const data = await db.query(`
-            SELECT r.*, u.Nom as ClientNom, 
-            (SELECT COUNT(*) FROM ReclamationsDet WHERE FK_Reclamation_Id = r.Id) as NombreMessages
-            FROM ReclamationsIdt r
-            INNER JOIN sysUser u ON r.FK_User_Client = u.Id
-            ORDER BY r.DateReclamation DESC
-        `);
-        res.json({ 
-            success: true, 
-            data: data.map(r => ({
-                id: r.Id,
-                sujet: r.Sujet,
-                date: r.DateReclamation,
-                statut: r.Statut === 'E' ? 'En cours' : r.Statut === 'T' ? 'Traité' : 'Clôturé',
-                nature: r.Nature,
-                client: r.ClientNom,
-                count: r.NombreMessages
-            }))
-        });
-    } catch (error) { handleError(res, error); }
+        const common = getCommonParams(req);
+        // Using stored procedure for consistency
+        const data = await db.execute('ps_GetReclamations', { ...common });
+        response.success(res, data.map(r => ({
+            id: r.IdReclamation,
+            sujet: r.Sujet,
+            date: r.DateReclamation,
+            statut: r.Statut === 'E' ? 'En cours' : r.Statut === 'T' ? 'Traité' : 'Clôturé',
+            nature: r.Nature,
+            count: r.NombreMessages
+        })));
+    } catch (error) { response.error(res, error); }
 };
 
 const sendReply = async (req, res) => {
@@ -144,8 +125,8 @@ const sendReply = async (req, res) => {
             FK_Reclamation_Id: id, 
             NouveauStatut: 'T' 
         });
-        res.json({ success: true, message: 'Réponse envoyée.' });
-    } catch (error) { handleError(res, error); }
+        response.success(res, null, 'Réponse envoyée.');
+    } catch (error) { response.error(res, error); }
 };
 
 module.exports = {
@@ -154,3 +135,4 @@ module.exports = {
     getAdherents, createUserFromAdherent,
     getReclamations, sendReply
 };
+

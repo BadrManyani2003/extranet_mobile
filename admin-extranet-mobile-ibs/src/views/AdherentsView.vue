@@ -18,11 +18,9 @@ const fetchAdherents = async () => {
 
 const handleCreateUser = async (adherentId: number) => {
   try {
-    const res = await api.admin.createUserFromAdherent(adherentId)
-    if (res.success) {
-      alert('Accès Mobile créé avec succès !')
-      fetchAdherents()
-    }
+    await api.admin.createUserFromAdherent(adherentId)
+    alert('Accès Mobile créé avec succès !')
+    fetchAdherents()
   } catch (e) { console.error(e) }
 }
 

@@ -18,11 +18,9 @@ const fetchClients = async () => {
 
 const handleCreateUser = async (clientId: number) => {
   try {
-    const res = await api.admin.createUserFromClient(clientId)
-    if (res.success) {
-      alert('Utilisateur créé avec succès !')
-      fetchClients()
-    }
+    await api.admin.createUserFromClient(clientId)
+    alert('Utilisateur créé avec succès !')
+    fetchClients()
   } catch (e) { console.error(e) }
 }
 

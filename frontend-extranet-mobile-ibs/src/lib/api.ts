@@ -30,11 +30,14 @@ const request = async (endpoint: string, options: RequestInit = {}) => {
     ...options,
     headers: { ...headers, ...options.headers }
   })
-  if (!res.ok) {
-    const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData.message || 'Erreur serveur');
+  
+  const json = await res.json().catch(() => ({ success: false, message: 'Erreur de lecture JSON' }))
+  
+  if (!res.ok || !json.success) {
+    throw new Error(json.message || 'Erreur serveur');
   }
-  return res.json()
+  
+  return json.data
 }
 
 export const api = {
@@ -50,17 +53,17 @@ export const api = {
   
   admin: {
     // Users
-    getUsers: (filters = {}) => request('/admin/users', { method: 'POST', body: JSON.stringify(filters) }).then(r => r.data),
+    getUsers: (filters = {}) => request('/admin/users', { method: 'POST', body: JSON.stringify(filters) }),
     saveUser: (user: any) => request('/admin/users/save', { method: 'POST', body: JSON.stringify(user) }),
     deleteUser: (id: number) => request('/admin/users/delete', { method: 'POST', body: JSON.stringify({ id }) }),
     syncKeycloak: (id: number) => request('/admin/users/sync-keycloak', { method: 'POST', body: JSON.stringify({ id }) }),
     
     // Clients
-    getClients: (filters = {}) => request('/admin/clients', { method: 'POST', body: JSON.stringify(filters) }).then(r => r.data),
+    getClients: (filters = {}) => request('/admin/clients', { method: 'POST', body: JSON.stringify(filters) }),
     createUserFromClient: (clientId: number) => request('/admin/clients/create-user', { method: 'POST', body: JSON.stringify({ clientId }) }),
     
     // Adherents
-    getAdherents: (filters = {}) => request('/admin/adherents', { method: 'POST', body: JSON.stringify(filters) }).then(r => r.data),
+    getAdherents: (filters = {}) => request('/admin/adherents', { method: 'POST', body: JSON.stringify(filters) }),
     createUserFromAdherent: (adherentId: number) => request('/admin/adherents/create-user', { method: 'POST', body: JSON.stringify({ adherentId }) })
   }
 }

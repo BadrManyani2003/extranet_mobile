@@ -352,7 +352,8 @@ BEGIN
         p.Police        AS NumeroPolice,
         p.Branche,
         c.RaisonSociale AS Client,
-        u.Nom           AS UserNom
+        u.Nom           AS UserNom,
+        a.FK_User_Id
     FROM dbo.Adherents a
     INNER JOIN dbo.Polices  p ON a.FK_Police_Id = p.Id
     INNER JOIN dbo.Clients  c ON p.Fk_Client_Id = c.Id
@@ -781,7 +782,8 @@ BEGIN
         c.Email,
         c.Adresse,
         cParent.RaisonSociale AS ParentClient,
-        u.Nom                 AS UserNom
+        u.Nom                 AS UserNom,
+        c.FK_User_Id
     FROM dbo.Clients c
     LEFT JOIN dbo.Clients cParent ON c.Fk_Client_Id = cParent.Id
     LEFT JOIN dbo.sysUser u       ON c.FK_User_Id   = u.Id
