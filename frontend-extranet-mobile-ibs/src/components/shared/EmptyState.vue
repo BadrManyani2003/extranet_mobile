@@ -14,6 +14,6 @@ defineProps<{
       <component :is="icon || AlertCircle" class="w-10 h-10" />
     </div>
     <h4 v-if="title" class="text-xl font-black text-slate-900 mb-2">{{ title }}</h4>
-    <!-- <p class="text-slate-500 max-w-xs mx-auto font-medium leading-relaxed">{{ description }}</p> -->
+    <p class="text-slate-500 max-w-xs mx-auto font-medium leading-relaxed">{{ description }}</p>
   </div>
 </template>

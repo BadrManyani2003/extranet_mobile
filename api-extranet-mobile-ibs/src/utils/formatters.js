@@ -1,31 +1,25 @@
 const db = require('./db');
 
-/**
- * Expert formatters for insurance data
- */
 const formatters = {
-    /**
-     * Formats multiple policies with their risks, claims and receipts
-     */
     formatPolices: async (common, polices) => {
         return Promise.all(polices.map(async (p) => {
             const [risques, sinistres, quittances] = await Promise.all([
                 p.Branche === 'Santé' 
-                    ? db.execute('ps_GetAdherents', { ...common, FK_Police_Id: p.IdPolice })
-                    : db.execute('ps_GetRisques', { ...common, FK_Police_Id: p.IdPolice }),
-                db.execute('ps_GetSinistresByPolice', { ...common, FK_Police_Id: p.IdPolice }),
-                db.execute('ps_GetQuittancesByPolice', { ...common, FK_Police_Id: p.IdPolice })
+                    ? db.execute('sp_GetAdherents', { ...common, FK_Police_Id: p.Id })
+                    : db.execute('sp_GetRisques', { ...common, FK_Police_Id: p.Id }),
+                db.execute('sp_GetSinistres', { ...common, FK_Police_Id: p.Id }),
+                db.execute('sp_GetQuittances', { ...common, FK_Police_Id: p.Id })
             ]);
 
             return {
-                id: p.IdPolice,
-                numero: p.NumeroPolice,
+                id: p.Id,
+                numero: p.Police,
                 branche: p.Branche,
                 client: p.Client,
                 statut: p.Statut === 'A' ? 'Actif' : 'Inactif',
                 dateEcheance: p.DateEcheance ? new Date(p.DateEcheance).toLocaleDateString('fr-FR') : '',
-                primeAnnuelle: p.PrimeAnnuelle,
-                impayes: p.TotalImpayes,
+                primeAnnuelle: p.PrimeAnnuelle || 0,
+                impayes: p.TotalImpayes || 0,
                 risques: p.Branche === 'Santé' ? formatters.formatAdherents(risques) : formatters.formatRisques(risques, p.Branche),
                 sinistres: formatters.formatSinistres(sinistres),
                 quittances: formatters.formatQuittances(quittances)
@@ -34,9 +28,9 @@ const formatters = {
     },
 
     formatAdherents: (data) => data.map(a => ({
-        id: a.IdAdherent,
+        id: a.Id,
         type: 'Adhérent',
-        nom: a.NomAdherent,
+        nom: a.Nom,
         numAdhesion: a.NumAdhesion,
         matricule: a.Matricule
     })),
@@ -44,17 +38,18 @@ const formatters = {
     formatRisques: (data, branche) => {
         const risksMap = new Map();
         data.forEach(r => {
-            if (!risksMap.has(r.IdRisque)) {
-                risksMap.set(r.IdRisque, {
-                    id: r.IdRisque,
+            if (!risksMap.has(r.Id)) {
+                risksMap.set(r.Id, {
+                    id: r.Id,
                     type: branche === 'Automobile' ? 'Véhicule' : 'Risque',
-                    marque: r.LibelleRisque,
+                    marque: r.Libelle,
                     immatriculation: r.Identifiant,
                     garanties: []
                 });
             }
-            if (r.IdGarantie) {
-                risksMap.get(r.IdRisque).garanties.push({
+            // If the query returns a join with warranties, handle it here
+            if (r.IdGarantie) { 
+                risksMap.get(r.Id).garanties.push({
                     nom: r.LibelleGarantie,
                     capital: r.Capital,
                     franchise: r.Franchise
@@ -68,7 +63,7 @@ const formatters = {
         numero: s.NumeroSin,
         date: s.DateSin ? new Date(s.DateSin).toLocaleDateString('fr-FR') : '',
         nature: s.Branche,
-        statut: s.Statut === 'E' ? 'En cours' : 'Clôturé',
+        statut: s.Statut === 'E' ? 'En cours' : s.Statut === 'T' ? 'Traité' : 'Clôturé',
         objet: s.Risque,
         mtDommage: s.MT_Dommages,
         mtFrais: s.MT_Franchise,

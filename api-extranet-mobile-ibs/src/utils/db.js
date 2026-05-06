@@ -1,15 +1,6 @@
 const { poolPromise, sql } = require('../config/db');
 
-/**
- * Executes a stored procedure or a raw query with parameters.
- * Automatically handles input binding and connection pooling.
- */
 const db = {
-    /**
-     * Call a stored procedure
-     * @param {string} procedureName 
-     * @param {Object} params Key-value pairs of parameters
-     */
     execute: async (procedureName, params = {}) => {
         const pool = await poolPromise;
         const request = pool.request();
@@ -32,9 +23,6 @@ const db = {
         return result.recordset;
     },
 
-    /**
-     * Run a query with indexed parameters (@0, @1...)
-     */
     query: async (queryString, params = []) => {
         const pool = await poolPromise;
         const request = pool.request();

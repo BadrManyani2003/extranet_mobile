@@ -10,27 +10,18 @@ import { Textarea } from '@/components/ui/textarea'
 import ReclamationList from '@/components/reclamations/ReclamationList.vue'
 import ReclamationChat from '@/components/reclamations/ReclamationChat.vue'
 import { api } from '@/lib/api'
+import { useFetch } from '@/composables/useFetch'
 
-const reclamations = ref<any[]>([])
+const { data: reclamations, loading: loadingList, execute: fetchReclamations } = useFetch(api.data.getReclamations)
+const { data: messages, loading: loadingChat, execute: fetchMessages } = useFetch(api.data.getMessages)
+
 const selectedTicket = ref<any>(null)
-const messages = ref<any[]>([])
-const loading = ref(true)
 const isNewDialogOpen = ref(false)
 const newTicket = ref({ sujet: '', nature: 'R', message: '' })
 
-const fetchReclamations = async () => {
-  loading.value = true
-  try { reclamations.value = await api.data.getReclamations() } 
-  catch (e) { console.error(e) } 
-  finally { loading.value = false }
-}
-
 const selectTicket = async (ticket: any) => {
   selectedTicket.value = ticket
-  loading.value = true
-  try { messages.value = await api.data.getMessages(ticket.id) } 
-  catch (e) { console.error(e) } 
-  finally { loading.value = false }
+  await fetchMessages(ticket.id)
 }
 
 const handleCreateTicket = async () => {
@@ -39,22 +30,27 @@ const handleCreateTicket = async () => {
     const res = await api.data.createReclamation(newTicket.value)
     isNewDialogOpen.value = false
     newTicket.value = { sujet: '', nature: 'R', message: '' }
-    await fetchReclamations()
-    const created = reclamations.value.find(r => r.id === res.id)
+    const updated = await fetchReclamations()
+    const created = (updated as any[])?.find(r => r.id === res.id)
     if (created) selectTicket(created)
-  } catch (e) { console.error(e) }
+  } catch (e) {
+    console.error(e)
+  }
 }
 
 const handleSendMessage = async (text: string) => {
-  if (!selectedTicket.value) return
+  if (!selectedTicket.value || !messages.value) return
   messages.value.push({
     id: Date.now(),
     text,
     sender: 'user',
     time: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
   })
-  try { await api.data.sendMessage(selectedTicket.value.id, { message: text, nature: 'C' }) } 
-  catch (e) { console.error(e) }
+  try {
+    await api.data.sendMessage(selectedTicket.value.id, { message: text, nature: 'C' })
+  } catch (e) {
+    console.error(e)
+  }
 }
 
 onMounted(fetchReclamations)
@@ -73,7 +69,7 @@ onMounted(fetchReclamations)
         </Button>
       </div>
 
-      <ReclamationList :reclamations="reclamations" :loading="loading" @select="selectTicket" />
+      <ReclamationList :reclamations="reclamations || []" :loading="loadingList" @select="selectTicket" />
     </template>
 
     <template v-else>
@@ -93,7 +89,7 @@ onMounted(fetchReclamations)
         </div>
       </div>
 
-      <ReclamationChat :messages="messages" :loading="loading" :selected-ticket="selectedTicket" @send="handleSendMessage" />
+      <ReclamationChat :messages="messages || []" :loading="loadingChat" :selected-ticket="selectedTicket" @send="handleSendMessage" />
     </template>
   </div>
 

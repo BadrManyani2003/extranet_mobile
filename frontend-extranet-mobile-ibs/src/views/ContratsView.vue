@@ -2,25 +2,22 @@
 import { ref, computed, onMounted } from 'vue'
 import PageHeader from '@/components/shared/PageHeader.vue'
 import ContratItem from '@/components/contrats/ContratItem.vue'
+import LoadingSkeleton from '@/components/shared/LoadingSkeleton.vue'
+import EmptyState from '@/components/shared/EmptyState.vue'
 import { Accordion } from '@/components/ui/accordion'
 import { api } from '@/lib/api'
+import { useFetch } from '@/composables/useFetch'
 
-const contrats = ref<any[]>([])
+const { data: contrats, loading: chargementEnCours, execute: fetchContrats } = useFetch(api.data.getPolices)
 const recherchePrincipale = ref('')
 const recherchesDetaillees = ref<Record<string, string>>({})
-const chargementEnCours = ref(true)
 
-onMounted(async () => {
-  try {
-    contrats.value = await api.data.getPolices()
-  } catch (error) {
-    console.error('Erreur lors de la récupération des contrats:', error)
-  } finally {
-    chargementEnCours.value = false
-  }
+onMounted(() => {
+  fetchContrats()
 })
 
 const contratsFiltres = computed(() => {
+  if (!contrats.value) return []
   if (!recherchePrincipale.value) return contrats.value
   const requete = recherchePrincipale.value.toLowerCase()
   return contrats.value.filter(c => 
@@ -55,11 +52,9 @@ const gererMiseAJourRecherche = ({ policeId, onglet, requete }: any) => {
     />
 
     <div class="w-full space-y-4 pb-12">
-      <div v-if="chargementEnCours" class="space-y-4">
-        <div v-for="i in 3" :key="i" class="h-24 bg-white border border-slate-200 rounded-2xl animate-pulse"></div>
-      </div>
+      <LoadingSkeleton v-if="chargementEnCours" :count="3" height="h-24" />
       
-      <Accordion v-else type="single" collapsible class="space-y-4">
+      <Accordion v-else-if="contratsFiltres.length > 0" type="single" collapsible class="space-y-4">
         <ContratItem 
           v-for="contrat in contratsFiltres" 
           :key="contrat.id" 
@@ -70,9 +65,11 @@ const gererMiseAJourRecherche = ({ policeId, onglet, requete }: any) => {
         />
       </Accordion>
 
-      <div v-if="!chargementEnCours && contratsFiltres.length === 0" class="p-12 text-center bg-white border border-dashed rounded-2xl">
-        <p class="text-slate-500 font-medium">{{ $t('commun.no_results') }}</p>
-      </div>
+      <EmptyState 
+        v-else 
+        :description="$t('commun.no_results')" 
+        class="bg-white border border-dashed rounded-3xl"
+      />
     </div>
   </div>
 </template>

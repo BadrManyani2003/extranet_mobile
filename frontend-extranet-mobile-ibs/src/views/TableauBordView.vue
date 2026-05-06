@@ -7,15 +7,15 @@ import {
   AlertCircle, 
   CreditCard,
   PieChart,
-  LayoutDashboard,
   ArrowUpRight,
   ArrowDownRight,
-  Calendar,
   ShieldCheck
 } from 'lucide-vue-next'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import LoadingSkeleton from '@/components/shared/LoadingSkeleton.vue'
 import { api } from '@/lib/api'
 import { useI18n } from 'vue-i18n'
+import { useFetch } from '@/composables/useFetch'
 
 const { t } = useI18n()
 
@@ -47,9 +47,10 @@ ChartJS.register(
   Filler
 )
 
-const statistiques = ref<any[]>([])
-const contrats = ref<any[]>([])
-const chargementEnCours = ref(true)
+const { data: statistiques, loading: loadingStats, execute: fetchStats } = useFetch(api.data.getStats)
+const { data: contrats, loading: loadingContrats, execute: fetchContrats } = useFetch(api.data.getPolices)
+
+const chargementEnCours = computed(() => loadingStats.value || loadingContrats.value)
 const periode = ref('monthly')
 
 const iconeMap: Record<string, any> = {
@@ -83,7 +84,8 @@ const optionsGraphique = {
 } as const
 
 const donneesBranche = computed(() => {
-  const branches = contrats.value.reduce((acc: Record<string, number>, c) => {
+  const items = contrats.value || []
+  const branches = items.reduce((acc: Record<string, number>, c) => {
     acc[c.branche] = (acc[c.branche] || 0) + 1
     return acc
   }, {})
@@ -92,12 +94,7 @@ const donneesBranche = computed(() => {
     labels: Object.keys(branches),
     datasets: [{
       data: Object.values(branches),
-      backgroundColor: [
-        '#0f172a', // slate-900
-        '#475569', // slate-600
-        '#94a3b8', // slate-400
-        '#cbd5e1'  // slate-200
-      ],
+      backgroundColor: ['#0f172a', '#475569', '#94a3b8', '#cbd5e1'],
       borderWidth: 0,
       hoverOffset: 15
     }]
@@ -123,14 +120,15 @@ const donneesEvolution = computed(() => ({
 }))
 
 const donneesSinistre = computed(() => {
-  const labels = Array.from(new Set(contrats.value.map(c => c.branche)))
+  const items = contrats.value || []
+  const labels = Array.from(new Set(items.map(c => c.branche)))
   const enCours = labels.map(label => {
-    return contrats.value
+    return items
       .filter(c => c.branche === label)
       .reduce((sum, c) => sum + (c.sinistres?.filter((s: any) => s.statut === 'En cours').length || 0), 0)
   })
   const clotures = labels.map(label => {
-    return contrats.value
+    return items
       .filter(c => c.branche === label)
       .reduce((sum, c) => sum + (c.sinistres?.filter((s: any) => s.statut === 'Clôturé').length || 0), 0)
   })
@@ -155,25 +153,14 @@ const donneesSinistre = computed(() => {
 })
 
 const statsWithDefault = computed(() => {
-  return statistiques.value.map(stat => ({
+  return (statistiques.value || []).map(stat => ({
     ...stat,
     change: stat.change || '0%'
   }))
 })
 
-onMounted(async () => {
-  try {
-    const [statsRes, contratsRes] = await Promise.all([
-      api.data.getStats(),
-      api.data.getPolices()
-    ])
-    statistiques.value = statsRes
-    contrats.value = contratsRes
-  } catch (error) {
-    console.error('Erreur lors de la récupération des données du tableau de bord:', error)
-  } finally {
-    chargementEnCours.value = false
-  }
+onMounted(() => {
+  Promise.all([fetchStats(), fetchContrats()])
 })
 </script>
 
@@ -203,9 +190,7 @@ onMounted(async () => {
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <template v-if="chargementEnCours">
-        <div v-for="i in 3" :key="i" class="h-32 bg-white border border-slate-200 rounded-3xl animate-pulse"></div>
-      </template>
+      <LoadingSkeleton v-if="chargementEnCours" :count="3" />
       <Card v-else v-for="stat in statsWithDefault" :key="stat.title" 
         class="border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-[2.5rem] overflow-hidden hover:shadow-xl transition-all duration-500 bg-white group border-b-4"
         :style="{ borderBottomColor: stat.bg.includes('slate-200') ? '#0f172a' : stat.bg.includes('slate-100') ? '#475569' : '#94a3b8' }"
@@ -257,7 +242,7 @@ onMounted(async () => {
         <div class="h-[300px] w-full relative">
           <Doughnut :data="donneesBranche" :options="{ ...optionsGraphique, cutout: '70%' }" />
           <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-[-20px]">
-            <span class="text-3xl font-black text-slate-900">{{ contrats.length }}</span>
+            <span class="text-3xl font-black text-slate-900">{{ (contrats || []).length }}</span>
             <span class="text-[10px] text-slate-400 font-bold uppercase">{{ $t('tableau_bord.total_policies') }}</span>
           </div>
         </div>
@@ -277,6 +262,5 @@ onMounted(async () => {
         </div>
       </Card>
     </div>
-
   </div>
 </template>

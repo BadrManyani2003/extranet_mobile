@@ -1,22 +1,16 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { onMounted } from 'vue'
 import { FileText } from 'lucide-vue-next'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import DataTableWrapper from '@/components/shared/DataTableWrapper.vue'
 import { api } from '@/lib/api'
 import { formatCurrency } from '@/lib/utils'
+import { useFetch } from '@/composables/useFetch'
 
-const quittancesImpayees = ref<any[]>([])
-const chargementEnCours = ref(true)
+const { data: quittancesImpayees, loading: chargementEnCours, execute: fetchImpayes } = useFetch(api.data.getImpayes)
 
-onMounted(async () => {
-  try {
-    quittancesImpayees.value = await api.data.getImpayes()
-  } catch (e) {
-    console.error(e)
-  } finally {
-    chargementEnCours.value = false
-  }
+onMounted(() => {
+  fetchImpayes()
 })
 </script>
 
@@ -24,7 +18,7 @@ onMounted(async () => {
   <DataTableWrapper 
     :title="$t('vue_impayes.title')"
     :description="$t('vue_impayes.subtitle')"
-    :items="quittancesImpayees"
+    :items="quittancesImpayees || []"
     :loading="chargementEnCours"
     :search-placeholder="$t('vue_impayes.search')"
   >

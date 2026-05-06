@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { Calendar, Clock, ChevronLeft, MessageSquare, History } from 'lucide-vue-next'
+import { Calendar, Clock, ChevronLeft, MessageSquare } from 'lucide-vue-next'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import LoadingSkeleton from '@/components/shared/LoadingSkeleton.vue'
+import EmptyState from '@/components/shared/EmptyState.vue'
 
 defineProps<{
   reclamations: any[]
@@ -13,17 +15,17 @@ const emit = defineEmits(['select'])
 
 <template>
   <ScrollArea class="flex-1 p-6">
-    <div v-if="loading" class="flex flex-col items-center justify-center h-64 gap-4">
-      <History class="w-12 h-12 text-slate-100 animate-pulse" />
-      <p class="text-xs font-black text-slate-300 uppercase tracking-widest">Chargement de vos demandes...</p>
+    <div v-if="loading" class="p-4">
+      <LoadingSkeleton :count="4" height="h-32" />
     </div>
-    <div v-else-if="reclamations.length === 0" class="flex flex-col items-center justify-center h-64 text-center p-12">
-      <div class="w-20 h-20 bg-slate-50 rounded-[2rem] flex items-center justify-center text-slate-200 mb-6">
-        <MessageSquare class="w-10 h-10" />
-      </div>
-      <h3 class="text-xl font-black text-slate-900 mb-2">Aucune réclamation</h3>
-      <p class="text-slate-500 font-medium max-w-xs mx-auto">Vous n'avez pas encore de demande en cours.</p>
-    </div>
+
+    <EmptyState 
+      v-else-if="reclamations.length === 0" 
+      title="Aucune réclamation"
+      description="Vous n'avez pas encore de demande en cours."
+      :icon="MessageSquare"
+    />
+
     <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div v-for="rec in reclamations" :key="rec.id" 
         @click="emit('select', rec)"

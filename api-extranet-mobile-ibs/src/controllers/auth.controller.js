@@ -1,49 +1,33 @@
-const { poolPromise, sql } = require('../config/db');
-const authQueries = require('../chaines/auth.queries');
+const db = require('../utils/db');
+const response = require('../utils/response');
 const keycloakService = require('../services/keycloak.service');
 
 const login = async (req, res) => {
     const { username, password } = req.body;
 
     if (!username || !password) {
-        return res.status(400).json({ success: false, message: 'Identifiants requis' });
+        return response.error(res, 'Identifiants requis', 400);
     }
 
     try {
-        // 1. Authenticate with Keycloak
         const tokenData = await keycloakService.getToken(username, password);
+        const result = await db.query('SELECT Id, Nom, Email, Mobile FROM sysUser WHERE Email = @0 OR Nom = @0', [username]);
 
-        // 2. Fetch user details from database to get our local Id
-        // Assuming username is either email or some field in sysUser
-        const pool = await poolPromise;
-        const result = await pool.query(authQueries.getUserByEmail, [username]);
-
-        if (result.recordset.length === 0) {
-            // Option 1: Reject if not in our DB
-            // return res.status(401).json({ success: false, message: 'Utilisateur Keycloak valide mais inconnu dans la base IBS.' });
-            
-            // Option 2: Allow but with limited data (or just return the token)
-            return res.json({
-                success: true,
-                data: {
-                    ...tokenData,
-                    user: { username, status: 'external' }
-                }
+        if (result.length === 0) {
+            return response.success(res, {
+                ...tokenData,
+                user: { username, status: 'external' }
             });
         }
 
-        const user = result.recordset[0];
-
-        res.json({
-            success: true,
-            data: {
-                ...tokenData,
-                user: {
-                    id: user.Id,
-                    nom: user.Nom,
-                    email: user.Email,
-                    mobile: user.Mobile
-                }
+        const user = result[0];
+        response.success(res, {
+            ...tokenData,
+            user: {
+                id: user.Id,
+                nom: user.Nom,
+                email: user.Email,
+                mobile: user.Mobile
             }
         });
     } catch (error) {
@@ -54,39 +38,33 @@ const login = async (req, res) => {
 const refreshToken = async (req, res) => {
     const { refresh_token } = req.body;
     if (!refresh_token) {
-        return res.status(400).json({ success: false, message: 'Refresh token requis' });
+        return response.error(res, 'Refresh token requis', 400);
     }
 
     try {
         const data = await keycloakService.refreshToken(refresh_token);
-        res.json({ success: true, data });
+        response.success(res, data);
     } catch (error) {
         handleAuthError(res, error, 'La mise à jour du token a échoué');
     }
 };
 
 const getMe = async (req, res) => {
-    const { id } = req.body; 
     try {
-        const pool = await poolPromise;
-        const result = await pool.query(authQueries.getUserById, [id]);
+        const id = req.body.id || req.body.Id || req.user?.id;
+        const result = await db.query('SELECT * FROM sysUser WHERE Id = @0', [id]);
         
-        if (result.recordset.length === 0) {
-            return res.status(404).json({ success: false, message: 'Utilisateur non trouvé' });
+        if (result.length === 0) {
+            return response.error(res, 'Utilisateur non trouvé', 404);
         }
 
-        res.json({ success: true, data: result.recordset[0] });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
+        response.success(res, result[0]);
+    } catch (error) { response.error(res, error); }
 };
 
 const handleAuthError = (res, err, defaultMsg) => {
     if (err.code === 'ECONNREFUSED' || err.code === 'ENOTFOUND') {
-        return res.status(503).json({ 
-            success: false,
-            message: 'Le serveur d\'authentification (Keycloak) est injoignable.' 
-        });
+        return response.error(res, 'Le serveur d\'authentification (Keycloak) est injoignable.', 503);
     }
     
     const status = err.response?.status || 500;
@@ -94,11 +72,7 @@ const handleAuthError = (res, err, defaultMsg) => {
     if (err.response?.data) {
         message = err.response.data.error === 'invalid_grant' ? 'Identifiants invalides' : err.response.data.error_description || message;
     }
-    res.status(status).json({ success: false, message });
+    response.error(res, message, status);
 };
 
-module.exports = {
-    login,
-    refreshToken,
-    getMe
-};
+module.exports = { login, refreshToken, getMe };
