@@ -6,4 +6,3 @@ import { Toaster } from '@/components/ui/sonner'
   <router-view />
   <Toaster position="bottom-right" richColors />
 </template>
-

@@ -19,10 +19,8 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     throw new Error(result?.message || 'Server Error')
   }
 
-  // Si l'API retourne un tableau directement
   if (Array.isArray(result)) return result as any;
-  
-  // Si l'API retourne un objet avec success: true
+
   if (result?.success && 'data' in result) return result.data;
   
   return result as any;
@@ -31,7 +29,7 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
 export const api = {
   data: {
     getPolices: () => request<any[]>('/data/polices', { method: 'POST' }),
-    getImpayes: () => request<any[]>('/data/quittances/impayes', { method: 'POST' }), // Updated route path if necessary, wait I see '/data/quittances' in the old code, let's keep the updated one
+    getImpayes: () => request<any[]>('/data/quittances/impayes', { method: 'POST' }), 
     getStats: () => request<any[]>('/data/stats', { method: 'POST' }),
     getReclamations: () => request<any[]>('/reclamations/list', { method: 'POST' }),
     getMessages: (reclamationId: string | number) => request<any[]>('/reclamations/detail', { method: 'POST', body: JSON.stringify({ reclamationId }) }),
@@ -48,8 +46,7 @@ export const api = {
     createUserFromClient: (clientId: number) => request<any>('/admin/clients/create-user', { method: 'POST', body: JSON.stringify({ clientId }) }),
     getAdherents: (filters = {}) => request<any[]>('/admin/adherents', { method: 'POST', body: JSON.stringify(filters) }),
     createUserFromAdherent: (adherentId: number) => request<any>('/admin/adherents/create-user', { method: 'POST', body: JSON.stringify({ adherentId }) }),
-    // Note: getReclamations is defined in the old code under admin, but my refactoring only has it in reclamation.routes.js
     getReclamations: () => request<any[]>('/reclamations/list', { method: 'POST' }),
-    replyToReclamation: (reclamationId: string | number, Message: string) => request<any>('/reclamations/add-message', { method: 'POST', body: JSON.stringify({ reclamationId, message: Message, nature: 'A' }) }) // nature: 'A' for admin or 'E'
+    replyToReclamation: (reclamationId: string | number, Message: string) => request<any>('/reclamations/add-message', { method: 'POST', body: JSON.stringify({ reclamationId, message: Message, nature: 'A' }) })
   }
 }

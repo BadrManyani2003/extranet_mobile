@@ -79,28 +79,25 @@ const iconeBranche = computed(() => {
         <table class="w-full text-left border-collapse table-fixed sm:table-auto">
           <thead class="sticky top-0 bg-slate-50 z-10 shadow-sm">
             <tr class="border-b border-slate-200">
-              <!-- Colonnes Automobile -->
+              
               <template v-if="branche === 'Automobile'">
                 <th class="px-6 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">{{ $t('risques.brand') }}</th>
                 <th class="px-6 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">{{ $t('risques.registration') }}</th>
                 <th class="px-6 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">{{ $t('risques.circulation_date') }}</th>
               </template>
 
-              <!-- Colonnes Santé -->
               <template v-else-if="branche === 'Santé'">
                 <th class="px-6 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">{{ $t('risques.insured_name') }}</th>
                 <th class="px-6 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">{{ $t('risques.membership_num') }}</th>
                 <th class="px-6 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">{{ $t('risques.registration') }}</th>
               </template>
 
-              <!-- Colonnes TRC -->
               <template v-else-if="branche === 'Tout Risque Chantier'">
                 <th class="px-6 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">{{ $t('risques.project') }}</th>
                 <th class="px-6 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">{{ $t('risques.id') }}</th>
                 <th class="px-6 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">{{ $t('risques.type') }}</th>
               </template>
 
-              <!-- Colonnes par défaut -->
               <template v-else>
                 <th class="px-6 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">{{ $t('risques.designation') }}</th>
                 <th class="px-6 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">{{ $t('risques.type') }}</th>
@@ -114,21 +111,19 @@ const iconeBranche = computed(() => {
           <tbody>
             <tr v-for="(risque, idx) in risquesFiltres" :key="idx"
               class="border-b border-slate-50 hover:bg-slate-50 transition-colors group">
-              <!-- Lignes Automobile -->
+              
               <template v-if="branche === 'Automobile'">
                 <td class="px-6 py-3 text-sm font-bold text-slate-800 truncate">{{ risque.marque }}</td>
                 <td class="px-6 py-3 text-sm font-medium text-slate-600 truncate">{{ risque.immatriculation }}</td>
                 <td class="px-6 py-3 text-sm text-slate-500">{{ risque.dateMiseEnCirculation }}</td>
               </template>
 
-              <!-- Lignes Santé -->
               <template v-else-if="branche === 'Santé'">
                 <td class="px-6 py-3 text-sm font-bold text-slate-800 truncate">{{ risque.nom }}</td>
                 <td class="px-6 py-3 text-sm font-medium text-slate-600 truncate">{{ risque.numAdhesion }}</td>
                 <td class="px-6 py-3 text-sm text-slate-500 truncate">{{ risque.matricule }}</td>
               </template>
 
-              <!-- Lignes TRC -->
               <template v-else-if="branche === 'Tout Risque Chantier'">
                 <td class="px-6 py-3 text-sm font-bold text-slate-800 truncate">
                   <div class="flex items-center gap-2">
@@ -147,7 +142,6 @@ const iconeBranche = computed(() => {
                 </td>
               </template>
 
-              <!-- Lignes par défaut -->
               <template v-else>
                 <td class="px-6 py-3 text-sm font-bold text-slate-800 truncate">{{ risque.nom || risque.adresse || '-'
                   }}</td>
@@ -170,7 +164,6 @@ const iconeBranche = computed(() => {
       </div>
     </CardContent>
 
-    <!-- Dialogue simple et minimaliste -->
     <Dialog v-model:open="estDialogueOuvert">
       <DialogContent class="sm:max-w-[700px] bg-white p-6 shadow-xl border border-slate-200 font-['Outfit']">
         <DialogHeader class="border-b border-slate-100 pb-4 mb-4">
@@ -180,7 +173,7 @@ const iconeBranche = computed(() => {
         </DialogHeader>
 
         <div v-if="risqueSelectionne">
-          <!-- Garanties (Auto ou TRC) -->
+          
           <div v-if="risqueSelectionne.garanties">
             <table class="w-full text-left">
               <thead>
@@ -200,7 +193,6 @@ const iconeBranche = computed(() => {
             </table>
           </div>
 
-          <!-- Santé Personnes -->
           <div v-else-if="branche === 'Santé' && risqueSelectionne.personnesACharge">
             <table class="w-full text-left">
               <thead>

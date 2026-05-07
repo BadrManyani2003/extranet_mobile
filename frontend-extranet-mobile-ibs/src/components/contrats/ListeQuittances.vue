@@ -47,7 +47,7 @@ const quittancesFiltrees = computed(() => {
             class="bg-white border border-slate-200 rounded-xl p-4 transition-all hover:shadow-sm hover:border-slate-300"
           >
             <div class="grid grid-cols-1 md:grid-cols-5 items-center gap-4">
-              <!-- Num Quittance -->
+              
               <div class="flex items-center gap-3">
                 <div class="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400">
                   <FileText class="w-4 h-4" />
@@ -58,7 +58,6 @@ const quittancesFiltrees = computed(() => {
                 </div>
               </div>
 
-              <!-- Dates -->
               <div class="md:col-span-2 grid grid-cols-2 gap-4">
                 <div>
                   <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-none mb-1">{{ $t('quittances.from') }}</p>
@@ -76,13 +75,11 @@ const quittancesFiltrees = computed(() => {
                 </div>
               </div>
 
-              <!-- Prime Total -->
               <div class="md:text-right">
                 <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-none mb-1">{{ $t('quittances.total') }}</p>
                 <p class="text-sm font-black text-slate-900">{{ formatCurrency(quit.montantTotal) }}</p>
               </div>
 
-              <!-- Status & Unpaid -->
               <div class="flex items-center justify-end gap-4">
                 <div class="text-right">
                   <p class="text-[10px] font-bold uppercase tracking-widest leading-none mb-1 text-slate-400">{{ $t('quittances.unpaid') }}</p>

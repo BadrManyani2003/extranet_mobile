@@ -66,4 +66,3 @@ const handleLogout = () => {
     </div>
   </header>
 </template>
-

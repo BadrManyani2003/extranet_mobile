@@ -53,7 +53,6 @@ const handleSearch = () => {
       </Button>
     </div>
 
-
     <div class="flex items-center gap-4">
       <div class="relative flex-1 max-w-sm group">
         <Search class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
@@ -67,14 +66,12 @@ const handleSearch = () => {
       </div>
     </div>
 
-
     <div class="border border-slate-200 rounded-[2rem] bg-white shadow-xl shadow-slate-200/50 overflow-hidden">
       <div v-if="loading" class="flex items-center justify-center p-24">
         <Loader2 class="w-8 h-8 animate-spin text-slate-900" />
       </div>
       <template v-else>
         <slot :items="paginatedItems"></slot>
-
 
         <div class="border-t border-slate-100 p-6 flex items-center justify-between bg-slate-50/30">
           <p class="text-xs text-slate-400 font-black uppercase tracking-widest">

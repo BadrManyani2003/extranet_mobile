@@ -127,7 +127,7 @@ const donneesSinistre = computed(() => {
   const enCours = labels.map(label => {
     return items
       .filter(c => c.Branche === label)
-      .reduce((sum, c) => sum + (c.SinistresEncours || 0), 0) // Note: sp_GetPolices doesn't return nested sinistres
+      .reduce((sum, c) => sum + (c.SinistresEncours || 0), 0) 
   })
   const clotures = labels.map(label => {
     return items

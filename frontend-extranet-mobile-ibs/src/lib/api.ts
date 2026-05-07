@@ -38,10 +38,8 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     throw new Error(result?.message || 'Server Error')
   }
 
-  // Si l'API retourne un tableau directement
   if (Array.isArray(result)) return result as any;
-  
-  // Si l'API retourne un objet avec success: true
+
   if (result?.success && 'data' in result) return result.data;
   
   return result as any;

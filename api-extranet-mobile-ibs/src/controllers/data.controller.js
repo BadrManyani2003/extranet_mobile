@@ -1,18 +1,11 @@
 const Common = require('../common/Common');
 const qry    = require('../sql/qryExtranet');
 
-/**
- * Aide : extrait l'utilisateur connecté et la source depuis la requête.
- * @param {Request} req
- * @param {string} defaultSource - source par défaut ('M' | 'E' | 'A')
- */
 const ctx = (req) => ({
     id:     req.user.id,
     token:  req.user.token,
     source: req.headers['x-source']
 });
-
-// ─── Polices ────────────────────────────────────────────────────────────────
 
 const getPolices = async (req, res) => {
     try {
@@ -21,8 +14,6 @@ const getPolices = async (req, res) => {
         res.json(data[0] || []);
     } catch (e) { res.status(500).json({ success: false, message: e.message }); }
 };
-
-// ─── Sinistres ───────────────────────────────────────────────────────────────
 
 const getSinistres = async (req, res) => {
     try {
@@ -42,8 +33,6 @@ const getSinistresEnCours = async (req, res) => {
     } catch (e) { res.status(500).json({ success: false, message: e.message }); }
 };
 
-// ─── Risques & Garanties ─────────────────────────────────────────────────────
-
 const getRisques = async (req, res) => {
     try {
         const { id, source, token } = ctx(req);
@@ -61,8 +50,6 @@ const getGaranties = async (req, res) => {
         res.json(data[0] || []);
     } catch (e) { res.status(500).json({ success: false, message: e.message }); }
 };
-
-// ─── Quittances ──────────────────────────────────────────────────────────────
 
 const getQuittances = async (req, res) => {
     try {
@@ -82,8 +69,6 @@ const getImpayes = async (req, res) => {
     } catch (e) { res.status(500).json({ success: false, message: e.message }); }
 };
 
-// ─── Adhérents ───────────────────────────────────────────────────────────────
-
 const getAdherents = async (req, res) => {
     try {
         const { id, source, token } = ctx(req);
@@ -101,8 +86,6 @@ const getPersACharge = async (req, res) => {
         res.json(data[0] || []);
     } catch (e) { res.status(500).json({ success: false, message: e.message }); }
 };
-
-// ─── Statistiques ────────────────────────────────────────────────────────────
 
 const getStats = async (req, res) => {
     try {

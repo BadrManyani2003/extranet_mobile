@@ -43,4 +43,3 @@ const colorClass = computed(() => {
     {{ translatedStatus }}
   </Badge>
 </template>
-

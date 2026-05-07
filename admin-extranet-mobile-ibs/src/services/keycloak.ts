@@ -16,9 +16,9 @@ export const initKeycloak = (onAuthenticated: () => void) => {
   })
     .then((authenticated) => {
       if (authenticated) {
-        // Nettoyer l'URL des paramètres Keycloak (#state, #code, etc.)
+        
         const url = new URL(window.location.href);
-        url.hash = ''; // Supprimer le fragment qui contient les infos Keycloak
+        url.hash = ''; 
         window.history.replaceState({}, document.title, url.toString());
         
         onAuthenticated()

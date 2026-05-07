@@ -21,7 +21,7 @@ const emit = defineEmits(['update:searchModel'])
         <CardTitle class="text-lg flex items-center gap-2">
           <component :is="icon" class="w-5 h-5" :class="iconClass" /> {{ title }}
         </CardTitle>
-        <!-- <CardDescription>{{ description }}</CardDescription> -->
+        
       </div>
       <div v-if="searchModel !== undefined" class="w-full md:w-64">
         <SearchInput 

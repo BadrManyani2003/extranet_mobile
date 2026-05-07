@@ -18,7 +18,7 @@ const emit = defineEmits(['update:modelValue', 'print'])
   <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 no-print">
     <div class="space-y-1">
       <h2 class="text-3xl font-extrabold tracking-tight text-slate-900">{{ title }}</h2>
-      <!-- <p class="text-slate-500 text-base">{{ description }}</p> -->
+      
     </div>
     <div class="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
       <div class="w-full lg:w-80">

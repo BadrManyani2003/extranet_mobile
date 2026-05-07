@@ -7,8 +7,6 @@ const ctx = (req) => ({
     source: req.headers['x-source']
 });
 
-// ─── Lecture ──────────────────────────────────────────────────────────────────
-
 const getAll = async (req, res) => {
     try {
         const { id, source, token } = ctx(req);
@@ -25,8 +23,6 @@ const getDetail = async (req, res) => {
         res.json(data[0] || []);
     } catch (e) { res.status(500).json({ success: false, message: e.message }); }
 };
-
-// ─── Écriture ─────────────────────────────────────────────────────────────────
 
 const create = async (req, res) => {
     try {

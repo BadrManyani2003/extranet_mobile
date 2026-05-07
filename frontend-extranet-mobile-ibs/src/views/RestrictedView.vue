@@ -22,5 +22,5 @@ import { ShieldAlert , ExternalLink } from 'lucide-vue-next'
 </template>
 
 <style scoped>
-/* Micro-animations can be added here if needed */
+
 </style>

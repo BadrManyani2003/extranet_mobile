@@ -97,7 +97,7 @@ const sinistresFiltres = computed(() => {
             
             <AccordionContent class="px-6 pb-6 pt-2 border-t border-slate-200 bg-white/60">
               <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
-                <!-- Bloc 1: Statut & Risque -->
+                
                 <div class="bg-white/60 p-4 rounded-2xl border border-slate-200/60 flex flex-col gap-3">
                    <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                      <Info class="w-3.5 h-3.5 text-slate-900" /> {{ $t('sinistres.status_title') }}
@@ -111,8 +111,7 @@ const sinistresFiltres = computed(() => {
                        <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">{{ $t('sinistres.identified_risk') }}</p>
                       
                      </div>
-                     
-                     <!-- Détails spécifiques Risque -->
+
                      <template v-if="obtenirInfoRisque(sin)">
                        <div v-if="obtenirInfoRisque(sin).type === 'Véhicule'" class="grid grid-cols-2 gap-4 pt-2 border-t border-slate-100">
                          <div>
@@ -138,13 +137,11 @@ const sinistresFiltres = computed(() => {
                    </div>
                 </div>
 
-                <!-- Bloc 2: Bilan Financier -->
                 <div class="bg-white/60 p-4 rounded-2xl border border-slate-200/60 flex flex-col gap-3">
                    <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                      <Wallet class="w-3.5 h-3.5 text-slate-900" /> {{ $t('sinistres.financial_title') }}
                    </h4>
-                   
-                   <!-- Automobile -->
+
                    <div v-if="branche === 'Automobile'" class="space-y-4">
                      <div class="grid grid-cols-2 gap-4">
                        <div>
@@ -162,7 +159,6 @@ const sinistresFiltres = computed(() => {
                      </div>
                    </div>
 
-                   <!-- Santé / Adhérent -->
                    <div v-else class="space-y-4">
                      <div class="grid grid-cols-1 gap-4">
                        <div>
@@ -177,7 +173,6 @@ const sinistresFiltres = computed(() => {
                    </div>
                 </div>
 
-                <!-- Bloc 3: Observations -->
                 <div class="bg-white/60 p-4 rounded-2xl border border-slate-200/60 flex flex-col gap-2">
                    <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                      <FileText class="w-3.5 h-3.5 text-slate-400" /> {{ $t('sinistres.expert_notes') }}

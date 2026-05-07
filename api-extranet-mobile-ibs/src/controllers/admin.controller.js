@@ -7,8 +7,6 @@ const ctx = (req) => ({
     source: req.headers['x-source']
 });
 
-// ─── Utilisateurs ─────────────────────────────────────────────────────────────
-
 const getUsers = async (req, res) => {
     try {
         const { id, source, token } = ctx(req);
@@ -35,8 +33,6 @@ const deleteUser = async (req, res) => {
     } catch (e) { res.status(500).json({ success: false, message: e.message }); }
 };
 
-// ─── Clients ──────────────────────────────────────────────────────────────────
-
 const getClients = async (req, res) => {
     try {
         const { id, source, token } = ctx(req);
@@ -53,8 +49,6 @@ const createUserFromClient = async (req, res) => {
         res.json(data[0]?.[0]);
     } catch (e) { res.status(500).json({ success: false, message: e.message }); }
 };
-
-// ─── Adhérents (Admin) ────────────────────────────────────────────────────────
 
 const getAdherents = async (req, res) => {
     try {
@@ -73,10 +67,8 @@ const createUserFromAdherent = async (req, res) => {
     } catch (e) { res.status(500).json({ success: false, message: e.message }); }
 };
 
-// ─── Synchro Keycloak ────────────────────────────────────────────────────────
-
 const syncKeycloak = async (req, res) => {
-    // Réservé pour une future implémentation de synchro Keycloak
+    
     res.json({ success: true });
 };
 
