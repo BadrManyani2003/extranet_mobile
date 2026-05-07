@@ -5,6 +5,7 @@ import { User, UserPlus, CheckCircle2 } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import DataTableWrapper from '@/components/shared/DataTableWrapper.vue'
 import { api } from '@/lib/api'
+import { toast } from '@/components/ui/sonner'
 
 const adherents = ref<any[]>([])
 const loading = ref(true)
@@ -12,16 +13,22 @@ const loading = ref(true)
 const fetchAdherents = async () => {
   loading.value = true
   try { adherents.value = await api.admin.getAdherents() } 
-  catch (e) { console.error(e) } 
+  catch (e: any) { 
+    toast.error(e.message || "Erreur lors de la récupération")
+    console.error(e) 
+  } 
   finally { loading.value = false }
 }
 
 const handleCreateUser = async (adherentId: number) => {
   try {
     await api.admin.createUserFromAdherent(adherentId)
-    alert('Accès Mobile créé avec succès !')
+    toast.success('Accès Mobile créé avec succès !')
     fetchAdherents()
-  } catch (e) { console.error(e) }
+  } catch (e: any) { 
+    toast.error(e.message)
+    console.error(e) 
+  }
 }
 
 onMounted(fetchAdherents)
@@ -29,7 +36,7 @@ onMounted(fetchAdherents)
 
 <template>
   <DataTableWrapper 
-    title="Registre des Adhérents" 
+    title="Liste Adhérents" 
     description="Gérez les adhérents et créez leurs accès aux applications mobiles."
     :items="adherents"
     :loading="loading"

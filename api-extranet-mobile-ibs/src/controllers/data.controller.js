@@ -1,71 +1,131 @@
+const Common = require('../common/Common');
+const qry    = require('../sql/qryExtranet');
+
 /**
- * controllers/data.controller.js
- * Données utilisateur : polices, stats, impayés.
- * Pure relay DB → client. Zéro logique métier.
+ * Aide : extrait l'utilisateur connecté et la source depuis la requête.
+ * @param {Request} req
+ * @param {string} defaultSource - source par défaut ('M' | 'E' | 'A')
  */
+const ctx = (req) => ({
+    id:     req.user.id,
+    token:  req.user.token,
+    source: req.headers['x-source']
+});
 
-const { execSP, getConfig, ok, fail } = require('../common');
-const proc = require('../procedures');
+// ─── Polices ────────────────────────────────────────────────────────────────
 
-// POST /api/data/polices
-const polices = async (req, res) => {
-    try { 
-        const data = await execSP(proc.data.polices, getConfig(req));
-        ok(res, data);
-    } catch (err) { fail(res, err); }
-};
-
-// POST /api/data/stats
-const stats = async (req, res) => {
-    try { 
-        const data = await execSP(proc.data.stats, getConfig(req));
-        ok(res, data);
-    } catch (err) { fail(res, err); }
-};
-
-// POST /api/data/quittances
-const quittances = async (req, res) => {
+const getPolices = async (req, res) => {
     try {
-        const { FK_Police_Id = 0 } = req.body;
-        const data = await execSP(proc.data.quittances, { ...getConfig(req), FK_Police_Id });
-        ok(res, data);
-    } catch (err) { fail(res, err); }
+        const { id,source, token } = ctx(req);
+        const data = await Common.getDonnees(qry.getPolices, [id, source, token]);
+        res.json(data[0] || []);
+    } catch (e) { res.status(500).json({ success: false, message: e.message }); }
 };
 
-// POST /api/data/sinistres
-const sinistres = async (req, res) => {
+// ─── Sinistres ───────────────────────────────────────────────────────────────
+
+const getSinistres = async (req, res) => {
     try {
-        const { FK_Police_Id = 0 } = req.body;
-        const data = await execSP(proc.data.sinistres, { ...getConfig(req), FK_Police_Id });
-        ok(res, data);
-    } catch (err) { fail(res, err); }
+        const { id, source, token } = ctx(req);
+        const { policeId } = req.body;
+        const data = await Common.getDonnees(qry.getSinistres, [id, source, token, policeId]);
+        res.json(data[0] || []);
+    } catch (e) { res.status(500).json({ success: false, message: e.message }); }
 };
 
-// POST /api/data/risques
-const risques = async (req, res) => {
+const getSinistresEnCours = async (req, res) => {
     try {
-        const { FK_Police_Id = 0 } = req.body;
-        const data = await execSP(proc.data.risques, { ...getConfig(req), FK_Police_Id });
-        ok(res, data);
-    } catch (err) { fail(res, err); }
+        const { id, source, token } = ctx(req);
+        const { policeId } = req.body;
+        const data = await Common.getDonnees(qry.getSinistresEnCours, [id, source, token, policeId]);
+        res.json(data[0] || []);
+    } catch (e) { res.status(500).json({ success: false, message: e.message }); }
 };
 
-// POST /api/data/adherents
-const adherents = async (req, res) => {
+// ─── Risques & Garanties ─────────────────────────────────────────────────────
+
+const getRisques = async (req, res) => {
     try {
-        const { FK_Police_Id = 0 } = req.body;
-        const data = await execSP(proc.data.adherents, { ...getConfig(req), FK_Police_Id });
-        ok(res, data);
-    } catch (err) { fail(res, err); }
+        const { id, source, token } = ctx(req);
+        const { policeId } = req.body;
+        const data = await Common.getDonnees(qry.getRisques, [id, source, token, policeId]);
+        res.json(data[0] || []);
+    } catch (e) { res.status(500).json({ success: false, message: e.message }); }
 };
 
-// POST /api/data/garanties
-const garanties = async (req, res) => {
+const getGaranties = async (req, res) => {
     try {
-        const { FK_Risque_Id = 0 } = req.body;
-        const data = await execSP(proc.data.garanties, { ...getConfig(req), FK_Risque_Id });
-        ok(res, data);
-    } catch (err) { fail(res, err); }
+        const { id, source, token } = ctx(req);
+        const { risqueId } = req.body;
+        const data = await Common.getDonnees(qry.getGarantiesByRisque, [id, source, token, risqueId]);
+        res.json(data[0] || []);
+    } catch (e) { res.status(500).json({ success: false, message: e.message }); }
 };
 
-module.exports = { polices, stats, quittances, sinistres, risques, adherents, garanties };
+// ─── Quittances ──────────────────────────────────────────────────────────────
+
+const getQuittances = async (req, res) => {
+    try {
+        const { id, source, token } = ctx(req);
+        const { policeId } = req.body;
+        const data = await Common.getDonnees(qry.getQuittances, [id, source, token, policeId]);
+        res.json(data[0] || []);
+    } catch (e) { res.status(500).json({ success: false, message: e.message }); }
+};
+
+const getImpayes = async (req, res) => {
+    try {
+        const { id, source, token } = ctx(req);
+        const { policeId, enCour = 'O' } = req.body;
+        const data = await Common.getDonnees(qry.getImpayes, [id, source, token, policeId, enCour]);
+        res.json(data[0] || []);
+    } catch (e) { res.status(500).json({ success: false, message: e.message }); }
+};
+
+// ─── Adhérents ───────────────────────────────────────────────────────────────
+
+const getAdherents = async (req, res) => {
+    try {
+        const { id, source, token } = ctx(req);
+        const { policeId } = req.body;
+        const data = await Common.getDonnees(qry.getAdherents, [id, source, token, policeId]);
+        res.json(data[0] || []);
+    } catch (e) { res.status(500).json({ success: false, message: e.message }); }
+};
+
+const getPersACharge = async (req, res) => {
+    try {
+        const { id, source, token } = ctx(req);
+        const { adherentId } = req.body;
+        const data = await Common.getDonnees(qry.getPersACharge, [id, source, token, adherentId]);
+        res.json(data[0] || []);
+    } catch (e) { res.status(500).json({ success: false, message: e.message }); }
+};
+
+// ─── Statistiques ────────────────────────────────────────────────────────────
+
+const getStats = async (req, res) => {
+    try {
+        const { id, source, token } = ctx(req);
+        const data = await Common.getDonnees(qry.getStats, [id, source, token]);
+        res.json(data[0] || []);
+    } catch (e) { res.status(500).json({ success: false, message: e.message }); }
+};
+
+const getStatsByPolice = async (req, res) => {
+    try {
+        const { id, source, token } = ctx(req);
+        const { policeId } = req.body;
+        const data = await Common.getDonnees(qry.getStatsByPolice, [id, token, source, policeId]);
+        res.json(data[0]?.[0] || {});
+    } catch (e) { res.status(500).json({ success: false, message: e.message }); }
+};
+
+module.exports = {
+    getPolices,
+    getSinistres, getSinistresEnCours,
+    getRisques,   getGaranties,
+    getQuittances, getImpayes,
+    getAdherents,  getPersACharge,
+    getStats,      getStatsByPolice
+};

@@ -11,6 +11,7 @@ import ReclamationList from '@/components/reclamations/ReclamationList.vue'
 import ReclamationChat from '@/components/reclamations/ReclamationChat.vue'
 import { api } from '@/lib/api'
 import { useFetch } from '@/composables/useFetch'
+import { toast } from '@/components/ui/sonner'
 
 const { data: reclamations, loading: loadingList, execute: fetchReclamations } = useFetch(api.data.getReclamations)
 const { data: messages, loading: loadingChat, execute: fetchMessages } = useFetch(api.data.getMessages)
@@ -21,19 +22,21 @@ const newTicket = ref({ sujet: '', nature: 'R', message: '' })
 
 const selectTicket = async (ticket: any) => {
   selectedTicket.value = ticket
-  await fetchMessages(ticket.id)
+  await fetchMessages(ticket.Id)
 }
 
 const handleCreateTicket = async () => {
   if (!newTicket.value.sujet || !newTicket.value.message) return
   try {
     const res = await api.data.createReclamation(newTicket.value)
+    toast.success("Réclamation envoyée !")
     isNewDialogOpen.value = false
     newTicket.value = { sujet: '', nature: 'R', message: '' }
     const updated = await fetchReclamations()
-    const created = (updated as any[])?.find(r => r.id === res.id)
+    const created = (updated as any[])?.find(r => r.Id === res.Id)
     if (created) selectTicket(created)
-  } catch (e) {
+  } catch (e: any) {
+    toast.error(e.message || "Erreur lors de l'envoi")
     console.error(e)
   }
 }
@@ -47,8 +50,9 @@ const handleSendMessage = async (text: string) => {
     time: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
   })
   try {
-    await api.data.sendMessage(selectedTicket.value.id, { message: text, nature: 'C' })
-  } catch (e) {
+    await api.data.sendMessage(selectedTicket.value.Id, { message: text, nature: 'C' })
+  } catch (e: any) {
+    toast.error(e.message)
     console.error(e)
   }
 }
@@ -62,7 +66,6 @@ onMounted(fetchReclamations)
       <div class="p-8 border-b border-slate-100 flex items-center justify-between bg-white">
         <div>
           <h2 class="text-2xl font-black text-slate-900">Mes Réclamations</h2>
-          <p class="text-sm font-medium text-slate-500">Suivez l'état de vos demandes et échangez avec nos conseillers.</p>
         </div>
         <Button @click="isNewDialogOpen = true" class="rounded-2xl h-12 gap-2 bg-slate-900 shadow-xl shadow-slate-200">
           <Plus class="w-5 h-5" /> Nouvelle Demande
@@ -79,13 +82,13 @@ onMounted(fetchReclamations)
         </Button>
         <div class="flex-1">
           <div class="flex items-center gap-3">
-            <h2 class="text-xl font-black text-slate-900 line-clamp-1">{{ selectedTicket.sujet }}</h2>
-            <Badge :class="selectedTicket.statut === 'En cours' ? 'bg-orange-50 text-orange-600' : 'bg-emerald-50 text-emerald-600'" 
+            <h2 class="text-xl font-black text-slate-900 line-clamp-1">{{ selectedTicket.Sujet }}</h2>
+            <Badge :class="selectedTicket.Statut === 'En cours' ? 'bg-orange-50 text-orange-600' : 'bg-emerald-50 text-emerald-600'" 
               class="rounded-lg text-[10px] font-black uppercase tracking-widest px-2 py-0.5 border-none shadow-none">
-              {{ selectedTicket.statut }}
+              {{ selectedTicket.Statut }}
             </Badge>
           </div>
-          <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Ticket #{{ selectedTicket.id }} • Ouvert le {{ new Date(selectedTicket.date).toLocaleDateString() }}</p>
+          <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Ticket #{{ selectedTicket.Id }} • Ouvert le {{ new Date(selectedTicket.DateReclamation).toLocaleDateString() }}</p>
         </div>
       </div>
 

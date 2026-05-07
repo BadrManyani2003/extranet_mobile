@@ -27,7 +27,7 @@ export const initKeycloak = (onAuthenticated: () => void) => {
       }
     })
     .catch((err) => {
-      console.error('Keycloak init error:', err)
+      console.error('❌ Keycloak init error:', err)
     })
 }
 

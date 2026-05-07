@@ -47,7 +47,6 @@ const handleSearch = () => {
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>
         <h2 class="text-3xl font-black tracking-tight text-slate-900">{{ title }}</h2>
-        <p class="text-slate-500 font-medium mt-1">{{ description }}</p>
       </div>
       <Button v-if="addButtonLabel" class="rounded-2xl h-12 px-6 gap-2 bg-slate-900 shadow-xl shadow-slate-200" @click="$emit('add')">
         <Plus class="w-5 h-5" /> {{ addButtonLabel }}

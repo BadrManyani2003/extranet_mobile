@@ -16,6 +16,7 @@ import LoadingSkeleton from '@/components/shared/LoadingSkeleton.vue'
 import { api } from '@/lib/api'
 import { useI18n } from 'vue-i18n'
 import { useFetch } from '@/composables/useFetch'
+import keycloak from '@/services/keycloak'
 
 const { t } = useI18n()
 
@@ -84,9 +85,10 @@ const optionsGraphique = {
 } as const
 
 const donneesBranche = computed(() => {
-  const items = contrats.value || []
+  const items = (contrats.value || []) as any[]
   const branches = items.reduce((acc: Record<string, number>, c) => {
-    acc[c.branche] = (acc[c.branche] || 0) + 1
+    const b = c.Branche || 'Inconnu'
+    acc[b] = (acc[b] || 0) + 1
     return acc
   }, {})
 
@@ -120,17 +122,17 @@ const donneesEvolution = computed(() => ({
 }))
 
 const donneesSinistre = computed(() => {
-  const items = contrats.value || []
-  const labels = Array.from(new Set(items.map(c => c.branche)))
+  const items = (contrats.value || []) as any[]
+  const labels = Array.from(new Set(items.map(c => c.Branche).filter(Boolean)))
   const enCours = labels.map(label => {
     return items
-      .filter(c => c.branche === label)
-      .reduce((sum, c) => sum + (c.sinistres?.filter((s: any) => s.statut === 'En cours').length || 0), 0)
+      .filter(c => c.Branche === label)
+      .reduce((sum, c) => sum + (c.SinistresEncours || 0), 0) // Note: sp_GetPolices doesn't return nested sinistres
   })
   const clotures = labels.map(label => {
     return items
-      .filter(c => c.branche === label)
-      .reduce((sum, c) => sum + (c.sinistres?.filter((s: any) => s.statut === 'Clôturé').length || 0), 0)
+      .filter(c => c.Branche === label)
+      .reduce((sum, c) => sum + (c.SinistresClotures || 0), 0)
   })
 
   return {
@@ -153,10 +155,34 @@ const donneesSinistre = computed(() => {
 })
 
 const statsWithDefault = computed(() => {
-  return (statistiques.value || []).map(stat => ({
-    ...stat,
-    change: stat.change || '0%'
-  }))
+  const s = (statistiques.value as any)?.[0] || {}
+  
+  return [
+    { 
+      title: 'total_policies', 
+      value: s.TotalPolices || 0, 
+      icon: 'ShieldCheck', 
+      bg: 'bg-slate-900', 
+      color: 'text-white', 
+      change: '+0%' 
+    },
+    { 
+      title: 'pending_claims', 
+      value: s.SinistresEnCours || 0, 
+      icon: 'Activity', 
+      bg: 'bg-slate-600', 
+      color: 'text-white', 
+      change: '+0%' 
+    },
+    { 
+      title: 'unpaid_amount', 
+      value: new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'MAD' }).format(s.TotalImpayes || 0), 
+      icon: 'AlertCircle', 
+      bg: 'bg-slate-400', 
+      color: 'text-white', 
+      change: '+0%' 
+    }
+  ]
 })
 
 onMounted(() => {

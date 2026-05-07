@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Building2, UserPlus, CheckCircle2 } from 'lucide-vue-next'
 import DataTableWrapper from '@/components/shared/DataTableWrapper.vue'
 import { api } from '@/lib/api'
+import { toast } from '@/components/ui/sonner'
 
 const clients = ref<any[]>([])
 const loading = ref(true)
@@ -12,16 +13,22 @@ const loading = ref(true)
 const fetchClients = async () => {
   loading.value = true
   try { clients.value = await api.admin.getClients() } 
-  catch (e) { console.error(e) } 
+  catch (e: any) { 
+    toast.error(e.message || "Erreur lors de la récupération")
+    console.error(e) 
+  } 
   finally { loading.value = false }
 }
 
 const handleCreateUser = async (clientId: number) => {
   try {
     await api.admin.createUserFromClient(clientId)
-    alert('Utilisateur créé avec succès !')
+    toast.success('Utilisateur créé avec succès !')
     fetchClients()
-  } catch (e) { console.error(e) }
+  } catch (e: any) { 
+    toast.error(e.message)
+    console.error(e) 
+  }
 }
 
 onMounted(fetchClients)
@@ -29,7 +36,7 @@ onMounted(fetchClients)
 
 <template>
   <DataTableWrapper 
-    title="Portefeuille Clients" 
+    title="Liste Clients" 
     description="Gérez vos clients et créez leurs accès extranet."
     :items="clients"
     :loading="loading"
@@ -48,7 +55,7 @@ onMounted(fetchClients)
         </TableHeader>
         <TableBody>
           <TableRow v-for="client in items" :key="client.Id" class="hover:bg-slate-50/80 transition-colors border-b border-slate-50">
-            <TableCell class="font-bold text-slate-400 py-4">{{ client.IdIBS || 'N/A' }}</TableCell>
+            <TableCell class="font-bold text-slate-400 py-4">{{ client.Id || 'N/A' }}</TableCell>
             <TableCell>
               <div class="flex items-center gap-3">
                 <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-900 shadow-sm">

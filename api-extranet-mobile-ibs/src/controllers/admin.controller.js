@@ -1,121 +1,88 @@
-/**
- * controllers/admin.controller.js
- * Administration : utilisateurs, clients, adhérents.
- */
+const Common = require('../common/Common');
+const qry    = require('../sql/qryExtranet');
 
-const { execSP, getConfig, ok, fail } = require('../common');
-const proc = require('../procedures');
-const kc   = require('../services/keycloak.service');
-const { poolPromise } = require('../config/db');
+const ctx = (req) => ({
+    id:     req.user.id,
+    token:  req.user.token,
+    source: req.headers['x-source']
+});
 
-// POST /api/admin/users
+// ─── Utilisateurs ─────────────────────────────────────────────────────────────
+
 const getUsers = async (req, res) => {
-    try { 
-        const data = await execSP(proc.admin.getUsers, getConfig(req));
-        ok(res, data);
-    } catch (err) { fail(res, err); }
+    try {
+        const { id, source, token } = ctx(req);
+        const data = await Common.getDonnees(qry.getUsers, [id, token, source]);
+        res.json(data[0] || []);
+    } catch (e) { res.status(500).json({ success: false, message: e.message }); }
 };
 
-// POST /api/admin/users/save
 const saveUser = async (req, res) => {
     try {
-        const { Id = 0, Id_Auth, Nom, Telephone, Email, Nature, Extranet, Mobile } = req.body;
-        const data = await execSP(proc.admin.saveUser, { 
-            ...getConfig(req), 
-            Id, Id_Auth, Nom, Telephone, Email, Nature, Extranet, Mobile 
-        });
-        ok(res, data);
-    } catch (err) { fail(res, err); }
+        const { id, source, token } = ctx(req);
+        const { Id = 0, Id_Auth = '', Nom, Telephone = '', Email = '', Nature = 'P', Extranet = 'N', Mobile = 'N' } = req.body;
+        const data = await Common.setDonnees(qry.saveUser, [id, token, source, Id, Id_Auth, Nom, Telephone, Email, Nature, Extranet, Mobile]);
+        res.json({ success: true, id: data[0]?.[0]?.NewId });
+    } catch (e) { res.status(500).json({ success: false, message: e.message }); }
 };
 
-// POST /api/admin/users/delete
 const deleteUser = async (req, res) => {
     try {
-        const { Id = 0 } = req.body;
-        const data = await execSP(proc.admin.deleteUser, { 
-            ...getConfig(req), 
-            FK_User_Id_To_Delete: Id 
-        });
-        ok(res, data);
-    } catch (err) { fail(res, err); }
+        const { id, source, token } = ctx(req);
+        const { userId } = req.body;
+        await Common.setDonnees(qry.deleteUser, [id, token, source, userId]);
+        res.json({ success: true });
+    } catch (e) { res.status(500).json({ success: false, message: e.message }); }
 };
 
-// POST /api/admin/users/sync-keycloak
-const syncKeycloak = async (req, res) => {
-    try {
-        const { Id = 0 } = req.body;
-        const pool = await poolPromise;
-        
-        // Use parameterized query instead of raw string
-        const result = await pool.request()
-            .input('Id', Id)
-            .query('SELECT * FROM sysUser WHERE Id = @Id');
-            
-        const users = result.recordset;
-        if (!users.length) return res.status(404).json({ success: false, message: 'Utilisateur non trouvé.' });
+// ─── Clients ──────────────────────────────────────────────────────────────────
 
-        const user = users[0];
-        if (user.Id_Auth) return ok(res, { keycloakId: user.Id_Auth });
-
-        const token      = await kc.getAdminToken();
-        const keycloakId = await kc.createUser(token, user);
-
-        if (keycloakId) {
-            await pool.request()
-                .input('keycloakId', keycloakId)
-                .input('Id', Id)
-                .query('UPDATE sysUser SET Id_Auth=@keycloakId WHERE Id=@Id');
-        }
-
-        ok(res, { keycloakId });
-    } catch (err) { fail(res, err); }
-};
-
-// POST /api/admin/clients
 const getClients = async (req, res) => {
-    try { 
-        const data = await execSP(proc.admin.getClients, getConfig(req));
-        ok(res, data);
-    } catch (err) { fail(res, err); }
+    try {
+        const { id, source, token } = ctx(req);
+        const data = await Common.getDonnees(qry.getClients, [id, token, source]);
+        res.json(data[0] || []);
+    } catch (e) { res.status(500).json({ success: false, message: e.message }); }
 };
 
-// POST /api/admin/clients/create-user
 const createUserFromClient = async (req, res) => {
     try {
-        const { FK_Client_Id = 0 } = req.body;
-        const data = await execSP(proc.admin.createUserFromClient, { 
-            ...getConfig(req), 
-            FK_Client_Id 
-        });
-        ok(res, data);
-    } catch (err) { fail(res, err); }
+        const { id, source, token } = ctx(req);
+        const { clientId } = req.body;
+        const data = await Common.setDonnees(qry.createUserFromClient, [id, token, source, clientId]);
+        res.json(data[0]?.[0]);
+    } catch (e) { res.status(500).json({ success: false, message: e.message }); }
 };
 
-// POST /api/admin/adherents
+// ─── Adhérents (Admin) ────────────────────────────────────────────────────────
+
 const getAdherents = async (req, res) => {
     try {
-        const data = await execSP(proc.admin.getAdherents, { 
-            ...getConfig(req), 
-            FK_Police_Id: 0 
-        });
-        ok(res, data);
-    } catch (err) { fail(res, err); }
+        const { id, source, token } = ctx(req);
+        const data = await Common.getDonnees(qry.getAdherentsAdmin, [id, source, token, 0]);
+        res.json(data[0] || []);
+    } catch (e) { res.status(500).json({ success: false, message: e.message }); }
 };
 
-// POST /api/admin/adherents/create-user
 const createUserFromAdherent = async (req, res) => {
     try {
-        const { FK_Adherent_Id = 0 } = req.body;
-        const data = await execSP(proc.admin.createUserFromAdherent, { 
-            ...getConfig(req), 
-            FK_Adherent_Id 
-        });
-        ok(res, data);
-    } catch (err) { fail(res, err); }
+        const { id, source, token } = ctx(req);
+        const { adherentId } = req.body;
+        const data = await Common.setDonnees(qry.createUserFromAdherent, [id, token, source, adherentId]);
+        res.json(data[0]?.[0]);
+    } catch (e) { res.status(500).json({ success: false, message: e.message }); }
+};
+
+// ─── Synchro Keycloak ────────────────────────────────────────────────────────
+
+const syncKeycloak = async (req, res) => {
+    // Réservé pour une future implémentation de synchro Keycloak
+    res.json({ success: true });
 };
 
 module.exports = {
-    getUsers, saveUser, deleteUser, syncKeycloak,
+    getUsers, saveUser, deleteUser,
     getClients, createUserFromClient,
-    getAdherents, createUserFromAdherent
+    getAdherents, createUserFromAdherent,
+    syncKeycloak
 };

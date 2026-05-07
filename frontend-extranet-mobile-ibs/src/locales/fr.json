@@ -1,9 +1,9 @@
 {
   "navigation": {
     "dashboard": "Tableau de bord",
-    "policies": "Mes contrats",
+    "policies": "Mes polices",
     "unpaid": "Mes impayés",
-    "reclamation": "Mes Réclamations"
+    "reclamation": "Mes réclamations"
   },
   "tableau_bord": {
     "title": "Tableau de bord",
@@ -23,7 +23,7 @@
     "total_unpaid": "Total des impayés"
   },
   "contrats": {
-    "title": "Mes contrats",
+    "title": "Mes polices",
     "subtitle": "Consultez et gérez vos contrats d'assurance en vigueur.",
     "search_placeholder": "Recherche",
     "prime_annuelle": "Prime annuelle",
@@ -106,7 +106,7 @@
     "empty_all": "Aucune quittance disponible pour ce contrat."
   },
   "vue_impayes": {
-    "title": "Suivi des impayés",
+    "title": "Mes impayés",
     "subtitle": "Gérez les quittances en attente de règlement.",
     "search": "Recherche",
     "total_unpaid": "Total des impayés",
@@ -116,7 +116,7 @@
     "empty": "Bravo ! Aucun impayé n'est actuellement détecté dans votre portefeuille."
   },
   "reclamations": {
-    "title": "Assistant personnel",
+    "title": "Mes réclamations",
     "subtitle": "Posez vos questions sur vos contrats, garanties et sinistres.",
     "placeholder": "Écrivez votre message ici...",
     "online": "En ligne"

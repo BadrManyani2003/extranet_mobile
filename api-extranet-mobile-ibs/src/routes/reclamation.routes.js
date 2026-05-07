@@ -1,8 +1,9 @@
 const router = require('express').Router();
-const ctrl   = require('../controllers/reclamation.controller');
 const auth   = require('../middleware/auth');
+const ctrl   = require('../controllers/reclamation.controller');
 
 router.use(auth);
+router.use(auth.checkRole(['admincab', 'comercialcab', 'client', 'adherent']));
 
 router.post('/list',          ctrl.getAll);
 router.post('/detail',        ctrl.getDetail);

@@ -1,37 +1,23 @@
-const express = require('express');
-const cors = require('cors');
-const morgan = require('morgan');
 require('dotenv').config();
-
-const apiRoutes = require('./routes/index');
+const express = require('express');
+const cors    = require('cors');
+const morgan  = require('morgan');
 
 const app = express();
 
-// Middlewares
 app.use(cors());
-app.use(express.json()); // Parse JSON bodies
-app.use(morgan('dev')); // Logging
+app.use(express.json());
+app.use(morgan('dev'));
 
-// API Routes
-app.use('/api', apiRoutes);
+app.use('/api', require('./routes/index'));
 
-// Health Check
-app.get('/health', (req, res) => {
-    res.json({ status: 'OK', message: 'Server is running' });
-});
+app.get('/health', (_, res) => res.json({ status: 'OK' }));
 
-// 404 Handler
-app.use((req, res) => {
-    res.status(404).json({ success: false, message: `Route ${req.method} ${req.path} not found.` });
-});
+app.use((req, res) => res.status(404).json({ success: false, message: `Route ${req.method} ${req.path} introuvable.` }));
 
-// Error Handling Middleware
 app.use((err, req, res, next) => {
-    console.error('❌ Global Error:', err.stack);
-    res.status(500).json({ 
-        success: false, 
-        message: 'Internal Server Error' 
-    });
+    console.error(err.stack);
+    res.status(500).json({ success: false, message: 'Erreur interne du serveur.' });
 });
 
 module.exports = app;

@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import ReclamationList from '@/components/shared/ReclamationList.vue'
 import ReclamationChat from '@/components/shared/ReclamationChat.vue'
 import { api } from '@/lib/api'
+import { toast } from '@/components/ui/sonner'
 
 const reclamations = ref<any[]>([])
 const selectedTicket = ref<any>(null)
@@ -17,17 +18,20 @@ const natureFilter = ref('all')
 const fetchReclamations = async () => {
   loading.value = true
   try { reclamations.value = await api.admin.getReclamations() } 
-  catch (e) { console.error(e) } 
+  catch (e: any) { 
+    toast.error(e.message || "Erreur lors de la récupération")
+    console.error(e) 
+  } 
   finally { loading.value = false }
 }
 
 const filteredReclamations = computed(() => {
   return reclamations.value.filter(r => {
     const matchesSearch = !searchQuery.value || 
-      r.sujet.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-      r.client.toLowerCase().includes(searchQuery.value.toLowerCase())
+      (r.Sujet || '').toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+      (r.Client || '').toLowerCase().includes(searchQuery.value.toLowerCase())
     
-    const matchesNature = natureFilter.value === 'all' || r.nature === natureFilter.value
+    const matchesNature = natureFilter.value === 'all' || r.Nature === natureFilter.value
     
     return matchesSearch && matchesNature
   })
@@ -36,8 +40,11 @@ const filteredReclamations = computed(() => {
 const selectTicket = async (ticket: any) => {
   selectedTicket.value = ticket
   loading.value = true
-  try { messages.value = await api.data.getMessages(ticket.id) } 
-  catch (e) { console.error(e) } 
+  try { messages.value = await api.data.getMessages(ticket.Id) } 
+  catch (e: any) { 
+    toast.error(e.message)
+    console.error(e) 
+  } 
   finally { loading.value = false }
 }
 
@@ -50,9 +57,13 @@ const handleSendMessage = async (text: string) => {
     time: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
   })
   try { 
-    await api.admin.replyToReclamation(selectedTicket.value.id, text)
-    selectedTicket.value.statut = 'Traité'
-  } catch (e) { console.error(e) }
+    await api.admin.replyToReclamation(selectedTicket.value.Id, text)
+    toast.success("Réponse envoyée")
+    selectedTicket.value.Statut = 'Traité'
+  } catch (e: any) { 
+    toast.error(e.message)
+    console.error(e) 
+  }
 }
 
 onMounted(fetchReclamations)
@@ -64,8 +75,7 @@ onMounted(fetchReclamations)
       <div class="p-8 border-b border-slate-100 bg-white space-y-6">
         <div class="flex items-center justify-between">
           <div>
-            <h2 class="text-2xl font-black text-slate-900">Gestion des Réclamations</h2>
-            <p class="text-sm font-medium text-slate-500">Consultez et répondez aux demandes d'assistance des clients.</p>
+            <h2 class="text-2xl font-black text-slate-900">Liste Réclamations</h2>
           </div>
         </div>
 
@@ -102,14 +112,14 @@ onMounted(fetchReclamations)
         </Button>
         <div class="flex-1">
           <div class="flex items-center gap-3">
-            <h2 class="text-xl font-black text-slate-900 line-clamp-1">{{ selectedTicket.sujet }}</h2>
-            <Badge :class="selectedTicket.statut === 'En cours' ? 'bg-orange-50 text-orange-600' : 'bg-emerald-50 text-emerald-600'" 
+            <h2 class="text-xl font-black text-slate-900 line-clamp-1">{{ selectedTicket.Sujet }}</h2>
+            <Badge :class="selectedTicket.Statut === 'En cours' ? 'bg-orange-50 text-orange-600' : 'bg-emerald-50 text-emerald-600'" 
               class="rounded-lg text-[10px] font-black uppercase tracking-widest px-2 py-0.5 border-none shadow-none">
-              {{ selectedTicket.statut }}
+              {{ selectedTicket.Statut }}
             </Badge>
           </div>
           <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">
-            Client: {{ selectedTicket.client }} • Ticket #{{ selectedTicket.id }} • Ouvert le {{ new Date(selectedTicket.date).toLocaleDateString() }}
+            Client: {{ selectedTicket.Client }} • Ticket #{{ selectedTicket.Id }} • Ouvert le {{ new Date(selectedTicket.DateReclamation).toLocaleDateString() }}
           </p>
         </div>
       </div>

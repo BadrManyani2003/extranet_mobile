@@ -30,7 +30,7 @@ CREATE TABLE dbo.sysUser
 (
     Id INT NOT NULL IDENTITY(1,1),
     Id_Auth VARCHAR(255) NULL,
-    token VARCHAR(MAX) NULL,
+    token VARCHAR(max) NULL,
     Nom VARCHAR(255) NOT NULL,
     Telephone VARCHAR(20) NULL,
     Email VARCHAR(255) NULL,
@@ -40,10 +40,7 @@ CREATE TABLE dbo.sysUser
     CreatedAt DATETIME2 NOT NULL CONSTRAINT DF_sysUser_CreatedAt DEFAULT GETDATE(),
     UpdatedAt DATETIME2 NULL,
     CONSTRAINT PK_sysUser PRIMARY KEY CLUSTERED (Id),
-    CONSTRAINT UQ_sysUser_Email UNIQUE NONCLUSTERED (Email),
-    CONSTRAINT CK_sysUser_Extranet CHECK (Extranet IN ('O', 'N')),
-    CONSTRAINT CK_sysUser_Mobile CHECK (Mobile IN ('O', 'N')),
-    CONSTRAINT CK_sysUser_Nature CHECK (Nature IN ('P', 'M', 'A', 'C'))
+    CONSTRAINT UQ_sysUser_Email UNIQUE NONCLUSTERED (Email)
 );
 GO
 
@@ -57,8 +54,7 @@ CREATE TABLE dbo.Postes_Autorises
     DateActivation DATETIME2 NULL,
     CreatedAt DATETIME2 NOT NULL CONSTRAINT DF_Postes_Autorises_CreatedAt DEFAULT GETDATE(),
     CONSTRAINT PK_Postes_Autorises PRIMARY KEY CLUSTERED (Id),
-    CONSTRAINT FK_PostesAutorises_User FOREIGN KEY (FK_User_Id) REFERENCES dbo.sysUser(Id) ON DELETE CASCADE,
-    CONSTRAINT CK_Postes_Autorises_Actif CHECK (Actif IN ('O', 'N'))
+    CONSTRAINT FK_PostesAutorises_User FOREIGN KEY (FK_User_Id) REFERENCES dbo.sysUser(Id) ON DELETE CASCADE
 );
 GO
 
@@ -71,8 +67,7 @@ CREATE TABLE dbo.userConnection
     DateSortie DATETIME2 NULL,
     CONSTRAINT PK_userConnection PRIMARY KEY CLUSTERED (Id),
     CONSTRAINT FK_userConn_User FOREIGN KEY (FK_User_Id) REFERENCES dbo.sysUser(Id) ON DELETE CASCADE,
-    CONSTRAINT FK_userConn_Poste FOREIGN KEY (FK_Poste_Id) REFERENCES dbo.Postes_Autorises(Id),
-    CONSTRAINT CK_userConnection_Dates CHECK (DateSortie IS NULL OR DateSortie >= DateConnection)
+    CONSTRAINT FK_userConn_Poste FOREIGN KEY (FK_Poste_Id) REFERENCES dbo.Postes_Autorises(Id)
 );
 GO
 
@@ -90,13 +85,8 @@ CREATE TABLE dbo.Compagnies
 (
     Id INT NOT NULL IDENTITY(1,1),
     RaisonSociale VARCHAR(255) NOT NULL,
-    Code VARCHAR(50) NULL,
-    Telephone VARCHAR(20) NULL,
-    Email VARCHAR(255) NULL,
-    Adresse VARCHAR(500) NULL,
     CreatedAt DATETIME2 NOT NULL CONSTRAINT DF_Compagnies_CreatedAt DEFAULT GETDATE(),
-    CONSTRAINT PK_Compagnies PRIMARY KEY CLUSTERED (Id),
-    CONSTRAINT UQ_Compagnies_Code UNIQUE NONCLUSTERED (Code)
+    CONSTRAINT PK_Compagnies PRIMARY KEY CLUSTERED (Id)
 );
 GO
 
@@ -104,22 +94,16 @@ CREATE TABLE dbo.Clients
 (
     Id INT NOT NULL,
     Fk_Client_Id INT NULL,
-    FK_User_Id INT NULL,
     RaisonSociale VARCHAR(255) NOT NULL,
     Particulier CHAR(1) NOT NULL CONSTRAINT DF_Clients_Particulier DEFAULT 'N',
     Email VARCHAR(255) NULL,
     Adresse VARCHAR(500) NULL,
     Telephone VARCHAR(20) NULL,
-    CodePostal VARCHAR(20) NULL,
-    Ville VARCHAR(100) NULL,
-    Pays VARCHAR(100) NULL,
     CreatedAt DATETIME2 NOT NULL CONSTRAINT DF_Clients_CreatedAt DEFAULT GETDATE(),
     UpdatedAt DATETIME2 NULL,
     CONSTRAINT PK_Clients PRIMARY KEY CLUSTERED (Id),
     CONSTRAINT FK_Clients_Parent FOREIGN KEY (Fk_Client_Id) REFERENCES dbo.Clients(Id),
-    CONSTRAINT FK_Clients_User FOREIGN KEY (FK_User_Id) REFERENCES dbo.sysUser(Id),
-    CONSTRAINT UQ_Clients_Email UNIQUE NONCLUSTERED (Email),
-    CONSTRAINT CK_Clients_Particulier CHECK (Particulier IN ('O', 'N'))
+    CONSTRAINT UQ_Clients_Email UNIQUE NONCLUSTERED (Email)
 );
 GO
 
@@ -131,8 +115,7 @@ CREATE TABLE dbo.UsersXClients
     CreatedAt DATETIME2 NOT NULL CONSTRAINT DF_UsersXClients_CreatedAt DEFAULT GETDATE(),
     CONSTRAINT PK_UsersXClients PRIMARY KEY CLUSTERED (FK_User_Id, FK_Client_Id),
     CONSTRAINT FK_UXC_User FOREIGN KEY (FK_User_Id) REFERENCES dbo.sysUser(Id) ON DELETE CASCADE,
-    CONSTRAINT FK_UXC_Client FOREIGN KEY (FK_Client_Id) REFERENCES dbo.Clients(Id) ON DELETE CASCADE,
-    CONSTRAINT CK_UsersXClients_Actif CHECK (Actif IN ('O', 'N'))
+    CONSTRAINT FK_UXC_Client FOREIGN KEY (FK_Client_Id) REFERENCES dbo.Clients(Id) ON DELETE CASCADE
 );
 GO
 
@@ -152,8 +135,7 @@ CREATE TABLE dbo.Polices
     UpdatedAt DATETIME2 NULL,
     CONSTRAINT PK_Polices PRIMARY KEY CLUSTERED (Id),
     CONSTRAINT FK_Polices_Client FOREIGN KEY (Fk_Client_Id) REFERENCES dbo.Clients(Id),
-    CONSTRAINT FK_Polices_Compagnie FOREIGN KEY (FK_Compagnie_Id) REFERENCES dbo.Compagnies(Id),
-    CONSTRAINT CK_Polices_Statut CHECK (Statut IN ('A', 'R', 'S', 'C'))
+    CONSTRAINT FK_Polices_Compagnie FOREIGN KEY (FK_Compagnie_Id) REFERENCES dbo.Compagnies(Id)
 );
 GO
 
@@ -176,8 +158,7 @@ CREATE TABLE dbo.Adherents
     CONSTRAINT FK_Adherents_Police FOREIGN KEY (FK_Police_Id) REFERENCES dbo.Polices(Id) ON DELETE CASCADE,
     CONSTRAINT FK_Adherents_User FOREIGN KEY (FK_User_Id) REFERENCES dbo.sysUser(Id),
     CONSTRAINT UQ_Adherents_Email UNIQUE NONCLUSTERED (Email),
-    CONSTRAINT UQ_Adherents_Matricule UNIQUE NONCLUSTERED (Matricule),
-    CONSTRAINT CK_Adherents_Actif CHECK (Actif IN ('O', 'N'))
+    CONSTRAINT UQ_Adherents_Matricule UNIQUE NONCLUSTERED (Matricule)
 );
 GO
 
@@ -189,7 +170,6 @@ CREATE TABLE dbo.PersACharge
     Lien VARCHAR(100) NULL,
     DateNaissance DATE NULL,
     DateAdhesion DATE NULL,
-    Prenom VARCHAR(255) NULL,
     CreatedAt DATETIME2 NOT NULL CONSTRAINT DF_PersACharge_CreatedAt DEFAULT GETDATE(),
     CONSTRAINT PK_PersACharge PRIMARY KEY CLUSTERED (Id),
     CONSTRAINT FK_PersACharge_Adherent FOREIGN KEY (FK_Adherent_Id) REFERENCES dbo.Adherents(Id) ON DELETE CASCADE
@@ -211,8 +191,7 @@ CREATE TABLE dbo.Risques
     UpdatedAt DATETIME2 NULL,
     CONSTRAINT PK_Risques PRIMARY KEY CLUSTERED (Id),
     CONSTRAINT FK_Risques_Police FOREIGN KEY (FK_Police_Id) REFERENCES dbo.Polices(Id) ON DELETE CASCADE,
-    CONSTRAINT UQ_Risques_NumeroIBS UNIQUE NONCLUSTERED (NumeroIBS),
-    CONSTRAINT CK_Risques_Statut CHECK (Statut IN ('A', 'I', 'R'))
+    CONSTRAINT UQ_Risques_NumeroIBS UNIQUE NONCLUSTERED (NumeroIBS)
 );
 GO
 
@@ -225,9 +204,7 @@ CREATE TABLE dbo.Garanties
     Franchise DECIMAL(18,2) NULL,
     CreatedAt DATETIME2 NOT NULL CONSTRAINT DF_Garanties_CreatedAt DEFAULT GETDATE(),
     CONSTRAINT PK_Garanties PRIMARY KEY CLUSTERED (Id),
-    CONSTRAINT FK_Garanties_Risque FOREIGN KEY (FK_Risque_Id) REFERENCES dbo.Risques(Id) ON DELETE CASCADE,
-    CONSTRAINT CK_Garanties_Capital CHECK (Capital >= 0),
-    CONSTRAINT CK_Garanties_Franchise CHECK (Franchise >= 0)
+    CONSTRAINT FK_Garanties_Risque FOREIGN KEY (FK_Risque_Id) REFERENCES dbo.Risques(Id) ON DELETE CASCADE
 );
 GO
 
@@ -245,17 +222,14 @@ CREATE TABLE dbo.Sinistres
     MT_Dommages DECIMAL(18,2) NULL,
     MT_Franchise DECIMAL(18,2) NULL,
     MT_Indemnite DECIMAL(18,2) NULL,
-    Observations VARCHAR(1000) NULL,
-    DateCloture DATE NULL,
+    Observations VARCHAR(max) NULL,
     CreatedAt DATETIME2 NOT NULL CONSTRAINT DF_Sinistres_CreatedAt DEFAULT GETDATE(),
     UpdatedAt DATETIME2 NULL,
     CONSTRAINT PK_Sinistres PRIMARY KEY CLUSTERED (Id),
     CONSTRAINT FK_Sinistres_Risque FOREIGN KEY (FK_Risque_Id) REFERENCES dbo.Risques(Id),
     CONSTRAINT FK_Sinistres_Police FOREIGN KEY (FK_Police_Id) REFERENCES dbo.Polices(Id),
     CONSTRAINT FK_Sinistres_Adherent FOREIGN KEY (FK_Adherent_Id) REFERENCES dbo.Adherents(Id),
-    CONSTRAINT UQ_Sinistres_NumeroSin UNIQUE NONCLUSTERED (NumeroSin),
-    CONSTRAINT CK_Sinistres_Statut CHECK (Statut IN ('E', 'T', 'C', 'R')),
-    CONSTRAINT CK_Sinistres_Montants CHECK (MT_Dommages >= 0 AND MT_Franchise >= 0 AND MT_Indemnite >= 0)
+    CONSTRAINT UQ_Sinistres_NumeroSin UNIQUE NONCLUSTERED (NumeroSin)
 );
 GO
 
@@ -274,9 +248,7 @@ CREATE TABLE dbo.Quittances
     UpdatedAt DATETIME2 NULL,
     CONSTRAINT PK_Quittances PRIMARY KEY CLUSTERED (Id),
     CONSTRAINT FK_Quittances_Police FOREIGN KEY (FK_Police_Id) REFERENCES dbo.Polices(Id) ON DELETE CASCADE,
-    CONSTRAINT UQ_Quittances_NumQuittance UNIQUE NONCLUSTERED (NumQuittance),
-    CONSTRAINT CK_Quittances_Montants CHECK (Montant >= 0 AND Solde >= 0),
-    CONSTRAINT CK_Quittances_Statut CHECK (Statut IN ('P', 'I', 'R'))
+    CONSTRAINT UQ_Quittances_NumQuittance UNIQUE NONCLUSTERED (NumQuittance)
 );
 GO
 
@@ -291,9 +263,7 @@ CREATE TABLE dbo.ReclamationsIdt
     Nature CHAR(1) NULL,
     CreatedAt DATETIME2 NOT NULL CONSTRAINT DF_ReclamationsIdt_CreatedAt DEFAULT GETDATE(),
     CONSTRAINT PK_ReclamationsIdt PRIMARY KEY CLUSTERED (Id),
-    CONSTRAINT FK_ReclamIdt_User FOREIGN KEY (FK_User_Client) REFERENCES dbo.sysUser(Id),
-    CONSTRAINT CK_ReclamationsIdt_Statut CHECK (Statut IN ('E', 'T', 'C')),
-    CONSTRAINT CK_ReclamationsIdt_Nature CHECK (Nature IN ('C', 'R', 'D'))
+    CONSTRAINT FK_ReclamIdt_User FOREIGN KEY (FK_User_Client) REFERENCES dbo.sysUser(Id)
 );
 GO
 
@@ -312,12 +282,10 @@ CREATE TABLE dbo.ReclamationsDet
 GO
 
 CREATE NONCLUSTERED INDEX IX_sysUser_Email ON dbo.sysUser(Email);
--- CREATE NONCLUSTERED INDEX IX_sysUser_Token ON dbo.sysUser(token); -- Removed because VARCHAR(MAX) cannot be indexed
 CREATE NONCLUSTERED INDEX IX_Postes_Autorises_User ON dbo.Postes_Autorises(FK_User_Id);
 CREATE NONCLUSTERED INDEX IX_userConnection_User ON dbo.userConnection(FK_User_Id);
 CREATE NONCLUSTERED INDEX IX_userConnection_Date ON dbo.userConnection(DateConnection);
 CREATE NONCLUSTERED INDEX IX_Roles_User ON dbo.Roles(FK_User_Id);
-CREATE NONCLUSTERED INDEX IX_Clients_User ON dbo.Clients(FK_User_Id);
 CREATE NONCLUSTERED INDEX IX_UsersXClients_Client ON dbo.UsersXClients(FK_Client_Id);
 CREATE NONCLUSTERED INDEX IX_Polices_Client ON dbo.Polices(Fk_Client_Id);
 CREATE NONCLUSTERED INDEX IX_Polices_Compagnie ON dbo.Polices(FK_Compagnie_Id);
@@ -340,7 +308,7 @@ CREATE NONCLUSTERED INDEX IX_ReclamationsIdt_Statut ON dbo.ReclamationsIdt(Statu
 CREATE NONCLUSTERED INDEX IX_ReclamationsDet_Reclamation ON dbo.ReclamationsDet(FK_Reclamation_Id);
 GO
 
-CREATE PROCEDURE dbo.sp_GetPolices
+CREATE OR ALTER PROCEDURE dbo.sp_GetPolices
     @FK_User_Id INT,
     @Source CHAR(1),
     @Token VARCHAR(MAX)
@@ -349,31 +317,47 @@ BEGIN
     SET NOCOUNT ON;
     
     IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
-        RETURN 0;
+    BEGIN
+        RAISERROR('Session expirée', 16, 1);
+        RETURN;
+    END
 
     SELECT 
         p.Id,
         p.Branche,
         p.Police,
         p.DateEcheance,
-        p.Statut,
+        CASE p.Statut 
+            WHEN 'E' THEN 'En cours' 
+            WHEN 'S' THEN 'Suspendu' 
+            WHEN 'R' THEN 'Résilié' 
+            WHEN 'M' THEN 'Mise en demeure' 
+            ELSE p.Statut 
+        END AS Statut,
         p.Module,
         c.RaisonSociale AS Client,
         c.Particulier,
         com.RaisonSociale AS Compagnie
     FROM dbo.Polices p
     INNER JOIN dbo.Clients c ON p.Fk_Client_Id = c.Id
-    INNER JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id
+    LEFT JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id AND uxc.FK_User_Id = @FK_User_Id AND uxc.Actif = 'O'
     INNER JOIN dbo.Compagnies com ON p.FK_Compagnie_Id = com.Id
-    WHERE uxc.FK_User_Id = @FK_User_Id
-        AND uxc.Actif = 'O'
-        AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N'));
+    WHERE 
+        @Source = 'A'
+        OR (
+            uxc.FK_User_Id IS NOT NULL 
+            AND (
+                (@Source = 'M' AND c.Particulier = 'O')
+                OR (@Source = 'E' AND c.Particulier = 'N')
+            )
+        )
+        OR EXISTS (SELECT 1 FROM dbo.Adherents WHERE FK_Police_Id = p.Id AND FK_User_Id = @FK_User_Id AND Actif = 'O');
     
-    RETURN 1;
+    RETURN;
 END
 GO
 
-CREATE PROCEDURE dbo.sp_GetSinistres
+CREATE OR ALTER PROCEDURE dbo.sp_GetSinistres
     @FK_User_Id INT,
     @Source CHAR(1),
     @Token VARCHAR(MAX),
@@ -383,32 +367,43 @@ BEGIN
     SET NOCOUNT ON;
     
     IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
-        RETURN 0;
+    BEGIN
+        RAISERROR('Session expirée', 16, 1);
+        RETURN;
+    END
 
     SELECT 
         s.Id,
-        s.NumeroSin,
-        s.DateSin,
-        s.DateDeclaration,
-        s.Statut,
-        s.MT_Indemnite,
-        s.Observations
+        s.NumeroSin AS numero,
+        s.DateSin AS [date],
+        s.DateDeclaration AS dateDeclaration,
+        CASE s.Statut 
+            WHEN 'E' THEN 'En cours' 
+            WHEN 'C' THEN 'Clôturé' 
+            WHEN 'R' THEN 'Réouvert' 
+            ELSE s.Statut 
+        END AS statut,
+        ISNULL(s.MT_Indemnite, 0) AS mtRembourse,
+        ISNULL(s.MT_Dommages, 0) AS mtDommage,
+        ISNULL(s.Observations, '') AS observation,
+        ISNULL(r.Libelle, ISNULL(r.Identifiant, '-')) AS objet
     FROM dbo.Sinistres s
     INNER JOIN dbo.Polices p ON s.FK_Police_Id = p.Id
     INNER JOIN dbo.Clients c ON p.Fk_Client_Id = c.Id
+    LEFT JOIN dbo.Risques r ON s.FK_Risque_Id = r.Id
     LEFT JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id AND uxc.FK_User_Id = @FK_User_Id AND uxc.Actif = 'O'
     WHERE p.Id = @FK_Police_Id
         AND (
-            (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
-            OR
-            (s.FK_Adherent_Id IN (SELECT Id FROM dbo.Adherents WHERE FK_User_Id = @FK_User_Id AND Actif = 'O'))
+            @Source = 'A'
+            OR (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
+            OR (s.FK_Adherent_Id IN (SELECT Id FROM dbo.Adherents WHERE FK_User_Id = @FK_User_Id AND Actif = 'O'))
         );
     
-    RETURN 1;
+    RETURN;
 END
 GO
 
-CREATE PROCEDURE dbo.sp_GetSinistresEncour
+CREATE OR ALTER PROCEDURE dbo.sp_GetSinistresEncour
     @FK_User_Id INT,
     @Source CHAR(1),
     @Token VARCHAR(MAX),
@@ -418,33 +413,39 @@ BEGIN
     SET NOCOUNT ON;
     
     IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
-        RETURN 0;
+    BEGIN
+        RAISERROR('Session expirée', 16, 1);
+        RETURN;
+    END
 
     SELECT 
         s.Id,
-        s.NumeroSin,
-        s.DateSin,
-        s.DateDeclaration,
-        s.Statut,
-        s.MT_Indemnite,
-        s.Observations
+        s.NumeroSin AS numero,
+        s.DateSin AS [date],
+        s.DateDeclaration AS dateDeclaration,
+        'En cours' AS statut,
+        ISNULL(s.MT_Indemnite, 0) AS mtRembourse,
+        ISNULL(s.MT_Dommages, 0) AS mtDommage,
+        ISNULL(s.Observations, '') AS observation,
+        ISNULL(r.Libelle, ISNULL(r.Identifiant, '-')) AS objet
     FROM dbo.Sinistres s
     INNER JOIN dbo.Polices p ON s.FK_Police_Id = p.Id
     INNER JOIN dbo.Clients c ON p.Fk_Client_Id = c.Id
+    LEFT JOIN dbo.Risques r ON s.FK_Risque_Id = r.Id
     LEFT JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id AND uxc.FK_User_Id = @FK_User_Id AND uxc.Actif = 'O'
     WHERE p.Id = @FK_Police_Id
         AND s.Statut = 'E'
         AND (
-            (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
-            OR
-            (s.FK_Adherent_Id IN (SELECT Id FROM dbo.Adherents WHERE FK_User_Id = @FK_User_Id AND Actif = 'O'))
+            @Source = 'A'
+            OR (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
+            OR (s.FK_Adherent_Id IN (SELECT Id FROM dbo.Adherents WHERE FK_User_Id = @FK_User_Id AND Actif = 'O'))
         );
     
-    RETURN 1;
+    RETURN;
 END
 GO
 
-CREATE PROCEDURE dbo.sp_GetRisques
+CREATE OR ALTER PROCEDURE dbo.sp_GetRisques
     @FK_User_Id INT,
     @Source CHAR(1),
     @Token VARCHAR(MAX),
@@ -454,14 +455,20 @@ BEGIN
     SET NOCOUNT ON;
     
     IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
-        RETURN 0;
+    BEGIN
+        RAISERROR('Session expirée', 16, 1);
+        RETURN;
+    END
 
     SELECT 
         r.Id,
-        r.Libelle,
-        r.Identifiant,
-        r.Description,
-        r.DateDu,
+        r.Libelle AS nom,
+        r.Libelle AS marque,
+        r.Identifiant AS immatriculation,
+        r.Identifiant AS numAdhesion,
+        r.Identifiant AS matricule,
+        ISNULL(r.Description, 'Risque') AS [type],
+        r.DateDu AS dateMiseEnCirculation,
         r.DateEcheance,
         r.Statut
     FROM dbo.Risques r
@@ -473,11 +480,11 @@ BEGIN
         AND p.Id = @FK_Police_Id
         AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N'));
     
-    RETURN 1;
+    RETURN;
 END
 GO
 
-CREATE PROCEDURE dbo.sp_GetQuittances
+CREATE OR ALTER PROCEDURE dbo.sp_GetQuittances
     @FK_User_Id INT,
     @Source CHAR(1),
     @Token VARCHAR(MAX),
@@ -487,31 +494,43 @@ BEGIN
     SET NOCOUNT ON;
     
     IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
-        RETURN 0;
+    BEGIN
+        RAISERROR('Session expirée', 16, 1);
+        RETURN;
+    END
 
     SELECT 
         q.Id,
-        q.NumQuittance,
-        q.DateDu,
-        q.DateAu,
-        q.Montant,
-        q.Solde,
+        q.NumQuittance AS numero,
+        q.DateDu AS dateDebut,
+        q.DateAu AS dateFin,
+        ISNULL(q.Montant, 0) AS montantTotal,
+        ISNULL(q.Solde, 0) AS montantImpaye,
         q.DateEcheance,
-        q.Statut
+        CASE q.Statut 
+            WHEN 'E' THEN 'En cours' 
+            WHEN 'S' THEN 'Suspendu' 
+            WHEN 'R' THEN 'Résilié' 
+            WHEN 'M' THEN 'Mise en demeure' 
+            WHEN 'A' THEN 'Annulée' 
+            ELSE q.Statut 
+        END AS Statut
     FROM dbo.Quittances q
     INNER JOIN dbo.Polices p ON q.FK_Police_Id = p.Id
     INNER JOIN dbo.Clients c ON p.Fk_Client_Id = c.Id
-    INNER JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id
-    WHERE uxc.FK_User_Id = @FK_User_Id
-        AND uxc.Actif = 'O'
-        AND p.Id = @FK_Police_Id
-        AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N'));
+    LEFT JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id AND uxc.FK_User_Id = @FK_User_Id AND uxc.Actif = 'O'
+    WHERE p.Id = @FK_Police_Id
+        AND (
+            @Source = 'A'
+            OR (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
+            OR EXISTS (SELECT 1 FROM dbo.Adherents WHERE FK_Police_Id = p.Id AND FK_User_Id = @FK_User_Id AND Actif = 'O')
+        );
     
-    RETURN 1;
+    RETURN;
 END
 GO
 
-CREATE PROCEDURE dbo.sp_GetImpayes
+CREATE OR ALTER PROCEDURE dbo.sp_GetImpayes
     @FK_User_Id INT,
     @Source CHAR(1),
     @Token VARCHAR(MAX),
@@ -522,15 +541,18 @@ BEGIN
     SET NOCOUNT ON;
     
     IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
-        RETURN 0;
+    BEGIN
+        RAISERROR('Session expirée', 16, 1);
+        RETURN;
+    END
 
     SELECT 
         q.Id,
-        q.NumQuittance,
-        q.DateDu,
-        q.DateAu,
-        q.Montant,
-        q.Solde,
+        q.NumQuittance AS numero,
+        q.DateDu AS dateDebut,
+        q.DateAu AS dateFin,
+        ISNULL(q.Montant, 0) AS montantTotal,
+        ISNULL(q.Solde, 0) AS montantImpaye,
         q.DateEcheance
     FROM dbo.Quittances q
     INNER JOIN dbo.Polices p ON q.FK_Police_Id = p.Id
@@ -542,11 +564,11 @@ BEGIN
         AND ((@Encour = 'O' AND q.Solde > 0) OR (@Encour = 'N'))
         AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N'));
     
-    RETURN 1;
+    RETURN;
 END
 GO
 
-CREATE PROCEDURE dbo.sp_GetAdherents
+CREATE OR ALTER PROCEDURE dbo.sp_GetAdherents
     @FK_User_Id INT,
     @Source CHAR(1),
     @Token VARCHAR(MAX),
@@ -556,35 +578,40 @@ BEGIN
     SET NOCOUNT ON;
     
     IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
-        RETURN 0;
+    BEGIN
+        RAISERROR('Session expirée', 16, 1);
+        RETURN;
+    END
 
     SELECT 
         a.Id,
-        a.Nom,
-        a.Prenom,
+        RTRIM(LTRIM(ISNULL(a.Nom, '') + ' ' + ISNULL(a.Prenom, ''))) AS nom,
         a.Email,
         a.NumAdhesion,
         a.Matricule,
         a.DateNaissance,
         a.Actif,
-        a.Telephone
+        a.Telephone,
+        a.FK_User_Id
     FROM dbo.Adherents a
     INNER JOIN dbo.Polices p ON a.FK_Police_Id = p.Id
     INNER JOIN dbo.Clients c ON p.Fk_Client_Id = c.Id
     LEFT JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id AND uxc.FK_User_Id = @FK_User_Id AND uxc.Actif = 'O'
-    WHERE p.Id = @FK_Police_Id
+    WHERE (@Source = 'A' OR (@FK_Police_Id > 0 AND p.Id = @FK_Police_Id))
         AND a.Actif = 'O'
         AND (
+            @Source = 'A'
+            OR
             (uxc.FK_User_Id IS NOT NULL AND (@Source = 'E' AND c.Particulier = 'N'))
             OR
             (a.FK_User_Id = @FK_User_Id)
         );
     
-    RETURN 1;
+    RETURN;
 END
 GO
 
-CREATE PROCEDURE dbo.sp_GetPersACharge
+CREATE OR ALTER PROCEDURE dbo.sp_GetPersACharge
     @FK_User_Id INT,
     @Source CHAR(1),
     @Token VARCHAR(MAX),
@@ -594,14 +621,16 @@ BEGIN
     SET NOCOUNT ON;
     
     IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
-        RETURN 0;
+    BEGIN
+        RAISERROR('Session expirée', 16, 1);
+        RETURN;
+    END
 
     SELECT 
         pc.Id,
-        pc.Nom,
-        pc.Prenom,
-        pc.Lien,
-        pc.DateNaissance,
+        pc.Nom AS nom,
+        pc.Lien AS lien,
+        pc.DateNaissance AS dateNaissance,
         pc.DateAdhesion
     FROM dbo.PersACharge pc
     INNER JOIN dbo.Adherents a ON pc.FK_Adherent_Id = a.Id
@@ -616,11 +645,11 @@ BEGIN
             (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
         );
     
-    RETURN 1;
+    RETURN;
 END
 GO
 
-CREATE PROCEDURE dbo.sp_GetGarantiesByRisque
+CREATE OR ALTER PROCEDURE dbo.sp_GetGarantiesByRisque
     @FK_User_Id INT,
     @Source CHAR(1),
     @Token VARCHAR(MAX),
@@ -630,13 +659,16 @@ BEGIN
     SET NOCOUNT ON;
     
     IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
-        RETURN 0;
+    BEGIN
+        RAISERROR('Session expirée', 16, 1);
+        RETURN;
+    END
 
     SELECT 
         g.Id,
-        g.Libelle,
-        g.Capital,
-        g.Franchise
+        g.Libelle AS nom,
+        ISNULL(g.Capital, 0) AS capital,
+        ISNULL(g.Franchise, '-') AS franchise
     FROM dbo.Garanties g
     INNER JOIN dbo.Risques r ON g.FK_Risque_Id = r.Id
     INNER JOIN dbo.Polices p ON r.FK_Police_Id = p.Id
@@ -649,7 +681,7 @@ BEGIN
             EXISTS (SELECT 1 FROM dbo.Adherents WHERE FK_Police_Id = p.Id AND FK_User_Id = @FK_User_Id AND Actif = 'O')
         );
     
-    RETURN 1;
+    RETURN;
 END
 GO
 
@@ -662,7 +694,10 @@ BEGIN
     SET NOCOUNT ON;
     
     IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
-        RETURN 0;
+    BEGIN
+        RAISERROR('Session expirée', 16, 1);
+        RETURN;
+    END
 
     SELECT 
         r.Id,
@@ -677,11 +712,11 @@ BEGIN
     WHERE (@Source = 'C' OR r.FK_User_Client = @FK_User_Id)
     ORDER BY r.DateReclamation DESC;
     
-    RETURN 1;
+    RETURN;
 END
 GO
 
-CREATE PROCEDURE dbo.sp_GetReclamationDetails
+CREATE OR ALTER PROCEDURE dbo.sp_GetReclamationDetails
     @FK_User_Id INT,
     @Source CHAR(1),
     @Token VARCHAR(MAX),
@@ -691,7 +726,10 @@ BEGIN
     SET NOCOUNT ON;
     
     IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
-        RETURN 0;
+    BEGIN
+        RAISERROR('Session expirée', 16, 1);
+        RETURN;
+    END
 
     IF EXISTS (SELECT 1 FROM dbo.ReclamationsIdt WHERE Id = @FK_Reclamation_Id 
                AND (@Source = 'C' OR FK_User_Client = @FK_User_Id))
@@ -707,14 +745,15 @@ BEGIN
         WHERE rd.FK_Reclamation_Id = @FK_Reclamation_Id
         ORDER BY rd.DateMessage ASC;
         
-        RETURN 1;
+        RETURN;
     END
     
-    RETURN 0;
+    RAISERROR('Réclamation introuvable', 16, 1);
+    RETURN;
 END
 GO
 
-CREATE PROCEDURE dbo.sp_CreateReclamation
+CREATE OR ALTER PROCEDURE dbo.sp_CreateReclamation
     @FK_User_Id INT,
     @Source CHAR(1),
     @Token VARCHAR(MAX),
@@ -726,7 +765,10 @@ BEGIN
     SET NOCOUNT ON;
     
     IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
-        RETURN 0;
+    BEGIN
+        RAISERROR('Session expirée', 16, 1);
+        RETURN;
+    END
 
     DECLARE @NewId INT;
 
@@ -740,11 +782,11 @@ BEGIN
 
     SELECT @NewId AS Id;
     
-    RETURN 1;
+    RETURN;
 END
 GO
 
-CREATE PROCEDURE dbo.sp_AddMessageReclamation
+CREATE OR ALTER PROCEDURE dbo.sp_AddMessageReclamation
     @FK_User_Id INT,
     @Source CHAR(1),
     @Token VARCHAR(MAX),
@@ -756,7 +798,10 @@ BEGIN
     SET NOCOUNT ON;
     
     IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
-        RETURN 0;
+    BEGIN
+        RAISERROR('Session expirée', 16, 1);
+        RETURN;
+    END
 
     IF EXISTS (SELECT 1 FROM dbo.ReclamationsIdt WHERE Id = @FK_Reclamation_Id AND FK_User_Client = @FK_User_Id)
     BEGIN
@@ -768,14 +813,15 @@ BEGIN
             DateStatut = GETDATE() 
         WHERE Id = @FK_Reclamation_Id;
         
-        RETURN 1;
+        RETURN;
     END
     
-    RETURN 0;
+    RAISERROR('Action non autorisée', 16, 1);
+    RETURN;
 END
 GO
 
-CREATE PROCEDURE dbo.sp_UpdateReclamationStatus
+CREATE OR ALTER PROCEDURE dbo.sp_UpdateReclamationStatus
     @FK_User_Id INT,
     @Source CHAR(1),
     @Token VARCHAR(MAX),
@@ -786,7 +832,10 @@ BEGIN
     SET NOCOUNT ON;
     
     IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
-        RETURN 0;
+    BEGIN
+        RAISERROR('Session expirée', 16, 1);
+        RETURN;
+    END
 
     IF EXISTS (SELECT 1 FROM dbo.ReclamationsIdt WHERE Id = @FK_Reclamation_Id AND FK_User_Client = @FK_User_Id)
     BEGIN
@@ -795,13 +844,13 @@ BEGIN
             DateStatut = GETDATE() 
         WHERE Id = @FK_Reclamation_Id;
         
-        RETURN 1;
+        RETURN;
     END
     
-    RETURN 0;
+    RAISERROR('Action non autorisée', 16, 1);
+    RETURN;
 END
 GO
-
 
 CREATE OR ALTER PROCEDURE dbo.ps_SaveUser
     @FK_User_Id    INT,
@@ -818,6 +867,19 @@ CREATE OR ALTER PROCEDURE dbo.ps_SaveUser
 AS
 BEGIN
     SET NOCOUNT ON;
+    
+    IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
+    BEGIN
+        RAISERROR('Session expirée', 16, 1);
+        RETURN;
+    END
+
+    IF EXISTS (SELECT 1 FROM dbo.sysUser WHERE Email = @Email AND Id <> @FK_Target_Id)
+    BEGIN
+        RAISERROR('Email déjà utilisé', 16, 1);
+        RETURN;
+    END
+
     IF @FK_Target_Id = 0
     BEGIN
         INSERT INTO dbo.sysUser (Id_Auth, Nom, Telephone, Email, Nature, Extranet, Mobile)
@@ -832,7 +894,7 @@ BEGIN
         WHERE Id = @FK_Target_Id;
         SELECT @FK_Target_Id AS NewId;
     END
-END;
+END
 GO
 
 CREATE OR ALTER PROCEDURE dbo.ps_DeleteUser
@@ -843,11 +905,30 @@ CREATE OR ALTER PROCEDURE dbo.ps_DeleteUser
 AS
 BEGIN
     SET NOCOUNT ON;
+    
+    IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
+    BEGIN
+        RAISERROR('Session expirée', 16, 1);
+        RETURN;
+    END
+
+    IF EXISTS (SELECT 1 FROM UsersXClients  WHERE FK_User_Id = @FK_Delete_Id)
+    BEGIN
+        RAISERROR('Impossible de supprimer : cet utilisateur est lié à un client', 16, 1);
+        RETURN;
+    END
+    
+    IF EXISTS (SELECT 1 FROM dbo.Adherents WHERE FK_User_Id = @FK_Delete_Id)
+    BEGIN
+        RAISERROR('Impossible de supprimer : cet utilisateur est lié à un adhérent', 16, 1);
+        RETURN;
+    END
+    
     DELETE FROM dbo.Roles            WHERE FK_User_Id = @FK_Delete_Id;
     DELETE FROM dbo.Postes_Autorises WHERE FK_User_Id = @FK_Delete_Id;
     DELETE FROM dbo.UsersXClients    WHERE FK_User_Id = @FK_Delete_Id;
     DELETE FROM dbo.sysUser          WHERE Id         = @FK_Delete_Id;
-END;
+END
 GO
 
 CREATE OR ALTER PROCEDURE dbo.ps_GetClients
@@ -857,6 +938,13 @@ CREATE OR ALTER PROCEDURE dbo.ps_GetClients
 AS
 BEGIN
     SET NOCOUNT ON;
+    
+    IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
+    BEGIN
+        RAISERROR('Session expirée', 16, 1);
+        RETURN;
+    END
+    
     SELECT DISTINCT
         c.Id,
         c.RaisonSociale,
@@ -865,12 +953,13 @@ BEGIN
         c.Adresse,
         cParent.RaisonSociale AS ParentClient,
         u.Nom                 AS UserNom,
-        c.FK_User_Id
+        x.FK_User_Id
     FROM dbo.Clients c
     LEFT JOIN dbo.Clients cParent ON c.Fk_Client_Id = cParent.Id
-    LEFT JOIN dbo.sysUser u       ON c.FK_User_Id   = u.Id
+    left join UsersXClients x on x.FK_Client_Id = c.id
+    LEFT JOIN dbo.sysUser u       ON x.FK_User_Id   = u.Id
     ORDER BY c.RaisonSociale;
-END;
+END
 GO
 
 CREATE OR ALTER PROCEDURE dbo.ps_CreateUserFromClient
@@ -881,14 +970,38 @@ CREATE OR ALTER PROCEDURE dbo.ps_CreateUserFromClient
 AS
 BEGIN
     SET NOCOUNT ON;
+    
+    IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
+    BEGIN
+        RAISERROR('Session expirée', 16, 1);
+        RETURN;
+    END
+    
     DECLARE @Nom VARCHAR(255), @Email VARCHAR(255), @NewUserId INT;
     SELECT @Nom = RaisonSociale, @Email = Email FROM dbo.Clients WHERE Id = @FK_Client_Id;
-    IF @Nom IS NULL RETURN;
-    INSERT INTO dbo.sysUser (Nom, Email, Nature, Extranet, Mobile) VALUES (@Nom, @Email, 'C', 'O', 'N');
+    
+    IF @Nom IS NULL
+    BEGIN
+        RAISERROR('Client introuvable', 16, 1);
+        RETURN;
+    END
+    
+    IF EXISTS (SELECT 1 FROM dbo.sysUser WHERE Email = @Email)
+    BEGIN
+        RAISERROR('Email déjà utilisé', 16, 1);
+        RETURN;
+    END
+
+    INSERT INTO dbo.sysUser (Nom, Email, Nature, Extranet, Mobile) 
+    VALUES (@Nom, @Email, 'C', 'O', 'N');
+    
     SET @NewUserId = SCOPE_IDENTITY();
-    UPDATE dbo.Clients SET FK_User_Id = @NewUserId WHERE Id = @FK_Client_Id;
+    
+    INSERT INTO dbo.UsersXClients (FK_User_Id, FK_Client_Id, Actif)
+    VALUES (@NewUserId, @FK_Client_Id, 'O');
+    
     SELECT * FROM dbo.sysUser WHERE Id = @NewUserId;
-END;
+END
 GO
 
 CREATE OR ALTER PROCEDURE dbo.ps_CreateUserFromAdherent
@@ -899,14 +1012,35 @@ CREATE OR ALTER PROCEDURE dbo.ps_CreateUserFromAdherent
 AS
 BEGIN
     SET NOCOUNT ON;
+    
+    IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
+    BEGIN
+        RAISERROR('Session expirée', 16, 1);
+        RETURN;
+    END
+    
     DECLARE @Nom VARCHAR(255), @Email VARCHAR(255), @NewUserId INT;
     SELECT @Nom = Nom, @Email = Email FROM dbo.Adherents WHERE Id = @FK_Adherent_Id;
-    IF @Nom IS NULL RETURN;
-    INSERT INTO dbo.sysUser (Nom, Email, Nature, Extranet, Mobile) VALUES (@Nom, @Email, 'C', 'N', 'O');
+    
+    IF @Nom IS NULL
+    BEGIN
+        RAISERROR('Adhérent introuvable', 16, 1);
+        RETURN;
+    END
+
+    IF EXISTS (SELECT 1 FROM dbo.sysUser WHERE Email = @Email)
+    BEGIN
+        RAISERROR('Email déjà utilisé', 16, 1);
+        RETURN;
+    END
+
+    INSERT INTO dbo.sysUser (Nom, Email, Nature, Extranet, Mobile) 
+    VALUES (@Nom, @Email, 'C', 'N', 'O');
+    
     SET @NewUserId = SCOPE_IDENTITY();
     UPDATE dbo.Adherents SET FK_User_Id = @NewUserId WHERE Id = @FK_Adherent_Id;
     SELECT * FROM dbo.sysUser WHERE Id = @NewUserId;
-END;
+END
 GO
 
 CREATE OR ALTER PROCEDURE dbo.ps_GetUsers
@@ -916,8 +1050,15 @@ CREATE OR ALTER PROCEDURE dbo.ps_GetUsers
 AS
 BEGIN
     SET NOCOUNT ON;
+    
+    IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
+    BEGIN
+        RAISERROR('Session expirée', 16, 1);
+        RETURN;
+    END
+    
     SELECT * FROM dbo.sysUser ORDER BY Nom;
-END;
+END
 GO
 
 CREATE OR ALTER PROCEDURE dbo.sp_GetStats
@@ -927,30 +1068,43 @@ CREATE OR ALTER PROCEDURE dbo.sp_GetStats
 AS
 BEGIN
     SET NOCOUNT ON;
-    IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token) RETURN;
+    
+    IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
+    BEGIN
+        RAISERROR('Session expirée', 16, 1);
+        RETURN;
+    END
 
     SELECT 
-        (SELECT COUNT(*) FROM dbo.Polices p 
-         JOIN dbo.Clients c ON p.Fk_Client_Id = c.Id
-         JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id
-         WHERE uxc.FK_User_Id = @FK_User_Id AND uxc.Actif = 'O'
-           AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N'))) AS TotalPolices,
+        (SELECT COUNT(DISTINCT p.Id) FROM dbo.Polices p 
+         LEFT JOIN dbo.Clients c ON p.Fk_Client_Id = c.Id
+         LEFT JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id AND uxc.FK_User_Id = @FK_User_Id AND uxc.Actif = 'O'
+         LEFT JOIN dbo.Adherents a ON p.Id = a.FK_Police_Id AND a.FK_User_Id = @FK_User_Id AND a.Actif = 'O'
+         WHERE @Source = 'A'
+            OR (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
+            OR (@Source = 'A' AND a.Id IS NOT NULL)) AS TotalPolices,
            
         (SELECT COUNT(*) FROM dbo.Sinistres s
          JOIN dbo.Polices p ON s.FK_Police_Id = p.Id
          JOIN dbo.Clients c ON p.Fk_Client_Id = c.Id
-         LEFT JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id AND uxc.FK_User_Id = @FK_User_Id
+         LEFT JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id AND uxc.FK_User_Id = @FK_User_Id AND uxc.Actif = 'O'
          WHERE s.Statut = 'E'
-           AND (uxc.FK_User_Id IS NOT NULL OR s.FK_Adherent_Id IN (SELECT Id FROM dbo.Adherents WHERE FK_User_Id = @FK_User_Id))) AS SinistresEnCours,
+           AND (
+               @Source = 'A'
+               OR (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
+               OR s.FK_Adherent_Id IN (SELECT Id FROM dbo.Adherents WHERE FK_User_Id = @FK_User_Id AND Actif = 'O')
+           )) AS SinistresEnCours,
            
         (SELECT ISNULL(SUM(q.Solde), 0) FROM dbo.Quittances q
          JOIN dbo.Polices p ON q.FK_Police_Id = p.Id
          JOIN dbo.Clients c ON p.Fk_Client_Id = c.Id
-         JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id
-         WHERE uxc.FK_User_Id = @FK_User_Id AND uxc.Actif = 'O'
-           AND q.Solde > 0
-           AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N'))) AS TotalImpayes;
-END;
+         LEFT JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id AND uxc.FK_User_Id = @FK_User_Id AND uxc.Actif = 'O'
+         WHERE q.Solde > 0
+           AND (
+               @Source = 'A'
+               OR (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
+           )) AS TotalImpayes;
+END
 GO
 
 CREATE OR ALTER PROCEDURE dbo.ps_GetStatsByPolice
@@ -961,8 +1115,63 @@ CREATE OR ALTER PROCEDURE dbo.ps_GetStatsByPolice
 AS
 BEGIN
     SET NOCOUNT ON;
+    
+    IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
+    BEGIN
+        RAISERROR('Session expirée', 16, 1);
+        RETURN;
+    END
+
     SELECT 
-        (SELECT COUNT(*) FROM dbo.Sinistres WHERE FK_Police_Id = @FK_Police_Id AND Statut = 'E') AS SinistresEnCours,
-        (SELECT ISNULL(SUM(Solde), 0) FROM dbo.Quittances WHERE FK_Police_Id = @FK_Police_Id AND Solde > 0) AS TotalImpayes;
-END;
+        (SELECT ISNULL(SUM(Montant), 0) FROM dbo.Quittances 
+         WHERE FK_Police_Id = @FK_Police_Id 
+           AND DateDu >= DATEADD(YEAR, -1, GETDATE())) AS PrimeAnnuelle,
+
+        (SELECT ISNULL(SUM(Solde), 0) FROM dbo.Quittances 
+         WHERE FK_Police_Id = @FK_Police_Id AND Solde > 0) AS Impayes,
+
+        (SELECT COUNT(*) FROM dbo.Risques 
+         WHERE FK_Police_Id = @FK_Police_Id AND Statut = 'O') AS NbRisques,
+
+        (SELECT COUNT(*) FROM dbo.Sinistres s
+         WHERE s.FK_Police_Id = @FK_Police_Id
+           AND (
+               @Source <> 'A' 
+               OR s.FK_Adherent_Id IN (SELECT Id FROM dbo.Adherents WHERE FK_User_Id = @FK_User_Id)
+           )) AS NbSinistres,
+
+        (SELECT COUNT(*) FROM dbo.Sinistres s
+         WHERE s.FK_Police_Id = @FK_Police_Id AND s.Statut = 'E'
+           AND (
+               @Source <> 'A' 
+               OR s.FK_Adherent_Id IN (SELECT Id FROM dbo.Adherents WHERE FK_User_Id = @FK_User_Id)
+           )) AS NbSinistresEnCours;
+END
+GO
+
+CREATE OR ALTER PROCEDURE dbo.sp_DeleteReclamation
+    @FK_User_Id        INT,
+    @Source            CHAR(1),
+    @Token             VARCHAR(MAX),
+    @FK_Reclamation_Id INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
+    BEGIN
+        RAISERROR('Session expirée', 16, 1);
+        RETURN;
+    END
+
+    IF EXISTS (SELECT 1 FROM dbo.ReclamationsIdt WHERE Id = @FK_Reclamation_Id AND (@Source = 'C' OR FK_User_Client = @FK_User_Id))
+    BEGIN
+        DELETE FROM dbo.ReclamationsDet WHERE FK_Reclamation_Id = @FK_Reclamation_Id;
+        DELETE FROM dbo.ReclamationsIdt WHERE Id = @FK_Reclamation_Id;
+        RETURN;
+    END
+    
+    RAISERROR('Action non autorisée', 16, 1);
+    RETURN;
+END
 GO

@@ -34,38 +34,38 @@ const handleSend = () => {
         <History class="w-12 h-12 text-slate-200 animate-spin" />
       </div>
       <div v-else class="max-w-4xl mx-auto space-y-1">
-        <div v-for="(msg, index) in messages" :key="msg.id" 
+        <div v-for="(msg, index) in messages" :key="msg.Id" 
           class="flex flex-col"
           :class="[
-            msg.sender === 'user' ? 'items-end' : 'items-start',
-            index > 0 && messages[index-1].sender === msg.sender && messages[index-1].time === msg.time ? 'mt-1' : 'mt-4'
+            (msg.sender === 'user' || msg.Nature === 'C') ? 'items-end' : 'items-start',
+            index > 0 && (messages[index-1].sender === msg.sender || messages[index-1].Nature === msg.Nature) && messages[index-1].DateMessage === msg.DateMessage ? 'mt-1' : 'mt-4'
           ]"
         >
-          <div class="flex items-end gap-3 max-w-[85%]" :class="msg.sender === 'user' ? 'flex-row-reverse' : 'flex-row'">
+          <div class="flex items-end gap-3 max-w-[85%]" :class="(msg.sender === 'user' || msg.Nature === 'C') ? 'flex-row-reverse' : 'flex-row'">
             <div class="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 shadow-sm transition-all"
               :class="[
-                msg.sender === 'user' ? 'bg-slate-900 text-white' : 'bg-white border border-slate-200 text-slate-400',
-                index < messages.length - 1 && messages[index+1].sender === msg.sender && messages[index+1].time === msg.time ? 'opacity-0 scale-0' : 'opacity-100 scale-100'
+                (msg.sender === 'user' || msg.Nature === 'C') ? 'bg-slate-900 text-white' : 'bg-white border border-slate-200 text-slate-400',
+                index < messages.length - 1 && (messages[index+1].sender === msg.sender || messages[index+1].Nature === msg.Nature) && messages[index+1].DateMessage === msg.DateMessage ? 'opacity-0 scale-0' : 'opacity-100 scale-100'
               ]"
             >
-              <User v-if="msg.sender === 'user'" class="w-5 h-5" />
+              <User v-if="(msg.sender === 'user' || msg.Nature === 'C')" class="w-5 h-5" />
               <ShieldCheck v-else class="w-5 h-5 text-slate-900" />
             </div>
 
-            <div class="flex flex-col" :class="msg.sender === 'user' ? 'items-end' : 'items-start'">
+            <div class="flex flex-col" :class="(msg.sender === 'user' || msg.Nature === 'C') ? 'items-end' : 'items-start'">
               <div class="px-6 py-4 rounded-[1.5rem] text-sm font-bold leading-relaxed shadow-sm transition-all"
                 :class="[
-                  msg.sender === 'user' ? 'bg-slate-900 text-white' : 'bg-white text-slate-700 border border-slate-100',
-                  msg.sender === 'user' 
-                    ? (index < messages.length - 1 && messages[index+1].sender === msg.sender && messages[index+1].time === msg.time ? 'rounded-tr-[1.5rem]' : 'rounded-tr-none')
-                    : (index < messages.length - 1 && messages[index+1].sender === msg.sender && messages[index+1].time === msg.time ? 'rounded-tl-[1.5rem]' : 'rounded-tl-none')
+                  (msg.sender === 'user' || msg.Nature === 'C') ? 'bg-slate-900 text-white' : 'bg-white text-slate-700 border border-slate-100',
+                  (msg.sender === 'user' || msg.Nature === 'C') 
+                    ? (index < messages.length - 1 && (messages[index+1].sender === msg.sender || messages[index+1].Nature === msg.Nature) && messages[index+1].DateMessage === msg.DateMessage ? 'rounded-tr-[1.5rem]' : 'rounded-tr-none')
+                    : (index < messages.length - 1 && (messages[index+1].sender === msg.sender || messages[index+1].Nature === msg.Nature) && messages[index+1].DateMessage === msg.DateMessage ? 'rounded-tl-[1.5rem]' : 'rounded-tl-none')
                 ]"
               >
-                {{ msg.text }}
+                {{ msg.Message || msg.text }}
               </div>
-              <span v-if="!(index < messages.length - 1 && messages[index+1].sender === msg.sender && messages[index+1].time === msg.time)" 
+              <span v-if="!(index < messages.length - 1 && (messages[index+1].sender === msg.sender || messages[index+1].Nature === msg.Nature) && messages[index+1].DateMessage === msg.DateMessage)" 
                 class="text-[10px] font-black text-slate-300 mt-2 uppercase tracking-widest px-1">
-                {{ msg.sender === 'user' ? 'Vous' : 'Conseiller IBS' }} • {{ msg.time }}
+                {{ (msg.sender === 'user' || msg.Nature === 'C') ? 'Vous' : 'Conseiller IBS' }} • {{ msg.DateMessage ? new Date(msg.DateMessage).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : msg.time }}
               </span>
             </div>
           </div>

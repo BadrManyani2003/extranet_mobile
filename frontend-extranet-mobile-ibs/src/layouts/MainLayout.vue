@@ -1,14 +1,33 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { FileText, AlertCircle, BarChart3, LifeBuoy } from 'lucide-vue-next'
 import Sidebar from './Sidebar.vue'
 import Header from './Header.vue'
+import { api } from '../lib/api'
 
+const router = useRouter()
 const isMenuOpen = ref(false)
+const hasAccess = ref(true)
+const isLoading = ref(true)
 
 const toggleMenu = () => {
   isMenuOpen.value = !isMenuOpen.value
 }
+
+onMounted(async () => {
+  try {
+    const response = await api.data.getUserInfo()
+    if (String(response?.user?.Extranet).trim().toUpperCase() === 'N') {
+      hasAccess.value = false
+      router.push({ name: 'restricted' })
+    }
+  } catch (error) {
+    console.error('Access check failed in MainLayout:', error)
+  } finally {
+    isLoading.value = false
+  }
+})
 
 const navItems = [
   { section: 'CLIENT' },
@@ -20,7 +39,10 @@ const navItems = [
 </script>
 
 <template>
-  <div class="min-h-screen bg-slate-50 flex font-['Outfit']">
+  <div v-if="isLoading" class="min-h-screen bg-slate-50 flex items-center justify-center">
+    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-900"></div>
+  </div>
+  <div v-else-if="hasAccess" class="min-h-screen bg-slate-50 flex font-['Outfit']">
     <div 
       v-if="isMenuOpen" 
       class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 lg:hidden transition-opacity duration-300"

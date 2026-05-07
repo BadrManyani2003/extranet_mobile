@@ -1,47 +1,75 @@
-const jwt = require('jsonwebtoken');
-const { poolPromise } = require('../config/db');
+const jwt  = require('jsonwebtoken');
+const Common = require('../common/Common');
+const qry    = require('../sql/qryExtranet');
 
 /**
- * Auth Middleware
- * Verifies JWT token and resolves the internal database ID from Keycloak ID (sub)
+ * Middleware d'authentification.
+ * Décode le token Keycloak (Bearer) et résout l'ID interne de l'utilisateur en base.
+ * Expose req.user = { ...payload, id, token }
  */
 module.exports = async (req, res, next) => {
     const authHeader = req.headers.authorization;
 
     if (!authHeader?.startsWith('Bearer ')) {
-        return res.status(401).json({ success: false, message: 'Authorization token missing or malformed.' });
+        return res.status(401).json({ success: false, message: 'Token manquant ou invalide.' });
     }
 
-    const token = authHeader.split(' ')[1];
-    
-    try {
-        // Decode token (standard Keycloak tokens don't always need local secret check if validated by Keycloak)
-        // However, we'll use JWT_SECRET if provided, otherwise decode.
-        const decoded = process.env.JWT_SECRET 
-            ? jwt.verify(token, process.env.JWT_SECRET)
-            : jwt.decode(token);
+    const token   = authHeader.split(' ')[1];
+    const decoded = jwt.decode(token);          // RS256 : pas de clé publique locale → decode uniquement
 
-        if (!decoded || !decoded.sub) {
-            return res.status(401).json({ success: false, message: 'Invalid token payload.' });
+    if (!decoded?.sub) {
+        return res.status(401).json({ success: false, message: 'Payload token invalide.' });
+    }
+
+    try {
+        const result = await Common.getDonnees(qry.getUserByAuthId, [decoded.sub]);
+        const row    = result[0]?.[0];
+
+        // Synchroniser le token en base de données si différent
+        if (row && row.token !== token) {
+            await Common.setDonnees(qry.updateToken, [token, decoded.sub]);
         }
 
-        // Resolve internal ID from DB
-        const pool = await poolPromise;
-        const result = await pool.request()
-            .input('keycloakId', decoded.sub)
-            .query('SELECT Id FROM sysUser WHERE Id_Auth = @keycloakId');
-
-        const rows = result.recordset;
-        
-        // Attach user info to request
-        req.user = { 
-            ...decoded, 
-            id: rows.length > 0 ? rows[0].Id : 0 
+        req.user = {
+            ...decoded,
+            id:    row?.Id ?? 0,   // ID interne (table sysUser)
+            token,                 // Token brut — transmis aux procédures stockées
+            roles: decoded.realm_access?.roles || [],
+            extranet: row?.Extranet || 'N'
         };
+
+        // Bloquer l'accès si l'extranet est désactivé
+        const extranetStatus = String(req.user.extranet).trim().toUpperCase();
+        if (extranetStatus === 'N' && !req.path.includes('/auth/me')) {
+            return res.status(403).json({ 
+                success: false, 
+                message: "Vous n'avez pas l'accès à l'extranet. Veuillez utiliser l'application mobile." 
+            });
+        }
 
         next();
     } catch (err) {
         console.error('❌ Auth Middleware Error:', err.message);
-        return res.status(403).json({ success: false, message: 'Token verification failed.' });
+        return res.status(403).json({ success: false, message: 'Erreur de vérification du token.' });
     }
+};
+
+/**
+ * Middleware factory pour vérifier les rôles.
+ * @param {string|string[]} roles 
+ */
+module.exports.checkRole = (roles) => {
+    return (req, res, next) => {
+        if (!req.user) return res.status(401).json({ success: false, message: 'Non authentifié.' });
+        
+        const userRoles = req.user.roles || [];
+        const allowedRoles = Array.isArray(roles) ? roles : [roles];
+        
+        const hasRole = allowedRoles.some(r => userRoles.includes(r));
+
+        if (!hasRole) {
+            return res.status(403).json({ success: false, message: 'Accès interdit : rôle insuffisant.' });
+        }
+        next();
+    };
 };

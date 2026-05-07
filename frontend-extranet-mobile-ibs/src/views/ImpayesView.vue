@@ -37,16 +37,16 @@ onMounted(() => {
         </TableHeader>
         <TableBody>
           <TableRow v-for="item in items" :key="item.id" class="hover:bg-slate-50/80 transition-colors border-b border-slate-50">
-            <TableCell class="font-bold text-slate-900 py-4">{{ item.police }}</TableCell>
-            <TableCell class="text-sm text-slate-600 font-bold">{{ item.branche }}</TableCell>
+            <TableCell class="font-bold text-slate-900 py-4">{{ item.Police || '-' }}</TableCell>
+            <TableCell class="text-sm text-slate-600 font-bold">{{ item.Branche || '-' }}</TableCell>
             <TableCell>
               <div class="flex items-center gap-2">
                 <FileText class="w-4 h-4 text-slate-400" />
                 <span class="font-black text-slate-800 text-sm">{{ item.numero }}</span>
               </div>
             </TableCell>
-            <TableCell class="text-sm text-slate-600 font-bold">{{ item.dateDebut }}</TableCell>
-            <TableCell class="text-sm text-slate-600 font-bold">{{ item.dateFin }}</TableCell>
+            <TableCell class="text-sm text-slate-600 font-bold">{{ item.dateDebut ? new Date(item.dateDebut).toLocaleDateString() : '-' }}</TableCell>
+            <TableCell class="text-sm text-slate-600 font-bold">{{ item.dateFin ? new Date(item.dateFin).toLocaleDateString() : '-' }}</TableCell>
             <TableCell class="text-sm font-bold text-slate-900 text-right">{{ formatCurrency(item.montantTotal) }}</TableCell>
             <TableCell class="text-sm font-black text-right text-slate-900">{{ formatCurrency(item.montantImpaye) }}</TableCell>
           </TableRow>

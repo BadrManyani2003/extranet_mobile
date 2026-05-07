@@ -1,4 +1,5 @@
 import { ref } from 'vue'
+import { toast } from '@/components/ui/sonner'
 
 export function useFetch<T>(apiMethod: (...args: any[]) => Promise<T>) {
   const data = ref<T | null>(null)
@@ -13,6 +14,7 @@ export function useFetch<T>(apiMethod: (...args: any[]) => Promise<T>) {
       return data.value
     } catch (e: any) {
       error.value = e.message || 'Une erreur est survenue'
+      toast.error(error.value)
       throw e
     } finally {
       loading.value = false

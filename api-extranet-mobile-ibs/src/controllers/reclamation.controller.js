@@ -1,82 +1,67 @@
-/**
- * controllers/reclamation.controller.js
- * Gestion des réclamations et messages.
- */
+const Common = require('../common/Common');
+const qry    = require('../sql/qryExtranet');
 
-const { execSP, getConfig, ok, fail } = require('../common');
-const proc = require('../procedures');
+const ctx = (req) => ({
+    id:     req.user.id,
+    token:  req.user.token,
+    source: req.headers['x-source']
+});
 
-// POST /api/reclamations/list
+// ─── Lecture ──────────────────────────────────────────────────────────────────
+
 const getAll = async (req, res) => {
-    try { 
-        const data = await execSP(proc.reclamations.getAll, getConfig(req));
-        ok(res, data);
-    } catch (err) { fail(res, err); }
+    try {
+        const { id, source, token } = ctx(req);
+        const data = await Common.getDonnees(qry.getReclamations, [id, source, token]);
+        res.json(data[0] || []);
+    } catch (e) { res.status(500).json({ success: false, message: e.message }); }
 };
 
-// POST /api/reclamations/detail
 const getDetail = async (req, res) => {
     try {
-        const { Id = 0, id = 0 } = req.body;
-        const data = await execSP(proc.reclamations.getDetail, { 
-            ...getConfig(req), 
-            FK_Reclamation_Id: Id || id 
-        });
-        ok(res, data);
-    } catch (err) { fail(res, err); }
+        const { id, source, token } = ctx(req);
+        const { reclamationId } = req.body;
+        const data = await Common.getDonnees(qry.getReclamationDetails, [id, source, token, reclamationId]);
+        res.json(data[0] || []);
+    } catch (e) { res.status(500).json({ success: false, message: e.message }); }
 };
 
-// POST /api/reclamations/create
+// ─── Écriture ─────────────────────────────────────────────────────────────────
+
 const create = async (req, res) => {
     try {
-        const { Sujet, sujet, Nature, nature, Message, message } = req.body;
-        const data = await execSP(proc.reclamations.create, { 
-            ...getConfig(req), 
-            Sujet: Sujet || sujet, 
-            Nature: Nature || nature, 
-            Message: Message || message 
-        });
-        ok(res, data);
-    } catch (err) { fail(res, err); }
+        const { id, source, token } = ctx(req);
+        const { sujet, nature, message } = req.body;
+        const data = await Common.setDonnees(qry.createReclamation, [id, source, token, sujet, nature, message]);
+        res.json({ success: true, id: data[0]?.[0]?.Id });
+    } catch (e) { res.status(500).json({ success: false, message: e.message }); }
 };
 
-// POST /api/reclamations/add-message
 const addMessage = async (req, res) => {
     try {
-        const { Id = 0, id = 0, Nature = 'C', nature = 'C', Message, message } = req.body;
-        const data = await execSP(proc.reclamations.addMessage, { 
-            ...getConfig(req), 
-            FK_Reclamation_Id: Id || id, 
-            Nature: Nature || nature, 
-            Message: Message || message 
-        });
-        ok(res, data);
-    } catch (err) { fail(res, err); }
+        const { id, source, token } = ctx(req);
+        const { reclamationId, nature, message } = req.body;
+        await Common.setDonnees(qry.addMessageReclamation, [id, source, token, reclamationId, nature, message]);
+        res.json({ success: true });
+    } catch (e) { res.status(500).json({ success: false, message: e.message }); }
 };
 
-// POST /api/reclamations/update-statut
 const updateStatut = async (req, res) => {
     try {
-        const { Id = 0, Statut } = req.body;
-        const data = await execSP(proc.reclamations.updateStatut, { 
-            ...getConfig(req), 
-            FK_Reclamation_Id: Id, 
-            Statut 
-        });
-        ok(res, data);
-    } catch (err) { fail(res, err); }
+        const { id, source, token } = ctx(req);
+        const { reclamationId, statut } = req.body;
+        await Common.setDonnees(qry.updateReclamationStatut, [id, source, token, reclamationId, statut]);
+        res.json({ success: true });
+    } catch (e) { res.status(500).json({ success: false, message: e.message }); }
 };
 
-// POST /api/reclamations/delete
 const remove = async (req, res) => {
     try {
-        const { Id = 0 } = req.body;
-        const data = await execSP(proc.reclamations.delete, { 
-            ...getConfig(req), 
-            FK_Reclamation_Id: Id 
-        });
-        ok(res, data);
-    } catch (err) { fail(res, err); }
+        const { id, source, token } = ctx(req);
+        const { reclamationId } = req.body;
+        await Common.setDonnees(qry.deleteReclamation, [id, source, token, reclamationId]);
+        res.json({ success: true });
+    } catch (e) { res.status(500).json({ success: false, message: e.message }); }
 };
 
 module.exports = { getAll, getDetail, create, addMessage, updateStatut, remove };
