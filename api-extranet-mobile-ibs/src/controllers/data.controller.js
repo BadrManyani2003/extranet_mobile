@@ -1,89 +1,71 @@
-const common = require('../utils/common');
-const response = require('../utils/response');
-const { formatPolices } = require('../utils/formatters');
+/**
+ * controllers/data.controller.js
+ * Données utilisateur : polices, stats, impayés.
+ * Pure relay DB → client. Zéro logique métier.
+ */
 
-const getConfig = (req) => ({
-    Source: (req.body.Source || req.headers['x-source'] || 'M').charAt(0).toUpperCase(),
-    Token: req.body.Token || req.headers.authorization?.split(' ')[1] || ''
-});
+const { execSP, getConfig, ok, fail } = require('../common');
+const proc = require('../procedures');
 
-const getPolices = async (req, res) => {
-    try {
-        const config = getConfig(req);
-        const polices = await common.executeps('sp_GetPolices', req.body, config);
-        const enriched = await formatPolices({ ...req.body, ...config }, polices);
-        response.success(res, enriched);
-    } catch (error) { response.error(res, error); }
+// POST /api/data/polices
+const polices = async (req, res) => {
+    try { 
+        const data = await execSP(proc.data.polices, getConfig(req));
+        ok(res, data);
+    } catch (err) { fail(res, err); }
 };
 
-const getGlobalStats = async (req, res) => {
-    try {
-        const stats = await common.executeps('sp_GetStats', req.body, getConfig(req));
-        const s = stats[0] || {};
-        response.success(res, [
-            { id: 1, title: 'total_policies', value: (s.TotalPolices || 0).toString(), change: '+2%', icon: 'ShieldCheck', color: 'text-slate-900', bg: 'bg-slate-100' },
-            { id: 2, title: 'pending_claims', value: (s.SinistresEnCours || 0).toString(), change: '0%', icon: 'Activity', color: 'text-slate-600', bg: 'bg-slate-50' },
-            { id: 3, title: 'total_unpaid', value: `${(s.TotalImpayes || 0).toLocaleString()} MAD`, change: '-5%', icon: 'AlertCircle', color: 'text-slate-900', bg: 'bg-slate-200' }
-        ]);
-    } catch (error) { response.error(res, error); }
+// POST /api/data/stats
+const stats = async (req, res) => {
+    try { 
+        const data = await execSP(proc.data.stats, getConfig(req));
+        ok(res, data);
+    } catch (err) { fail(res, err); }
 };
 
-const getUnpaid = async (req, res) => {
+// POST /api/data/quittances
+const quittances = async (req, res) => {
     try {
-        const data = await common.executeps('sp_GetQuittances', { FK_Police_Id: 0, ...req.body }, getConfig(req));
-        const unpaid = data.filter(q => q.Solde > 0).map((q, idx) => ({
-            id: idx + 1,
-            police: q.Police,
-            branche: q.Branche,
-            numero: q.NumQuittance,
-            montantImpaye: q.Solde
-        }));
-        response.success(res, unpaid);
-    } catch (error) { response.error(res, error); }
+        const { FK_Police_Id = 0 } = req.body;
+        const data = await execSP(proc.data.quittances, { ...getConfig(req), FK_Police_Id });
+        ok(res, data);
+    } catch (err) { fail(res, err); }
 };
 
-const getReclamations = async (req, res) => {
+// POST /api/data/sinistres
+const sinistres = async (req, res) => {
     try {
-        const data = await common.executeps('sp_GetReclamations', req.body, getConfig(req));
-        response.success(res, data.map(r => ({
-            id: r.Id,
-            sujet: r.Sujet,
-            client: r.Client,
-            date: r.DateReclamation,
-            statut: r.Statut === 'E' ? 'En cours' : r.Statut === 'T' ? 'Traité' : 'Clôturé',
-            nature: r.Nature
-        })));
-    } catch (error) { response.error(res, error); }
+        const { FK_Police_Id = 0 } = req.body;
+        const data = await execSP(proc.data.sinistres, { ...getConfig(req), FK_Police_Id });
+        ok(res, data);
+    } catch (err) { fail(res, err); }
 };
 
-const getMessages = async (req, res) => {
+// POST /api/data/risques
+const risques = async (req, res) => {
     try {
-        const targetId = req.body.id || req.body.Id || req.params.id;
-        const data = await common.executeps('sp_GetReclamationDetails', { FK_Reclamation_Id: targetId, ...req.body }, getConfig(req));
-        response.success(res, data.map(m => ({
-            id: m.Id,
-            text: m.Message,
-            sender: m.Nature === 'C' ? 'user' : 'admin',
-            time: m.DateMessage ? new Date(m.DateMessage).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : ''
-        })));
-    } catch (error) { response.error(res, error); }
+        const { FK_Police_Id = 0 } = req.body;
+        const data = await execSP(proc.data.risques, { ...getConfig(req), FK_Police_Id });
+        ok(res, data);
+    } catch (err) { fail(res, err); }
 };
 
-const createReclamation = async (req, res) => {
+// POST /api/data/adherents
+const adherents = async (req, res) => {
     try {
-        const { sujet, nature, message } = req.body;
-        const result = await common.executeps('sp_CreateReclamation', { Sujet: sujet, Nature: nature, Message: message, ...req.body }, getConfig(req));
-        response.success(res, { id: result[0].Id }, 'Réclamation créée avec succès.');
-    } catch (error) { response.error(res, error); }
+        const { FK_Police_Id = 0 } = req.body;
+        const data = await execSP(proc.data.adherents, { ...getConfig(req), FK_Police_Id });
+        ok(res, data);
+    } catch (err) { fail(res, err); }
 };
 
-const sendMessage = async (req, res) => {
+// POST /api/data/garanties
+const garanties = async (req, res) => {
     try {
-        const targetId = req.body.id || req.body.Id || req.params.id;
-        const { message, nature } = req.body;
-        await common.executeps('sp_AddMessageReclamation', { FK_Reclamation_Id: targetId, Nature: nature || 'C', Message: message, ...req.body }, getConfig(req));
-        response.success(res, null, 'Message envoyé.');
-    } catch (error) { response.error(res, error); }
+        const { FK_Risque_Id = 0 } = req.body;
+        const data = await execSP(proc.data.garanties, { ...getConfig(req), FK_Risque_Id });
+        ok(res, data);
+    } catch (err) { fail(res, err); }
 };
 
-module.exports = { getPolices, getGlobalStats, getUnpaid, getReclamations, getMessages, createReclamation, sendMessage };
+module.exports = { polices, stats, quittances, sinistres, risques, adherents, garanties };

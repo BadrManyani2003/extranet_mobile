@@ -23,9 +23,10 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     const tokenParsed = keycloak.tokenParsed as any
     const userId = tokenParsed?.sub_id || tokenParsed?.id || tokenParsed?.sub || 1
     
+    headers.set('Authorization', `Bearer ${token}`)
+
     body = {
       ...body,
-      FK_User_Id: userId,
       Source: 'M',
       Token: token
     }
@@ -49,13 +50,13 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
 
 export const api = {
   data: {
-    getPolices: () => request<any[]>('/data/policies'),
-    getImpayes: () => request<any[]>('/data/unpaid'),
+    getPolices: () => request<any[]>('/data/polices'),
+    getImpayes: () => request<any[]>('/data/quittances'),
     getStats: () => request<any[]>('/data/stats'),
-    getReclamations: () => request<any[]>('/data/reclamations'),
-    getMessages: (id: string | number) => request<any[]>('/data/messages', { body: JSON.stringify({ id }) }),
-    createReclamation: (body: any) => request<any>('/data/reclamation/create', { body: JSON.stringify(body) }),
-    sendMessage: (id: string | number, body: any) => request<any>('/data/reclamation/send-message', { body: JSON.stringify({ ...body, id }) })
+    getReclamations: () => request<any[]>('/reclamations/list'),
+    getMessages: (Id: string | number) => request<any[]>('/reclamations/detail', { body: JSON.stringify({ Id }) }),
+    createReclamation: (body: any) => request<any>('/reclamations/create', { body: JSON.stringify(body) }),
+    sendMessage: (Id: string | number, body: any) => request<any>('/reclamations/add-message', { body: JSON.stringify({ ...body, Id }) })
   },
   
   admin: {
@@ -64,8 +65,8 @@ export const api = {
     deleteUser: (Id: number) => request<any>('/admin/users/delete', { body: JSON.stringify({ Id }) }),
     syncKeycloak: (Id: number) => request<any>('/admin/users/sync-keycloak', { body: JSON.stringify({ Id }) }),
     getClients: (filters = {}) => request<any[]>('/admin/clients', { body: JSON.stringify(filters) }),
-    createUserFromClient: (Id: number) => request<any>('/admin/clients/create-user', { body: JSON.stringify({ Id }) }),
+    createUserFromClient: (FK_Client_Id: number) => request<any>('/admin/clients/create-user', { body: JSON.stringify({ FK_Client_Id }) }),
     getAdherents: (filters = {}) => request<any[]>('/admin/adherents', { body: JSON.stringify(filters) }),
-    createUserFromAdherent: (Id: number) => request<any>('/admin/adherents/create-user', { body: JSON.stringify({ Id }) })
+    createUserFromAdherent: (FK_Adherent_Id: number) => request<any>('/admin/adherents/create-user', { body: JSON.stringify({ FK_Adherent_Id }) })
   }
 }

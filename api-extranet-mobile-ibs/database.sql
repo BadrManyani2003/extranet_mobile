@@ -30,7 +30,7 @@ CREATE TABLE dbo.sysUser
 (
     Id INT NOT NULL IDENTITY(1,1),
     Id_Auth VARCHAR(255) NULL,
-    token VARCHAR(1000) NULL,
+    token VARCHAR(MAX) NULL,
     Nom VARCHAR(255) NOT NULL,
     Telephone VARCHAR(20) NULL,
     Email VARCHAR(255) NULL,
@@ -312,7 +312,7 @@ CREATE TABLE dbo.ReclamationsDet
 GO
 
 CREATE NONCLUSTERED INDEX IX_sysUser_Email ON dbo.sysUser(Email);
-CREATE NONCLUSTERED INDEX IX_sysUser_Token ON dbo.sysUser(token);
+-- CREATE NONCLUSTERED INDEX IX_sysUser_Token ON dbo.sysUser(token); -- Removed because VARCHAR(MAX) cannot be indexed
 CREATE NONCLUSTERED INDEX IX_Postes_Autorises_User ON dbo.Postes_Autorises(FK_User_Id);
 CREATE NONCLUSTERED INDEX IX_userConnection_User ON dbo.userConnection(FK_User_Id);
 CREATE NONCLUSTERED INDEX IX_userConnection_Date ON dbo.userConnection(DateConnection);
@@ -343,7 +343,7 @@ GO
 CREATE PROCEDURE dbo.sp_GetPolices
     @FK_User_Id INT,
     @Source CHAR(1),
-    @Token VARCHAR(1000)
+    @Token VARCHAR(MAX)
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -376,7 +376,7 @@ GO
 CREATE PROCEDURE dbo.sp_GetSinistres
     @FK_User_Id INT,
     @Source CHAR(1),
-    @Token VARCHAR(1000),
+    @Token VARCHAR(MAX),
     @FK_Police_Id INT
 AS
 BEGIN
@@ -411,7 +411,7 @@ GO
 CREATE PROCEDURE dbo.sp_GetSinistresEncour
     @FK_User_Id INT,
     @Source CHAR(1),
-    @Token VARCHAR(1000),
+    @Token VARCHAR(MAX),
     @FK_Police_Id INT
 AS
 BEGIN
@@ -447,7 +447,7 @@ GO
 CREATE PROCEDURE dbo.sp_GetRisques
     @FK_User_Id INT,
     @Source CHAR(1),
-    @Token VARCHAR(1000),
+    @Token VARCHAR(MAX),
     @FK_Police_Id INT
 AS
 BEGIN
@@ -480,7 +480,7 @@ GO
 CREATE PROCEDURE dbo.sp_GetQuittances
     @FK_User_Id INT,
     @Source CHAR(1),
-    @Token VARCHAR(1000),
+    @Token VARCHAR(MAX),
     @FK_Police_Id INT
 AS
 BEGIN
@@ -514,7 +514,7 @@ GO
 CREATE PROCEDURE dbo.sp_GetImpayes
     @FK_User_Id INT,
     @Source CHAR(1),
-    @Token VARCHAR(1000),
+    @Token VARCHAR(MAX),
     @FK_Police_Id INT,
     @Encour CHAR(1)
 AS
@@ -549,7 +549,7 @@ GO
 CREATE PROCEDURE dbo.sp_GetAdherents
     @FK_User_Id INT,
     @Source CHAR(1),
-    @Token VARCHAR(1000),
+    @Token VARCHAR(MAX),
     @FK_Police_Id INT
 AS
 BEGIN
@@ -587,7 +587,7 @@ GO
 CREATE PROCEDURE dbo.sp_GetPersACharge
     @FK_User_Id INT,
     @Source CHAR(1),
-    @Token VARCHAR(1000),
+    @Token VARCHAR(MAX),
     @FK_Adherent_Id INT
 AS
 BEGIN
@@ -623,7 +623,7 @@ GO
 CREATE PROCEDURE dbo.sp_GetGarantiesByRisque
     @FK_User_Id INT,
     @Source CHAR(1),
-    @Token VARCHAR(1000),
+    @Token VARCHAR(MAX),
     @FK_Risque_Id INT
 AS
 BEGIN
@@ -656,7 +656,7 @@ GO
 CREATE OR ALTER PROCEDURE dbo.sp_GetReclamations
     @FK_User_Id INT,
     @Source CHAR(1),
-    @Token VARCHAR(1000)
+    @Token VARCHAR(MAX)
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -684,7 +684,7 @@ GO
 CREATE PROCEDURE dbo.sp_GetReclamationDetails
     @FK_User_Id INT,
     @Source CHAR(1),
-    @Token VARCHAR(1000),
+    @Token VARCHAR(MAX),
     @FK_Reclamation_Id INT
 AS
 BEGIN
@@ -717,7 +717,7 @@ GO
 CREATE PROCEDURE dbo.sp_CreateReclamation
     @FK_User_Id INT,
     @Source CHAR(1),
-    @Token VARCHAR(1000),
+    @Token VARCHAR(MAX),
     @Sujet VARCHAR(255),
     @Nature CHAR(1),
     @Message VARCHAR(2000)
@@ -747,7 +747,7 @@ GO
 CREATE PROCEDURE dbo.sp_AddMessageReclamation
     @FK_User_Id INT,
     @Source CHAR(1),
-    @Token VARCHAR(1000),
+    @Token VARCHAR(MAX),
     @FK_Reclamation_Id INT,
     @Nature CHAR(1),
     @Message VARCHAR(2000)
@@ -778,7 +778,7 @@ GO
 CREATE PROCEDURE dbo.sp_UpdateReclamationStatus
     @FK_User_Id INT,
     @Source CHAR(1),
-    @Token VARCHAR(1000),
+    @Token VARCHAR(MAX),
     @FK_Reclamation_Id INT,
     @Statut CHAR(1)
 AS
@@ -805,7 +805,7 @@ GO
 
 CREATE OR ALTER PROCEDURE dbo.ps_SaveUser
     @FK_User_Id    INT,
-    @Token         VARCHAR(1000),
+    @Token         VARCHAR(MAX),
     @Source        VARCHAR(50),
     @FK_Target_Id  INT,
     @Id_Auth       VARCHAR(255),
@@ -837,7 +837,7 @@ GO
 
 CREATE OR ALTER PROCEDURE dbo.ps_DeleteUser
     @FK_User_Id    INT,
-    @Token         VARCHAR(1000),
+    @Token         VARCHAR(MAX),
     @Source        VARCHAR(50),
     @FK_Delete_Id  INT
 AS
@@ -852,7 +852,7 @@ GO
 
 CREATE OR ALTER PROCEDURE dbo.ps_GetClients
     @FK_User_Id   INT,
-    @Token        VARCHAR(1000),
+    @Token        VARCHAR(MAX),
     @Source       VARCHAR(50)
 AS
 BEGIN
@@ -875,7 +875,7 @@ GO
 
 CREATE OR ALTER PROCEDURE dbo.ps_CreateUserFromClient
     @FK_User_Id   INT,
-    @Token        VARCHAR(1000),
+    @Token        VARCHAR(MAX),
     @Source       VARCHAR(50),
     @FK_Client_Id INT
 AS
@@ -893,7 +893,7 @@ GO
 
 CREATE OR ALTER PROCEDURE dbo.ps_CreateUserFromAdherent
     @FK_User_Id     INT,
-    @Token          VARCHAR(1000),
+    @Token          VARCHAR(MAX),
     @Source         VARCHAR(50),
     @FK_Adherent_Id INT
 AS
@@ -911,7 +911,7 @@ GO
 
 CREATE OR ALTER PROCEDURE dbo.ps_GetUsers
     @FK_User_Id INT,
-    @Token      VARCHAR(1000),
+    @Token      VARCHAR(MAX),
     @Source     VARCHAR(50)
 AS
 BEGIN
@@ -923,7 +923,7 @@ GO
 CREATE OR ALTER PROCEDURE dbo.sp_GetStats
     @FK_User_Id INT,
     @Source     CHAR(1),
-    @Token      VARCHAR(1000)
+    @Token      VARCHAR(MAX)
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -955,7 +955,7 @@ GO
 
 CREATE OR ALTER PROCEDURE dbo.ps_GetStatsByPolice
     @FK_User_Id   INT,
-    @Token        VARCHAR(1000),
+    @Token        VARCHAR(MAX),
     @Source       VARCHAR(50),
     @FK_Police_Id INT
 AS

@@ -1,17 +1,14 @@
-const express = require('express');
-const router = express.Router();
-const reclamationController = require('../controllers/reclamation.controller');
-const authMiddleware = require('../middlewares/auth.middleware');
+const router = require('express').Router();
+const ctrl   = require('../controllers/reclamation.controller');
+const auth   = require('../middleware/auth');
 
-// All routes require authentication
-router.use(authMiddleware);
+router.use(auth);
 
-// All methods changed to POST to support parameters in req.body
-router.post('/list', reclamationController.getReclamations);
-router.post('/detail', reclamationController.getReclamationDetail);
-router.post('/create', reclamationController.createReclamation);
-router.post('/add-message', reclamationController.addMessage);
-router.post('/update-statut', reclamationController.updateStatut);
-router.post('/delete', reclamationController.deleteReclamation);
+router.post('/list',          ctrl.getAll);
+router.post('/detail',        ctrl.getDetail);
+router.post('/create',        ctrl.create);
+router.post('/add-message',   ctrl.addMessage);
+router.post('/update-statut', ctrl.updateStatut);
+router.post('/delete',        ctrl.remove);
 
 module.exports = router;

@@ -20,7 +20,7 @@ const db = {
         });
 
         const result = await request.execute(procedureName);
-        return result.recordset;
+        return result.recordset || [];
     },
 
     query: async (queryString, params = []) => {
@@ -35,7 +35,7 @@ const db = {
         });
 
         const result = await request.query(queryString);
-        return result.recordset;
+        return result.recordset || [];
     }
 };
 

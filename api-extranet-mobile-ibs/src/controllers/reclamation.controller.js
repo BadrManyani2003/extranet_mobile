@@ -1,86 +1,82 @@
-const common = require('../utils/common');
-const response = require('../utils/response');
+/**
+ * controllers/reclamation.controller.js
+ * Gestion des réclamations et messages.
+ */
 
-const getConfig = (req) => ({
-    Source: (req.body.Source || req.headers['x-source'] || 'M').charAt(0).toUpperCase(),
-    Token: req.body.Token || req.headers.authorization?.split(' ')[1] || ''
-});
+const { execSP, getConfig, ok, fail } = require('../common');
+const proc = require('../procedures');
 
-const getReclamations = async (req, res) => {
-    try {
-        const data = await common.executeps('sp_GetReclamations', req.body, getConfig(req));
-        response.success(res, data.map(r => ({
-            id: r.Id,
-            client: r.Client,
-            date: r.DateReclamation,
-            sujet: r.Sujet,
-            statut: r.Statut === 'E' ? 'En cours' : r.Statut === 'T' ? 'Traité' : 'Clôturé',
-            nature: r.Nature
-        })));
-    } catch (error) { response.error(res, error); }
+// POST /api/reclamations/list
+const getAll = async (req, res) => {
+    try { 
+        const data = await execSP(proc.reclamations.getAll, getConfig(req));
+        ok(res, data);
+    } catch (err) { fail(res, err); }
 };
 
-const getReclamationDetail = async (req, res) => {
+// POST /api/reclamations/detail
+const getDetail = async (req, res) => {
     try {
-        const targetId = req.body.id || req.body.Id || req.body.reclamationId || req.params.id;
-        const data = await common.executeps('sp_GetReclamationDetails', { FK_Reclamation_Id: targetId, ...req.body }, getConfig(req));
-        
-        if (data.length === 0) {
-            return response.error(res, 'Réclamation non trouvée', 404);
-        }
-
-        response.success(res, {
-            id: targetId,
-            messages: data.map(m => ({
-                id: m.Id,
-                date: m.DateMessage,
-                nature: m.Nature,
-                message: m.Message,
-                auteur: m.Envoyeur
-            }))
+        const { Id = 0, id = 0 } = req.body;
+        const data = await execSP(proc.reclamations.getDetail, { 
+            ...getConfig(req), 
+            FK_Reclamation_Id: Id || id 
         });
-    } catch (error) { response.error(res, error); }
+        ok(res, data);
+    } catch (err) { fail(res, err); }
 };
 
-const createReclamation = async (req, res) => {
+// POST /api/reclamations/create
+const create = async (req, res) => {
     try {
-        const { sujet, nature, message } = req.body;
-        const result = await common.executeps('sp_CreateReclamation', { Sujet: sujet, Nature: nature, Message: message, ...req.body }, getConfig(req));
-        response.success(res, { id: result[0].Id }, 'Réclamation créée avec succès.');
-    } catch (error) { response.error(res, error); }
+        const { Sujet, sujet, Nature, nature, Message, message } = req.body;
+        const data = await execSP(proc.reclamations.create, { 
+            ...getConfig(req), 
+            Sujet: Sujet || sujet, 
+            Nature: Nature || nature, 
+            Message: Message || message 
+        });
+        ok(res, data);
+    } catch (err) { fail(res, err); }
 };
 
+// POST /api/reclamations/add-message
 const addMessage = async (req, res) => {
     try {
-        const targetId = req.body.id || req.body.Id || req.body.reclamationId || req.params.id;
-        const { message, nature } = req.body;
-        await common.executeps('sp_AddMessageReclamation', { FK_Reclamation_Id: targetId, Nature: nature || 'C', Message: message, ...req.body }, getConfig(req));
-        response.success(res, null, 'Message ajouté.');
-    } catch (error) { response.error(res, error); }
+        const { Id = 0, id = 0, Nature = 'C', nature = 'C', Message, message } = req.body;
+        const data = await execSP(proc.reclamations.addMessage, { 
+            ...getConfig(req), 
+            FK_Reclamation_Id: Id || id, 
+            Nature: Nature || nature, 
+            Message: Message || message 
+        });
+        ok(res, data);
+    } catch (err) { fail(res, err); }
 };
 
+// POST /api/reclamations/update-statut
 const updateStatut = async (req, res) => {
     try {
-        const targetId = req.body.id || req.body.Id || req.body.reclamationId || req.params.id;
-        const { statut } = req.body;
-        await common.executeps('sp_UpdateReclamationStatus', { FK_Reclamation_Id: targetId, Statut: statut, ...req.body }, getConfig(req));
-        response.success(res, null, 'Statut mis à jour.');
-    } catch (error) { response.error(res, error); }
+        const { Id = 0, Statut } = req.body;
+        const data = await execSP(proc.reclamations.updateStatut, { 
+            ...getConfig(req), 
+            FK_Reclamation_Id: Id, 
+            Statut 
+        });
+        ok(res, data);
+    } catch (err) { fail(res, err); }
 };
 
-const deleteReclamation = async (req, res) => {
+// POST /api/reclamations/delete
+const remove = async (req, res) => {
     try {
-        const targetId = req.body.id || req.body.Id || req.body.reclamationId;
-        await common.executeps('sp_DeleteReclamation', { FK_Reclamation_Id: targetId, ...req.body }, getConfig(req));
-        response.success(res, null, 'Réclamation supprimée.');
-    } catch (error) { response.error(res, error); }
+        const { Id = 0 } = req.body;
+        const data = await execSP(proc.reclamations.delete, { 
+            ...getConfig(req), 
+            FK_Reclamation_Id: Id 
+        });
+        ok(res, data);
+    } catch (err) { fail(res, err); }
 };
 
-module.exports = {
-    getReclamations,
-    getReclamationDetail,
-    createReclamation,
-    addMessage,
-    updateStatut,
-    deleteReclamation
-};
+module.exports = { getAll, getDetail, create, addMessage, updateStatut, remove };

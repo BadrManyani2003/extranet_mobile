@@ -1,14 +1,9 @@
-const express = require('express');
-const router = express.Router();
+const router = require('express').Router();
 
-const authRoutes = require('./auth.routes');
-const dataRoutes = require('./data.routes');
-const reclamationRoutes = require('./reclamation.routes');
-const adminRoutes = require('./admin.routes');
-
-router.use('/auth', authRoutes);
-router.use('/data', dataRoutes);
-router.use('/reclamations', reclamationRoutes);
-router.use('/admin', adminRoutes);
+router.use('/auth',        require('./auth.routes'));
+router.use('/data',        require('./data.routes'));
+router.use('/reclamations',require('./reclamation.routes'));
+router.use('/admin',       require('./admin.routes'));
+router.use('/user',        require('./userRoutes'));
 
 module.exports = router;

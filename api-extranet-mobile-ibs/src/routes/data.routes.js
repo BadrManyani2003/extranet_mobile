@@ -1,14 +1,15 @@
-const express = require('express');
-const router = express.Router();
-const dataController = require('../controllers/data.controller');
-const authMiddleware = require('../middlewares/auth.middleware');
+const router = require('express').Router();
+const ctrl   = require('../controllers/data.controller');
+const auth   = require('../middleware/auth');
 
-router.post('/policies', authMiddleware, dataController.getPolices);
-router.post('/unpaid', authMiddleware, dataController.getUnpaid);
-router.post('/stats', authMiddleware, dataController.getGlobalStats);
-router.post('/reclamations', authMiddleware, dataController.getReclamations);
-router.post('/messages', authMiddleware, dataController.getMessages);
-router.post('/reclamation/create', authMiddleware, dataController.createReclamation);
-router.post('/reclamation/send-message', authMiddleware, dataController.sendMessage);
+router.use(auth);
+
+router.post('/polices',    ctrl.polices);
+router.post('/stats',      ctrl.stats);
+router.post('/quittances', ctrl.quittances);
+router.post('/sinistres',  ctrl.sinistres);
+router.post('/risques',    ctrl.risques);
+router.post('/adherents',  ctrl.adherents);
+router.post('/garanties',  ctrl.garanties);
 
 module.exports = router;

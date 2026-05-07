@@ -1,78 +1,79 @@
-const db = require('../utils/db');
-const response = require('../utils/response');
-const keycloakService = require('../services/keycloak.service');
+/**
+ * controllers/auth.controller.js
+ * Gestion de l'authentification via Keycloak.
+ */
 
+const { execSP, getConfig, ok, fail } = require('../common');
+const proc   = require('../procedures');
+const kc     = require('../services/keycloak.service');
+const qs     = require('qs');
+const axios  = require('axios');
+const { poolPromise } = require('../config/db');
+
+// POST /api/auth/login
 const login = async (req, res) => {
     const { username, password } = req.body;
-
-    if (!username || !password) {
-        return response.error(res, 'Identifiants requis', 400);
-    }
+    if (!username || !password) return res.status(400).json({ success: false, message: 'Identifiants requis.' });
 
     try {
-        const tokenData = await keycloakService.getToken(username, password);
-        const result = await db.query('SELECT Id, Nom, Email, Mobile FROM sysUser WHERE Email = @0 OR Nom = @0', [username]);
-
-        if (result.length === 0) {
-            return response.success(res, {
-                ...tokenData,
-                user: { username, status: 'external' }
-            });
-        }
-
-        const user = result[0];
-        response.success(res, {
-            ...tokenData,
-            user: {
-                id: user.Id,
-                nom: user.Nom,
-                email: user.Email,
-                mobile: user.Mobile
-            }
+        // 1. Obtenir le token Keycloak
+        const data = qs.stringify({
+            grant_type:    'password',
+            client_id:     process.env.KEYCLOAK_CLIENT_ID,
+            client_secret: process.env.KEYCLOAK_SECRET,
+            username, password,
+            scope: 'openid'
         });
-    } catch (error) {
-        handleAuthError(res, error, 'La connexion a échoué');
+        const kcRes = await axios.post(
+            `${process.env.KEYCLOAK_AUTH_SERVER_URL}realms/${process.env.KEYCLOAK_REALM}/protocol/openid-connect/token`,
+            data, { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
+        );
+
+        // 2. Récupérer l'utilisateur depuis la DB
+        const pool = await poolPromise;
+        const result = await pool.request()
+            .input('username', username)
+            .query('SELECT Id, Nom, Email, Mobile FROM sysUser WHERE Email = @username OR Nom = @username');
+            
+        const users = result.recordset;
+
+        ok(res, { ...kcRes.data, user: users[0] || { username } });
+    } catch (err) {
+        const status  = err.response?.status || 500;
+        const message = err.response?.data?.error === 'invalid_grant'
+            ? 'Identifiants invalides.'
+            : err.response?.data?.error_description || 'Connexion échouée.';
+        res.status(status).json({ success: false, message });
     }
 };
 
-const refreshToken = async (req, res) => {
+// POST /api/auth/refresh
+const refresh = async (req, res) => {
     const { refresh_token } = req.body;
-    if (!refresh_token) {
-        return response.error(res, 'Refresh token requis', 400);
-    }
+    if (!refresh_token) return res.status(400).json({ success: false, message: 'Refresh token requis.' });
 
     try {
-        const data = await keycloakService.refreshToken(refresh_token);
-        response.success(res, data);
-    } catch (error) {
-        handleAuthError(res, error, 'La mise à jour du token a échoué');
-    }
+        const data = qs.stringify({
+            grant_type:    'refresh_token',
+            client_id:     process.env.KEYCLOAK_CLIENT_ID,
+            client_secret: process.env.KEYCLOAK_SECRET,
+            refresh_token
+        });
+        const kcRes = await axios.post(
+            `${process.env.KEYCLOAK_AUTH_SERVER_URL}realms/${process.env.KEYCLOAK_REALM}/protocol/openid-connect/token`,
+            data, { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
+        );
+        ok(res, kcRes.data);
+    } catch (err) { fail(res, err); }
 };
 
-const getMe = async (req, res) => {
+// POST /api/auth/me  (authentifié)
+const me = async (req, res) => {
     try {
-        const id = req.body.id || req.body.Id || req.user?.id;
-        const result = await db.query('SELECT * FROM sysUser WHERE Id = @0', [id]);
-        
-        if (result.length === 0) {
-            return response.error(res, 'Utilisateur non trouvé', 404);
-        }
-
-        response.success(res, result[0]);
-    } catch (error) { response.error(res, error); }
+        const rows = await execSP(proc.auth.getMe, getConfig(req));
+        if (!rows.length) return res.status(404).json({ success: false, message: 'Utilisateur non trouvé.' });
+        ok(res, rows[0]);
+    } catch (err) { fail(res, err); }
 };
 
-const handleAuthError = (res, err, defaultMsg) => {
-    if (err.code === 'ECONNREFUSED' || err.code === 'ENOTFOUND') {
-        return response.error(res, 'Le serveur d\'authentification (Keycloak) est injoignable.', 503);
-    }
-    
-    const status = err.response?.status || 500;
-    let message = defaultMsg;
-    if (err.response?.data) {
-        message = err.response.data.error === 'invalid_grant' ? 'Identifiants invalides' : err.response.data.error_description || message;
-    }
-    response.error(res, message, status);
-};
-
-module.exports = { login, refreshToken, getMe };
+module.exports = { login, refresh, me };

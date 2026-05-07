@@ -1,122 +1,121 @@
-const common = require('../utils/common');
-const response = require('../utils/response');
-const keycloakService = require('../services/keycloak.service');
-const db = require('../utils/db');
+/**
+ * controllers/admin.controller.js
+ * Administration : utilisateurs, clients, adhérents.
+ */
 
-const getConfig = (req) => ({
-    Source: (req.body.Source || req.headers['x-source'] || 'C').charAt(0).toUpperCase(),
-    Token: req.body.Token || req.headers.authorization?.split(' ')[1] || ''
-});
+const { execSP, getConfig, ok, fail } = require('../common');
+const proc = require('../procedures');
+const kc   = require('../services/keycloak.service');
+const { poolPromise } = require('../config/db');
 
+// POST /api/admin/users
 const getUsers = async (req, res) => {
-    try {
-        const data = req.body;
-        const users = await common.executeps('ps_GetUsers', data, getConfig(req));
-        response.success(res, users);
-    } catch (error) { response.error(res, error); }
+    try { 
+        const data = await execSP(proc.admin.getUsers, getConfig(req));
+        ok(res, data);
+    } catch (err) { fail(res, err); }
 };
 
+// POST /api/admin/users/save
 const saveUser = async (req, res) => {
     try {
-        const data = { 
-            ...req.body, 
-            FK_Target_Id: req.body.Id || 0 
-        };
-        await common.executeps('ps_SaveUser', data, getConfig(req));
-        response.success(res, null, 'Utilisateur enregistré.');
-    } catch (error) { response.error(res, error); }
+        const { Id = 0, Id_Auth, Nom, Telephone, Email, Nature, Extranet, Mobile } = req.body;
+        const data = await execSP(proc.admin.saveUser, { 
+            ...getConfig(req), 
+            Id, Id_Auth, Nom, Telephone, Email, Nature, Extranet, Mobile 
+        });
+        ok(res, data);
+    } catch (err) { fail(res, err); }
 };
 
+// POST /api/admin/users/delete
 const deleteUser = async (req, res) => {
     try {
-        const data = { FK_Delete_Id: req.body.Id || req.body.id };
-        await common.executeps('ps_DeleteUser', data, getConfig(req));
-        response.success(res, null, 'Utilisateur supprimé.');
-    } catch (error) { response.error(res, error); }
+        const { Id = 0 } = req.body;
+        const data = await execSP(proc.admin.deleteUser, { 
+            ...getConfig(req), 
+            FK_User_Id_To_Delete: Id 
+        });
+        ok(res, data);
+    } catch (err) { fail(res, err); }
 };
 
+// POST /api/admin/users/sync-keycloak
 const syncKeycloak = async (req, res) => {
     try {
-        const targetId = req.body.Id || req.body.id;
-        const users = await db.query('SELECT * FROM sysUser WHERE Id = @0', [targetId]);
-        if (!users.length) return response.error(res, 'Utilisateur non trouvé', 404);
+        const { Id = 0 } = req.body;
+        const pool = await poolPromise;
         
-        const user = users[0];
-        if (user.Id_Auth) return response.success(res, { keycloakId: user.Id_Auth });
+        // Use parameterized query instead of raw string
+        const result = await pool.request()
+            .input('Id', Id)
+            .query('SELECT * FROM sysUser WHERE Id = @Id');
+            
+        const users = result.recordset;
+        if (!users.length) return res.status(404).json({ success: false, message: 'Utilisateur non trouvé.' });
 
-        const token = await keycloakService.getAdminToken();
-        const keycloakId = await keycloakService.createUser(token, user);
+        const user = users[0];
+        if (user.Id_Auth) return ok(res, { keycloakId: user.Id_Auth });
+
+        const token      = await kc.getAdminToken();
+        const keycloakId = await kc.createUser(token, user);
 
         if (keycloakId) {
-            await db.query('UPDATE sysUser SET Id_Auth = @1 WHERE Id = @0', [targetId, keycloakId]);
-            response.success(res, { keycloakId });
-        } else {
-            throw new Error('Sync failed');
+            await pool.request()
+                .input('keycloakId', keycloakId)
+                .input('Id', Id)
+                .query('UPDATE sysUser SET Id_Auth=@keycloakId WHERE Id=@Id');
         }
-    } catch (error) { response.error(res, error); }
+
+        ok(res, { keycloakId });
+    } catch (err) { fail(res, err); }
 };
 
+// POST /api/admin/clients
 const getClients = async (req, res) => {
-    try {
-        const data = req.body;
-        const clients = await common.executeps('ps_GetClients', data, getConfig(req));
-        response.success(res, clients);
-    } catch (error) { response.error(res, error); }
+    try { 
+        const data = await execSP(proc.admin.getClients, getConfig(req));
+        ok(res, data);
+    } catch (err) { fail(res, err); }
 };
 
+// POST /api/admin/clients/create-user
 const createUserFromClient = async (req, res) => {
     try {
-        const data = { FK_Client_Id: req.body.clientId || req.body.Id };
-        const result = await common.executeps('ps_CreateUserFromClient', data, getConfig(req));
-        response.success(res, result[0]);
-    } catch (error) { response.error(res, error); }
+        const { FK_Client_Id = 0 } = req.body;
+        const data = await execSP(proc.admin.createUserFromClient, { 
+            ...getConfig(req), 
+            FK_Client_Id 
+        });
+        ok(res, data);
+    } catch (err) { fail(res, err); }
 };
 
+// POST /api/admin/adherents
 const getAdherents = async (req, res) => {
     try {
-        const data = { FK_Police_Id: 0, ...req.body };
-        const adherents = await common.executeps('sp_GetAdherents', data, getConfig(req));
-        response.success(res, adherents);
-    } catch (error) { response.error(res, error); }
+        const data = await execSP(proc.admin.getAdherents, { 
+            ...getConfig(req), 
+            FK_Police_Id: 0 
+        });
+        ok(res, data);
+    } catch (err) { fail(res, err); }
 };
 
+// POST /api/admin/adherents/create-user
 const createUserFromAdherent = async (req, res) => {
     try {
-        const data = { FK_Adherent_Id: req.body.adherentId || req.body.Id };
-        const result = await common.executeps('ps_CreateUserFromAdherent', data, getConfig(req));
-        response.success(res, result[0]);
-    } catch (error) { response.error(res, error); }
-};
-
-const getReclamations = async (req, res) => {
-    try {
-        const data = req.body;
-        const reclamations = await common.executeps('sp_GetReclamations', data, getConfig(req));
-        response.success(res, reclamations.map(r => ({
-            id: r.Id,
-            sujet: r.Sujet,
-            client: r.Client,
-            date: r.DateReclamation,
-            statut: r.Statut === 'E' ? 'En cours' : r.Statut === 'T' ? 'Traité' : 'Clôturé',
-            nature: r.Nature
-        })));
-    } catch (error) { response.error(res, error); }
-};
-
-const sendReply = async (req, res) => {
-    try {
-        const { id, Id, message } = req.body;
-        const targetId = id || Id;
-        const config = getConfig(req);
-        await common.executeps('sp_AddMessageReclamation', { FK_Reclamation_Id: targetId, Nature: 'A', Message: message }, config);
-        await common.executeps('sp_UpdateReclamationStatus', { FK_Reclamation_Id: targetId, Statut: 'T' }, config);
-        response.success(res, null, 'Réponse envoyée.');
-    } catch (error) { response.error(res, error); }
+        const { FK_Adherent_Id = 0 } = req.body;
+        const data = await execSP(proc.admin.createUserFromAdherent, { 
+            ...getConfig(req), 
+            FK_Adherent_Id 
+        });
+        ok(res, data);
+    } catch (err) { fail(res, err); }
 };
 
 module.exports = {
     getUsers, saveUser, deleteUser, syncKeycloak,
     getClients, createUserFromClient,
-    getAdherents, createUserFromAdherent,
-    getReclamations, sendReply
+    getAdherents, createUserFromAdherent
 };
