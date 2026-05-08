@@ -9,9 +9,10 @@ const props = defineProps<{
   messages: any[]
   loading: boolean
   selectedTicket: any
+  isCabinet?: boolean
 }>()
 
-const emit = defineEmits(['send'])
+const emit = defineEmits(['send', 'delete-message'])
 const nouveauMessage = ref('')
 const bottom = ref<any>(null)
 
@@ -21,9 +22,13 @@ watch(() => props.messages, async () => {
 }, { deep: true })
 
 const handleSend = () => {
-  if (!nouveauMessage.value.trim()) return
+  if (!nouveauMessage.value.trim() || props.selectedTicket?.statut === 'Clôturé' || props.selectedTicket?.statut === 'C') return
   emit('send', nouveauMessage.value)
   nouveauMessage.value = ''
+}
+
+const handleDelete = (msgId: number) => {
+  emit('delete-message', msgId)
 }
 </script>
 
@@ -34,38 +39,43 @@ const handleSend = () => {
         <History class="w-12 h-12 text-slate-200 animate-spin" />
       </div>
       <div v-else class="max-w-4xl mx-auto space-y-1">
-        <div v-for="(msg, index) in messages" :key="msg.Id" 
+        <div v-for="(msg, index) in messages" :key="msg.id" 
           class="flex flex-col"
           :class="[
-            (msg.sender === 'user' || msg.Nature === 'C') ? 'items-end' : 'items-start',
-            index > 0 && (messages[index-1].sender === msg.sender || messages[index-1].Nature === msg.Nature) && messages[index-1].DateMessage === msg.DateMessage ? 'mt-1' : 'mt-4'
+            (msg.sender === 'user' || msg.nature === 'C') ? 'items-end' : 'items-start',
+            index > 0 && (messages[index-1].sender === msg.sender || messages[index-1].nature === msg.nature) && messages[index-1].dateMessage === msg.dateMessage ? 'mt-1' : 'mt-4'
           ]"
         >
-          <div class="flex items-end gap-3 max-w-[85%]" :class="(msg.sender === 'user' || msg.Nature === 'C') ? 'flex-row-reverse' : 'flex-row'">
+          <div class="flex items-end gap-3 max-w-[85%]" :class="(msg.sender === 'user' || msg.nature === 'C') ? 'flex-row-reverse' : 'flex-row'">
             <div class="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 shadow-sm transition-all"
               :class="[
-                (msg.sender === 'user' || msg.Nature === 'C') ? 'bg-slate-900 text-white' : 'bg-white border border-slate-200 text-slate-400',
-                index < messages.length - 1 && (messages[index+1].sender === msg.sender || messages[index+1].Nature === msg.Nature) && messages[index+1].DateMessage === msg.DateMessage ? 'opacity-0 scale-0' : 'opacity-100 scale-100'
+                (msg.sender === 'user' || msg.nature === 'C') ? 'bg-slate-900 text-white' : 'bg-white border border-slate-200 text-slate-400',
+                index < messages.length - 1 && (messages[index+1].sender === msg.sender || messages[index+1].nature === msg.nature) && messages[index+1].dateMessage === msg.dateMessage ? 'opacity-0 scale-0' : 'opacity-100 scale-100'
               ]"
             >
-              <User v-if="(msg.sender === 'user' || msg.Nature === 'C')" class="w-5 h-5" />
+              <User v-if="(msg.sender === 'user' || msg.nature === 'C')" class="w-5 h-5" />
               <ShieldCheck v-else class="w-5 h-5 text-slate-900" />
             </div>
 
-            <div class="flex flex-col" :class="(msg.sender === 'user' || msg.Nature === 'C') ? 'items-end' : 'items-start'">
+            <div class="flex flex-col relative group" :class="(msg.sender === 'user' || msg.nature === 'C') ? 'items-end' : 'items-start'">
+              <button v-if="index === messages.length - 1 && (selectedTicket?.statut !== 'Clôturé' && selectedTicket?.statut !== 'C')" 
+                @click="handleDelete(msg.id)"
+                class="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg z-10">
+                <span class="text-xs font-bold">×</span>
+              </button>
               <div class="px-6 py-4 rounded-[1.5rem] text-sm font-bold leading-relaxed shadow-sm transition-all"
                 :class="[
-                  (msg.sender === 'user' || msg.Nature === 'C') ? 'bg-slate-900 text-white' : 'bg-white text-slate-700 border border-slate-100',
-                  (msg.sender === 'user' || msg.Nature === 'C') 
-                    ? (index < messages.length - 1 && (messages[index+1].sender === msg.sender || messages[index+1].Nature === msg.Nature) && messages[index+1].DateMessage === msg.DateMessage ? 'rounded-tr-[1.5rem]' : 'rounded-tr-none')
-                    : (index < messages.length - 1 && (messages[index+1].sender === msg.sender || messages[index+1].Nature === msg.Nature) && messages[index+1].DateMessage === msg.DateMessage ? 'rounded-tl-[1.5rem]' : 'rounded-tl-none')
+                  (msg.sender === 'user' || msg.nature === 'C') ? 'bg-slate-900 text-white' : 'bg-white text-slate-700 border border-slate-100',
+                  (msg.sender === 'user' || msg.nature === 'C') 
+                    ? (index < messages.length - 1 && (messages[index+1].sender === msg.sender || messages[index+1].nature === msg.nature) && messages[index+1].dateMessage === msg.dateMessage ? 'rounded-tr-[1.5rem]' : 'rounded-tr-none')
+                    : (index < messages.length - 1 && (messages[index+1].sender === msg.sender || messages[index+1].nature === msg.nature) && messages[index+1].dateMessage === msg.dateMessage ? 'rounded-tl-[1.5rem]' : 'rounded-tl-none')
                 ]"
               >
-                {{ msg.Message || msg.text }}
+                {{ msg.message || msg.text }}
               </div>
-              <span v-if="!(index < messages.length - 1 && (messages[index+1].sender === msg.sender || messages[index+1].Nature === msg.Nature) && messages[index+1].DateMessage === msg.DateMessage)" 
+              <span v-if="!(index < messages.length - 1 && (messages[index+1].sender === msg.sender || messages[index+1].nature === msg.nature) && messages[index+1].dateMessage === msg.dateMessage)" 
                 class="text-[10px] font-black text-slate-300 mt-2 uppercase tracking-widest px-1">
-                {{ (msg.sender === 'user' || msg.Nature === 'C') ? 'Vous' : 'Conseiller IBS' }} • {{ msg.DateMessage ? new Date(msg.DateMessage).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : msg.time }}
+                {{ (msg.sender === 'user' || msg.nature === 'C') ? 'Vous' : 'Conseiller IBS' }} • {{ msg.dateMessage ? new Date(msg.dateMessage).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : msg.time }}
               </span>
             </div>
           </div>
@@ -75,11 +85,14 @@ const handleSend = () => {
     </ScrollArea>
 
     <div class="p-6 bg-white border-t border-slate-100">
-      <div class="max-w-4xl mx-auto flex items-center gap-4 bg-slate-50 p-2.5 rounded-3xl border border-slate-200 focus-within:ring-4 focus-within:ring-slate-900/5 focus-within:border-slate-900/10 transition-all">
+      <div v-if="selectedTicket?.statut === 'Clôturé' || selectedTicket?.statut === 'C'" class="max-w-4xl mx-auto p-4 bg-slate-50 rounded-2xl border border-dashed border-slate-200 text-center text-slate-400 font-bold text-sm">
+        {{ $t('reclamations.closed_notice') || 'Cette réclamation est clôturée. Vous ne pouvez plus envoyer de messages.' }}
+      </div>
+      <div v-else class="max-w-4xl mx-auto flex items-center gap-4 bg-slate-50 p-2.5 rounded-3xl border border-slate-200 focus-within:ring-4 focus-within:ring-slate-900/5 focus-within:border-slate-900/10 transition-all">
         <Input 
           v-model="nouveauMessage" 
           @keyup.enter="handleSend"
-          placeholder="Tapez votre message ici..." 
+          :placeholder="$t('reclamations.message_placeholder') || 'Tapez votre message ici...'" 
           class="border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-slate-700 font-bold h-12"
         />
         <Button @click="handleSend" class="rounded-2xl w-12 h-12 bg-slate-900 hover:bg-black text-white shadow-xl shadow-slate-200 shrink-0" size="icon">

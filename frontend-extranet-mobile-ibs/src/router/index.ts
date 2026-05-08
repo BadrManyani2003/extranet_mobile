@@ -60,7 +60,7 @@ router.beforeEach(async (to) => {
       userCache = response.user
     }
 
-    if (String(userCache?.Extranet).trim().toUpperCase() === 'N') {
+    if (String(userCache?.extranet).trim().toUpperCase() === 'N') {
       return { name: 'restricted' }
     }
     

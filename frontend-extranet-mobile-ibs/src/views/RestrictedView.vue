@@ -12,9 +12,9 @@ import { ShieldAlert , ExternalLink } from 'lucide-vue-next'
           <ShieldAlert :size="48" stroke-width="1.5" />
         </div>
         
-        <h1 class="text-2xl font-bold text-slate-900 mb-3">Accès Restreint</h1>
+        <h1 class="text-2xl font-bold text-slate-900 mb-3">{{ $t('restricted.title') }}</h1>
         <p class="text-slate-500 mb-8 leading-relaxed">
-          Vous n'avez pas l'accès à l'extranet. Veuillez utiliser l'application mobile pour accéder à vos services.
+          {{ $t('restricted.description') }}
         </p>
       </div>
     </div>

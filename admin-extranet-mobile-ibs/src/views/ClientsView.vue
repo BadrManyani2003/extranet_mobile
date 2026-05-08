@@ -54,28 +54,28 @@ onMounted(fetchClients)
           </TableRow>
         </TableHeader>
         <TableBody>
-          <TableRow v-for="client in items" :key="client.Id" class="hover:bg-slate-50/80 transition-colors border-b border-slate-50">
-            <TableCell class="font-bold text-slate-400 py-4">{{ client.Id || 'N/A' }}</TableCell>
+          <TableRow v-for="client in items" :key="client.id" class="hover:bg-slate-50/80 transition-colors border-b border-slate-50">
+            <TableCell class="font-bold text-slate-400 py-4">{{ client.id || 'N/A' }}</TableCell>
             <TableCell>
               <div class="flex items-center gap-3">
                 <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-900 shadow-sm">
                   <Building2 class="w-4 h-4" />
                 </div>
-                <span class="font-black text-slate-900">{{ client.RaisonSociale }}</span>
+                <span class="font-black text-slate-900">{{ client.raisonSociale }}</span>
               </div>
             </TableCell>
-            <TableCell class="text-sm font-bold text-slate-600">{{ client.Email || '-' }}</TableCell>
+            <TableCell class="text-sm font-bold text-slate-600">{{ client.email || '-' }}</TableCell>
             <TableCell>
-              <div v-if="client.FK_User_Id" class="flex items-center gap-2 text-emerald-600 font-bold text-xs bg-emerald-50 px-3 py-1.5 rounded-xl w-fit">
+              <div v-if="client.fkUserId" class="flex items-center gap-2 text-emerald-600 font-bold text-xs bg-emerald-50 px-3 py-1.5 rounded-xl w-fit">
                 <CheckCircle2 class="w-4 h-4" />
-                {{ client.UserNom }}
+                {{ client.userNom }}
               </div>
               <span v-else class="text-slate-300 font-black text-[10px] uppercase tracking-widest">Aucun</span>
             </TableCell>
             <TableCell class="text-right">
-              <Button v-if="!client.FK_User_Id" variant="ghost" size="sm" 
+              <Button v-if="!client.fkUserId" variant="ghost" size="sm" 
                 class="h-10 gap-2 rounded-xl text-slate-600 font-black text-[10px] uppercase tracking-widest hover:bg-slate-100 hover:text-slate-900 transition-all"
-                @click="handleCreateUser(client.Id)"
+                @click="handleCreateUser(client.id)"
               >
                 <UserPlus class="w-4 h-4" /> Créer Accès
               </Button>

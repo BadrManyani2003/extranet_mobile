@@ -21,29 +21,29 @@ const emit = defineEmits(['select'])
 
     <EmptyState 
       v-else-if="reclamations.length === 0" 
-      title="Aucune réclamation"
-      description="Vous n'avez pas encore de demande en cours."
+      :title="$t('reclamations.empty_title')"
+      :description="$t('reclamations.empty_desc')"
       :icon="MessageSquare"
     />
 
     <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div v-for="rec in reclamations" :key="rec.Id" 
+      <div v-for="rec in reclamations" :key="rec.id" 
         @click="emit('select', rec)"
         class="group p-6 bg-white border border-slate-100 rounded-3xl hover:border-slate-900 hover:shadow-2xl hover:shadow-slate-200 transition-all cursor-pointer relative overflow-hidden"
       >
         <div class="flex items-start justify-between mb-4">
-          <Badge :class="rec.Statut === 'En cours' ? 'bg-orange-50 text-orange-600 border-orange-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'" 
+          <Badge :class="(rec.statut === 'En cours' || rec.statut === 'E') ? 'bg-orange-50 text-orange-600 border-orange-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'" 
             class="rounded-lg px-2.5 py-1 text-[10px] font-black uppercase tracking-widest border">
-            {{ rec.Statut }}
+            {{ (rec.statut === 'E' || rec.statut === 'En cours') ? 'En cours' : 'Clôturé' }}
           </Badge>
           <span class="text-[10px] font-black text-slate-300 uppercase tracking-widest flex items-center gap-1.5">
-            <Calendar class="w-3 h-3" /> {{ new Date(rec.DateReclamation).toLocaleDateString() }}
+            <Calendar class="w-3 h-3" /> {{ new Date(rec.dateReclamation).toLocaleDateString() }}
           </span>
         </div>
-        <h4 class="text-lg font-black text-slate-900 group-hover:text-slate-900 transition-colors mb-2 line-clamp-1">{{ rec.Sujet }}</h4>
+        <h4 class="text-lg font-black text-slate-900 group-hover:text-slate-900 transition-colors mb-2 line-clamp-1">{{ rec.sujet }}</h4>
         <div class="flex items-center justify-between mt-6">
           <div class="flex items-center gap-2 text-slate-400 font-bold text-xs">
-            <Clock class="w-4 h-4" /> {{ rec.MessageCount || 0 }} messages
+            <Clock class="w-4 h-4" /> {{ rec.messageCount || 0 }} {{ $t('reclamations.messages_count') }}
           </div>
           <ChevronLeft class="w-5 h-5 text-slate-200 rotate-180 group-hover:text-slate-900 group-hover:translate-x-1 transition-all" />
         </div>

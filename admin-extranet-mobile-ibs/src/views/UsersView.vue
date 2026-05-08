@@ -18,7 +18,7 @@ const isConfirmDeleteOpen = ref(false)
 const isConfirmSyncOpen = ref(false)
 const selectedUser = ref<any>(null)
 const userToDelete = ref<any>(null)
-const formData = ref({ Id: 0, Nom: '', Email: '', Telephone: '', Nature: 'P', Extranet: 'N', Mobile: 'N' })
+const formData = ref({ id: 0, nom: '', email: '', telephone: '', nature: 'P', extranet: 'N', mobile: 'N' })
 
 const fetchUsers = async () => {
   loading.value = true
@@ -51,7 +51,7 @@ const handleSave = async () => {
 const handleDelete = async () => {
   if (!userToDelete.value) return
   try {
-    await api.admin.deleteUser(userToDelete.value.Id)
+    await api.admin.deleteUser(userToDelete.value.id)
     toast.success("Utilisateur supprimé")
     isConfirmDeleteOpen.value = false
     fetchUsers()
@@ -64,7 +64,7 @@ const handleDelete = async () => {
 const handleSync = async () => {
   if (!selectedUser.value) return
   try {
-    await api.admin.syncKeycloak(selectedUser.value.Id)
+    await api.admin.syncKeycloak(selectedUser.value.id)
     toast.success("Synchronisation réussie")
     isConfirmSyncOpen.value = false
     fetchUsers()
@@ -97,16 +97,16 @@ onMounted(() => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          <TableRow v-for="user in items" :key="user.Id" class="hover:bg-slate-50/80 border-b border-slate-50">
-            <TableCell class="font-bold text-slate-900 py-4">{{ user.Nom }}</TableCell>
+          <TableRow v-for="user in items" :key="user.id" class="hover:bg-slate-50/80 border-b border-slate-50">
+            <TableCell class="font-bold text-slate-900 py-4">{{ user.nom }}</TableCell>
             <TableCell>
               <div class="flex flex-col">
-                <span class="text-sm font-bold text-slate-700">{{ user.Email || '-' }}</span>
-                <span class="text-xs text-slate-400 font-medium">{{ user.Telephone || '-' }}</span>
+                <span class="text-sm font-bold text-slate-700">{{ user.email || '-' }}</span>
+                <span class="text-xs text-slate-400 font-medium">{{ user.telephone || '-' }}</span>
               </div>
             </TableCell>
             <TableCell>
-              <div v-if="user.Id_Auth" class="text-emerald-600 text-xs font-black">OUI</div>
+              <div v-if="user.idAuth" class="text-emerald-600 text-xs font-black">OUI</div>
               <Button v-else variant="ghost" size="sm" class="h-8 gap-2 text-[10px] text-orange-600 font-black hover:bg-orange-50 rounded-xl" @click="selectedUser = user; isConfirmSyncOpen = true">
                 <RefreshCcw class="w-3.5 h-3.5" /> SYNC
               </Button>
@@ -126,18 +126,18 @@ onMounted(() => {
   <Dialog v-model:open="isDialogOpen">
     <DialogContent class="sm:max-w-[600px] rounded-[2.5rem] shadow-2xl p-0 overflow-hidden border-none font-['Outfit']">
       <DialogHeader class="p-10 bg-slate-50/50 border-b border-slate-100">
-        <DialogTitle class="text-2xl font-black text-slate-900">{{ formData.Id ? 'Modifier' : 'Nouveau' }} Utilisateur</DialogTitle>
+        <DialogTitle class="text-2xl font-black text-slate-900">{{ formData.id ? 'Modifier' : 'Nouveau' }} Utilisateur</DialogTitle>
         <DialogDescription class="text-slate-500 font-medium">Remplissez les informations ci-dessous pour gérer l'utilisateur.</DialogDescription>
       </DialogHeader>
       <div class="p-10 space-y-6">
         <div class="grid grid-cols-2 gap-6">
-          <div class="space-y-2"><Label>Nom complet</Label><Input v-model="formData.Nom" class="rounded-xl" /></div>
-          <div class="space-y-2"><Label>Email</Label><Input v-model="formData.Email" class="rounded-xl" /></div>
+          <div class="space-y-2"><Label>Nom complet</Label><Input v-model="formData.nom" class="rounded-xl" /></div>
+          <div class="space-y-2"><Label>Email</Label><Input v-model="formData.email" class="rounded-xl" /></div>
         </div>
         <div class="grid grid-cols-2 gap-6">
-          <div class="space-y-2"><Label>Téléphone</Label><Input v-model="formData.Telephone" class="rounded-xl" /></div>
+          <div class="space-y-2"><Label>Téléphone</Label><Input v-model="formData.telephone" class="rounded-xl" /></div>
           <div class="space-y-2"><Label>Type</Label>
-            <select v-model="formData.Nature" class="w-full border border-slate-200 rounded-xl h-10 px-3 text-sm font-bold bg-white">
+            <select v-model="formData.nature" class="w-full border border-slate-200 rounded-xl h-10 px-3 text-sm font-bold bg-white">
               <option value="P">Poste</option><option value="C">Client</option><option value="A">Adhérent</option>
             </select>
           </div>

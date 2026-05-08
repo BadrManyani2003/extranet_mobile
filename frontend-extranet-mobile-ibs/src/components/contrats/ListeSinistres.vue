@@ -11,7 +11,7 @@ import {
 import SectionHeader from '@/components/shared/SectionHeader.vue'
 import StatusBadge from '@/components/shared/StatusBadge.vue'
 import EmptyState from '@/components/shared/EmptyState.vue'
-import { formatCurrency } from '@/lib/utils'
+import { formatCurrency, formatDate } from '@/lib/utils'
 
 const props = defineProps<{
   sinistres: any[]
@@ -29,7 +29,8 @@ const obtenirInfoRisque = (sin: any) => {
     r.immatriculation === sin.objet || 
     r.marque === sin.objet || 
     r.nom === sin.objet ||
-    r.matricule === sin.objet
+    r.matricule === sin.objet ||
+    r.identifiant === sin.objet
   )
 }
 
@@ -81,7 +82,7 @@ const sinistresFiltres = computed(() => {
                     </div>
                     <div class="text-[11px] text-slate-400 font-medium mt-0.5 flex items-center gap-1.5">
                       <Calendar class="w-3 h-3" />
-                      {{ $t('sinistres.declared_on') }} {{ sin.date }}
+                      {{ $t('sinistres.declared_on') }} {{ formatDate(sin.date) }}
                     </div>
                   </div>
                 </div>
@@ -89,7 +90,8 @@ const sinistresFiltres = computed(() => {
                 <div class="flex items-center gap-8 pr-4">
                   <div class="flex flex-col items-end">
                     <span class="text-[10px] text-slate-400 uppercase font-bold tracking-widest leading-none mb-1">{{ $t('sinistres.object') }}</span>
-                    <span class="text-xs font-black text-slate-900">{{ sin.objet }}</span>
+                    <span class="text-xs font-black text-slate-900 truncate max-w-[150px]">{{ sin.objet }}</span>
+                    <span v-if="sin.identifiant" class="text-[10px] text-slate-500 font-bold mt-0.5">{{ sin.identifiant }}</span>
                   </div>
                 </div>
               </div>
@@ -107,33 +109,18 @@ const sinistresFiltres = computed(() => {
                        <p class="text-[10px] font-bold text-slate-400 uppercase">{{ $t('contrats.statut') }}</p>
                        <StatusBadge :status="sin.statut" class="mt-1" />
                      </div>
-                     <div>
-                       <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">{{ $t('sinistres.identified_risk') }}</p>
-                      
-                     </div>
-
-                     <template v-if="obtenirInfoRisque(sin)">
-                       <div v-if="obtenirInfoRisque(sin).type === 'Véhicule'" class="grid grid-cols-2 gap-4 pt-2 border-t border-slate-100">
-                         <div>
-                           <p class="text-[10px] font-bold text-slate-400 uppercase">{{ $t('sinistres.marque') }}</p>
-                           <p class="text-xs font-black text-slate-800">{{ obtenirInfoRisque(sin).marque }}</p>
-                         </div>
-                         <div>
-                           <p class="text-[10px] font-bold text-slate-400 uppercase">{{ $t('sinistres.matricule') }}</p>
-                           <p class="text-xs font-black text-slate-800">{{ obtenirInfoRisque(sin).immatriculation }}</p>
-                         </div>
-                       </div>
-                       <div v-else-if="obtenirInfoRisque(sin).type === 'Adhérent'" class="grid grid-cols-2 gap-4 pt-2 border-t border-slate-100">
-                         <div>
-                           <p class="text-[10px] font-bold text-slate-400 uppercase">{{ $t('sinistres.nom') }}</p>
-                           <p class="text-xs font-black text-slate-800">{{ obtenirInfoRisque(sin).nom }}</p>
-                         </div>
-                         <div>
-                           <p class="text-[10px] font-bold text-slate-400 uppercase">{{ $t('sinistres.matricule') }}</p>
-                           <p class="text-xs font-black text-slate-800">{{ obtenirInfoRisque(sin).matricule }}</p>
-                         </div>
-                       </div>
-                     </template>
+                      <div>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">{{ $t('sinistres.identified_risk') }}</p>
+                        <div class="flex items-center gap-2 mt-1">
+                          <div class="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400">
+                            <component :is="branche === 'Santé' ? User : Shield" class="w-4 h-4" />
+                          </div>
+                          <div>
+                            <p class="text-xs font-black text-slate-800">{{ sin.objet }}</p>
+                            <p v-if="sin.identifiant" class="text-[10px] text-slate-400 font-bold">{{ sin.identifiant }}</p>
+                          </div>
+                        </div>
+                      </div>
                    </div>
                 </div>
 
@@ -142,28 +129,19 @@ const sinistresFiltres = computed(() => {
                      <Wallet class="w-3.5 h-3.5 text-slate-900" /> {{ $t('sinistres.financial_title') }}
                    </h4>
 
-                   <div v-if="branche === 'Automobile'" class="space-y-4">
+                   <div class="space-y-4">
                      <div class="grid grid-cols-2 gap-4">
                        <div>
-                         <p class="text-[10px] font-bold text-slate-400 uppercase">{{ $t('sinistres.damages') }}</p>
-                         <p class="text-sm font-black text-slate-800">{{ formatCurrency(sin.mtDommage) }}</p>
+                         <p class="text-[10px] font-bold text-slate-400 uppercase">
+                           {{ branche === 'Santé' ? $t('sinistres.costs') : $t('sinistres.damages') }}
+                         </p>
+                         <p class="text-sm font-black text-slate-800">
+                           {{ formatCurrency(branche === 'Santé' ? sin.mtFrais : sin.mtDommage) }}
+                         </p>
                        </div>
                        <div>
                          <p class="text-[10px] font-bold text-slate-400 uppercase">{{ $t('sinistres.franchise') }}</p>
-                         <p class="text-sm font-black text-slate-800">{{ sin.franchise || '0,00' }}</p>
-                       </div>
-                     </div>
-                     <div class="pt-3 border-t border-slate-100 flex justify-between items-center">
-                       <p class="text-[10px] font-black text-slate-900 uppercase">{{ $t('sinistres.indemnite') }}</p>
-                       <p class="text-lg font-black text-slate-900">{{ formatCurrency(sin.mtRembourse) }}</p>
-                     </div>
-                   </div>
-
-                   <div v-else class="space-y-4">
-                     <div class="grid grid-cols-1 gap-4">
-                       <div>
-                         <p class="text-[10px] font-bold text-slate-400 uppercase">{{ $t('sinistres.costs') }}</p>
-                         <p class="text-sm font-black text-slate-800">{{ formatCurrency(sin.mtFrais) }}</p>
+                         <p class="text-sm font-black text-slate-800">{{ formatCurrency(sin.mtFranchise) }}</p>
                        </div>
                      </div>
                      <div class="pt-3 border-t border-slate-100 flex justify-between items-center">

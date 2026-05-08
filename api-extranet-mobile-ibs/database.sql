@@ -211,7 +211,7 @@ GO
 CREATE TABLE dbo.Sinistres
 (
     Id INT NOT NULL,
-    FK_Risque_Id INT NOT NULL,
+    FK_Risque_Id INT NULL,
     FK_Police_Id INT NOT NULL,
     FK_Adherent_Id INT NULL,
     NumeroSin VARCHAR(100) NULL,
@@ -308,6 +308,18 @@ CREATE NONCLUSTERED INDEX IX_ReclamationsIdt_Statut ON dbo.ReclamationsIdt(Statu
 CREATE NONCLUSTERED INDEX IX_ReclamationsDet_Reclamation ON dbo.ReclamationsDet(FK_Reclamation_Id);
 GO
 
+
+-------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------
+
+USE [IBS_Extranet_Mobile]
+GO
+
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
 CREATE OR ALTER PROCEDURE dbo.sp_GetPolices
     @FK_User_Id INT,
     @Source CHAR(1),
@@ -323,21 +335,21 @@ BEGIN
     END
 
     SELECT 
-        p.Id,
-        p.Branche,
-        p.Police,
-        p.DateEcheance,
+        p.Id AS id,
+        p.Branche AS branche,
+        p.Police AS police,
+        p.DateEcheance AS dateEcheance,
         CASE p.Statut 
             WHEN 'E' THEN 'En cours' 
             WHEN 'S' THEN 'Suspendu' 
             WHEN 'R' THEN 'Résilié' 
             WHEN 'M' THEN 'Mise en demeure' 
             ELSE p.Statut 
-        END AS Statut,
-        p.Module,
-        c.RaisonSociale AS Client,
-        c.Particulier,
-        com.RaisonSociale AS Compagnie
+        END AS statut,
+        p.Module AS module,
+        c.RaisonSociale AS client,
+        c.Particulier AS particulier,
+        com.RaisonSociale AS compagnie
     FROM dbo.Polices p
     INNER JOIN dbo.Clients c ON p.Fk_Client_Id = c.Id
     LEFT JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id AND uxc.FK_User_Id = @FK_User_Id AND uxc.Actif = 'O'
@@ -373,9 +385,9 @@ BEGIN
     END
 
     SELECT 
-        s.Id,
+        s.Id AS id,
         s.NumeroSin AS numero,
-        s.DateSin AS [date],
+        s.DateSin AS date,
         s.DateDeclaration AS dateDeclaration,
         CASE s.Statut 
             WHEN 'E' THEN 'En cours' 
@@ -385,12 +397,22 @@ BEGIN
         END AS statut,
         ISNULL(s.MT_Indemnite, 0) AS mtRembourse,
         ISNULL(s.MT_Dommages, 0) AS mtDommage,
+        ISNULL(s.MT_Dommages, 0) AS mtFrais,
+        ISNULL(s.MT_Franchise, 0) AS mtFranchise,
         ISNULL(s.Observations, '') AS observation,
-        ISNULL(r.Libelle, ISNULL(r.Identifiant, '-')) AS objet
+        CASE 
+            WHEN p.Branche = 'Santé' THEN a.Nom
+            ELSE ISNULL(r.Libelle, '-')
+        END AS objet,
+        CASE 
+            WHEN p.Branche = 'Santé' THEN a.NumAdhesion
+            ELSE r.Identifiant
+        END AS identifiant
     FROM dbo.Sinistres s
     INNER JOIN dbo.Polices p ON s.FK_Police_Id = p.Id
     INNER JOIN dbo.Clients c ON p.Fk_Client_Id = c.Id
     LEFT JOIN dbo.Risques r ON s.FK_Risque_Id = r.Id
+    LEFT JOIN dbo.Adherents a ON s.FK_Adherent_Id = a.Id
     LEFT JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id AND uxc.FK_User_Id = @FK_User_Id AND uxc.Actif = 'O'
     WHERE p.Id = @FK_Police_Id
         AND (
@@ -419,19 +441,29 @@ BEGIN
     END
 
     SELECT 
-        s.Id,
+        s.Id AS id,
         s.NumeroSin AS numero,
-        s.DateSin AS [date],
+        s.DateSin AS date,
         s.DateDeclaration AS dateDeclaration,
         'En cours' AS statut,
         ISNULL(s.MT_Indemnite, 0) AS mtRembourse,
         ISNULL(s.MT_Dommages, 0) AS mtDommage,
+        ISNULL(s.MT_Dommages, 0) AS mtFrais,
+        ISNULL(s.MT_Franchise, 0) AS mtFranchise,
         ISNULL(s.Observations, '') AS observation,
-        ISNULL(r.Libelle, ISNULL(r.Identifiant, '-')) AS objet
+        CASE 
+            WHEN p.Branche = 'Santé' THEN a.Nom
+            ELSE ISNULL(r.Libelle, '-')
+        END AS objet,
+        CASE 
+            WHEN p.Branche = 'Santé' THEN a.NumAdhesion
+            ELSE r.Identifiant
+        END AS identifiant
     FROM dbo.Sinistres s
     INNER JOIN dbo.Polices p ON s.FK_Police_Id = p.Id
     INNER JOIN dbo.Clients c ON p.Fk_Client_Id = c.Id
     LEFT JOIN dbo.Risques r ON s.FK_Risque_Id = r.Id
+    LEFT JOIN dbo.Adherents a ON s.FK_Adherent_Id = a.Id
     LEFT JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id AND uxc.FK_User_Id = @FK_User_Id AND uxc.Actif = 'O'
     WHERE p.Id = @FK_Police_Id
         AND s.Statut = 'E'
@@ -445,7 +477,7 @@ BEGIN
 END
 GO
 
-CREATE OR ALTER PROCEDURE dbo.sp_GetRisques
+CREATE OR ALTER PROCEDURE [dbo].[sp_GetRisques]
     @FK_User_Id INT,
     @Source CHAR(1),
     @Token VARCHAR(MAX),
@@ -461,16 +493,14 @@ BEGIN
     END
 
     SELECT 
-        r.Id,
+        r.Id AS id,
         r.Libelle AS nom,
         r.Libelle AS marque,
-        r.Identifiant AS immatriculation,
-        r.Identifiant AS numAdhesion,
-        r.Identifiant AS matricule,
-        ISNULL(r.Description, 'Risque') AS [type],
+        r.Identifiant AS identifiant,
+        ISNULL(r.Description, 'Risque') AS description,
         r.DateDu AS dateMiseEnCirculation,
-        r.DateEcheance,
-        r.Statut
+        r.DateEcheance AS dateEcheance,
+        r.Statut AS statut
     FROM dbo.Risques r
     INNER JOIN dbo.Polices p ON r.FK_Police_Id = p.Id
     INNER JOIN dbo.Clients c ON p.Fk_Client_Id = c.Id
@@ -500,13 +530,13 @@ BEGIN
     END
 
     SELECT 
-        q.Id,
+        q.Id AS id,
         q.NumQuittance AS numero,
         q.DateDu AS dateDebut,
         q.DateAu AS dateFin,
         ISNULL(q.Montant, 0) AS montantTotal,
         ISNULL(q.Solde, 0) AS montantImpaye,
-        q.DateEcheance,
+        q.DateEcheance AS dateEcheance,
         CASE q.Statut 
             WHEN 'E' THEN 'En cours' 
             WHEN 'S' THEN 'Suspendu' 
@@ -514,7 +544,7 @@ BEGIN
             WHEN 'M' THEN 'Mise en demeure' 
             WHEN 'A' THEN 'Annulée' 
             ELSE q.Statut 
-        END AS Statut
+        END AS statut
     FROM dbo.Quittances q
     INNER JOIN dbo.Polices p ON q.FK_Police_Id = p.Id
     INNER JOIN dbo.Clients c ON p.Fk_Client_Id = c.Id
@@ -523,14 +553,14 @@ BEGIN
         AND (
             @Source = 'A'
             OR (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
-            OR EXISTS (SELECT 1 FROM dbo.Adherents WHERE FK_Police_Id = p.Id AND FK_User_Id = @FK_User_Id AND Actif = 'O')
         );
     
     RETURN;
 END
 GO
 
-CREATE OR ALTER PROCEDURE dbo.sp_GetImpayes
+
+CREATE OR ALTER PROCEDURE [dbo].[sp_GetImpayes]
     @FK_User_Id INT,
     @Source CHAR(1),
     @Token VARCHAR(MAX),
@@ -546,24 +576,47 @@ BEGIN
         RETURN;
     END
 
-    SELECT 
-        q.Id,
-        q.NumQuittance AS numero,
-        q.DateDu AS dateDebut,
-        q.DateAu AS dateFin,
-        ISNULL(q.Montant, 0) AS montantTotal,
-        ISNULL(q.Solde, 0) AS montantImpaye,
-        q.DateEcheance
-    FROM dbo.Quittances q
-    INNER JOIN dbo.Polices p ON q.FK_Police_Id = p.Id
-    INNER JOIN dbo.Clients c ON p.Fk_Client_Id = c.Id
-    INNER JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id
-    WHERE uxc.FK_User_Id = @FK_User_Id
-        AND uxc.Actif = 'O'
-        AND p.Id = @FK_Police_Id
-        AND ((@Encour = 'O' AND q.Solde > 0) OR (@Encour = 'N'))
-        AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N'));
-    
+    IF @FK_Police_Id IS NOT NULL
+    BEGIN
+        SELECT 
+            q.Id AS id,
+            q.NumQuittance AS numero,
+            q.DateDu AS dateDebut,
+            q.DateAu AS dateFin,
+            ISNULL(q.Montant, 0) AS montantTotal,
+            ISNULL(q.Solde, 0) AS montantImpaye,
+            q.DateEcheance AS dateEcheance,
+            p.Branche AS branche
+        FROM dbo.Quittances q
+        INNER JOIN dbo.Polices p ON q.FK_Police_Id = p.Id
+        INNER JOIN dbo.Clients c ON p.Fk_Client_Id = c.Id
+        INNER JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id
+        WHERE uxc.FK_User_Id = @FK_User_Id
+            AND uxc.Actif = 'O'
+            AND p.Id = @FK_Police_Id
+            AND ((@Encour = 'O' AND q.Solde > 0) OR (@Encour = 'N'))
+            AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N'));
+    END
+    ELSE
+    BEGIN
+        SELECT 
+            q.Id AS id,
+            q.NumQuittance AS numero,
+            q.DateDu AS dateDebut,
+            q.DateAu AS dateFin,
+            ISNULL(q.Montant, 0) AS montantTotal,
+            ISNULL(q.Solde, 0) AS montantImpaye,
+            q.DateEcheance AS dateEcheance
+        FROM dbo.Quittances q
+        INNER JOIN dbo.Polices p ON q.FK_Police_Id = p.Id
+        INNER JOIN dbo.Clients c ON p.Fk_Client_Id = c.Id
+        INNER JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id
+        WHERE uxc.FK_User_Id = @FK_User_Id
+            AND uxc.Actif = 'O'
+            AND ((@Encour = 'O' AND q.Solde > 0) OR (@Encour = 'N'))
+            AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N'));
+    END
+
     RETURN;
 END
 GO
@@ -584,15 +637,15 @@ BEGIN
     END
 
     SELECT 
-        a.Id,
+        a.Id AS id,
         RTRIM(LTRIM(ISNULL(a.Nom, '') + ' ' + ISNULL(a.Prenom, ''))) AS nom,
-        a.Email,
-        a.NumAdhesion,
-        a.Matricule,
-        a.DateNaissance,
-        a.Actif,
-        a.Telephone,
-        a.FK_User_Id
+        a.Email AS email,
+        a.NumAdhesion AS numAdhesion,
+        a.Matricule AS matricule,
+        a.DateNaissance AS dateNaissance,
+        a.Actif AS actif,
+        a.Telephone AS telephone,
+        a.FK_User_Id AS fkUserId
     FROM dbo.Adherents a
     INNER JOIN dbo.Polices p ON a.FK_Police_Id = p.Id
     INNER JOIN dbo.Clients c ON p.Fk_Client_Id = c.Id
@@ -627,11 +680,11 @@ BEGIN
     END
 
     SELECT 
-        pc.Id,
+        pc.Id AS id,
         pc.Nom AS nom,
         pc.Lien AS lien,
         pc.DateNaissance AS dateNaissance,
-        pc.DateAdhesion
+        pc.DateAdhesion AS dateAdhesion
     FROM dbo.PersACharge pc
     INNER JOIN dbo.Adherents a ON pc.FK_Adherent_Id = a.Id
     INNER JOIN dbo.Polices p ON a.FK_Police_Id = p.Id
@@ -665,7 +718,7 @@ BEGIN
     END
 
     SELECT 
-        g.Id,
+        g.Id AS id,
         g.Libelle AS nom,
         ISNULL(g.Capital, 0) AS capital,
         ISNULL(g.Franchise, '-') AS franchise
@@ -700,13 +753,13 @@ BEGIN
     END
 
     SELECT 
-        r.Id,
-        r.DateReclamation,
-        r.Sujet,
-        r.Statut,
-        r.DateStatut,
-        r.Nature,
-        u.Nom AS Client
+        r.Id AS id,
+        r.DateReclamation AS dateReclamation,
+        r.Sujet AS sujet,
+        r.Statut AS statut,
+        r.DateStatut AS dateStatut,
+        r.Nature AS nature,
+        u.Nom AS client
     FROM dbo.ReclamationsIdt r
     INNER JOIN dbo.sysUser u ON r.FK_User_Client = u.Id
     WHERE (@Source = 'C' OR r.FK_User_Client = @FK_User_Id)
@@ -735,11 +788,11 @@ BEGIN
                AND (@Source = 'C' OR FK_User_Client = @FK_User_Id))
     BEGIN
         SELECT 
-            rd.Id,
-            rd.DateMessage,
-            rd.Nature,
-            rd.Message,
-            u.Nom AS Envoyeur
+            rd.Id AS id,
+            rd.DateMessage AS dateMessage,
+            rd.Nature AS nature,
+            rd.Message AS message,
+            u.Nom AS envoyeur
         FROM dbo.ReclamationsDet rd
         INNER JOIN dbo.sysUser u ON rd.FK_User_Id = u.Id
         WHERE rd.FK_Reclamation_Id = @FK_Reclamation_Id
@@ -780,7 +833,7 @@ BEGIN
     INSERT INTO dbo.ReclamationsDet (FK_Reclamation_Id, FK_User_Id, Nature, Message)
     VALUES (@NewId, @FK_User_Id, @Nature, @Message);
 
-    SELECT @NewId AS Id;
+    SELECT @NewId AS id;
     
     RETURN;
 END
@@ -884,7 +937,7 @@ BEGIN
     BEGIN
         INSERT INTO dbo.sysUser (Id_Auth, Nom, Telephone, Email, Nature, Extranet, Mobile)
         VALUES (@Id_Auth, @Nom, @Telephone, @Email, @Nature, @Extranet, @Mobile);
-        SELECT SCOPE_IDENTITY() AS NewId;
+        SELECT SCOPE_IDENTITY() AS newId;
     END
     ELSE
     BEGIN
@@ -892,7 +945,7 @@ BEGIN
         SET Id_Auth = @Id_Auth, Nom = @Nom, Telephone = @Telephone,
             Email = @Email, Nature = @Nature, Extranet = @Extranet, Mobile = @Mobile
         WHERE Id = @FK_Target_Id;
-        SELECT @FK_Target_Id AS NewId;
+        SELECT @FK_Target_Id AS newId;
     END
 END
 GO
@@ -946,18 +999,18 @@ BEGIN
     END
     
     SELECT DISTINCT
-        c.Id,
-        c.RaisonSociale,
-        c.Particulier,
-        c.Email,
-        c.Adresse,
-        cParent.RaisonSociale AS ParentClient,
-        u.Nom                 AS UserNom,
-        x.FK_User_Id
+        c.Id AS id,
+        c.RaisonSociale AS raisonSociale,
+        c.Particulier AS particulier,
+        c.Email AS email,
+        c.Adresse AS adresse,
+        cParent.RaisonSociale AS parentClient,
+        u.Nom AS userNom,
+        x.FK_User_Id AS fkUserId
     FROM dbo.Clients c
     LEFT JOIN dbo.Clients cParent ON c.Fk_Client_Id = cParent.Id
-    left join UsersXClients x on x.FK_Client_Id = c.id
-    LEFT JOIN dbo.sysUser u       ON x.FK_User_Id   = u.Id
+    LEFT JOIN UsersXClients x ON x.FK_Client_Id = c.id
+    LEFT JOIN dbo.sysUser u ON x.FK_User_Id = u.Id
     ORDER BY c.RaisonSociale;
 END
 GO
@@ -1000,7 +1053,19 @@ BEGIN
     INSERT INTO dbo.UsersXClients (FK_User_Id, FK_Client_Id, Actif)
     VALUES (@NewUserId, @FK_Client_Id, 'O');
     
-    SELECT * FROM dbo.sysUser WHERE Id = @NewUserId;
+    SELECT 
+        Id AS id,
+        Id_Auth AS idAuth,
+        token,
+        Nom AS nom,
+        Telephone AS telephone,
+        Email AS email,
+        Nature AS nature,
+        Extranet AS extranet,
+        Mobile AS mobile,
+        CreatedAt AS createdAt,
+        UpdatedAt AS updatedAt
+    FROM dbo.sysUser WHERE Id = @NewUserId;
 END
 GO
 
@@ -1039,7 +1104,20 @@ BEGIN
     
     SET @NewUserId = SCOPE_IDENTITY();
     UPDATE dbo.Adherents SET FK_User_Id = @NewUserId WHERE Id = @FK_Adherent_Id;
-    SELECT * FROM dbo.sysUser WHERE Id = @NewUserId;
+    
+    SELECT 
+        Id AS id,
+        Id_Auth AS idAuth,
+        token,
+        Nom AS nom,
+        Telephone AS telephone,
+        Email AS email,
+        Nature AS nature,
+        Extranet AS extranet,
+        Mobile AS mobile,
+        CreatedAt AS createdAt,
+        UpdatedAt AS updatedAt
+    FROM dbo.sysUser WHERE Id = @NewUserId;
 END
 GO
 
@@ -1057,11 +1135,24 @@ BEGIN
         RETURN;
     END
     
-    SELECT * FROM dbo.sysUser ORDER BY Nom;
+    SELECT 
+        Id AS id,
+        Id_Auth AS idAuth,
+        token,
+        Nom AS nom,
+        Telephone AS telephone,
+        Email AS email,
+        Nature AS nature,
+        Extranet AS extranet,
+        Mobile AS mobile,
+        CreatedAt AS createdAt,
+        UpdatedAt AS updatedAt
+    FROM dbo.sysUser ORDER BY Nom;
 END
 GO
 
-CREATE OR ALTER PROCEDURE dbo.sp_GetStats
+
+CREATE OR ALTER PROCEDURE [dbo].[sp_GetStats]
     @FK_User_Id INT,
     @Source     CHAR(1),
     @Token      VARCHAR(MAX)
@@ -1075,39 +1166,84 @@ BEGIN
         RETURN;
     END
 
+    -- Statistiques principales
     SELECT 
         (SELECT COUNT(DISTINCT p.Id) FROM dbo.Polices p 
          LEFT JOIN dbo.Clients c ON p.Fk_Client_Id = c.Id
          LEFT JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id AND uxc.FK_User_Id = @FK_User_Id AND uxc.Actif = 'O'
          LEFT JOIN dbo.Adherents a ON p.Id = a.FK_Police_Id AND a.FK_User_Id = @FK_User_Id AND a.Actif = 'O'
-         WHERE @Source = 'A'
-            OR (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
-            OR (@Source = 'A' AND a.Id IS NOT NULL)) AS TotalPolices,
-           
+         WHERE (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
+            OR a.Id IS NOT NULL) AS totalPolices,
+
         (SELECT COUNT(*) FROM dbo.Sinistres s
          JOIN dbo.Polices p ON s.FK_Police_Id = p.Id
          JOIN dbo.Clients c ON p.Fk_Client_Id = c.Id
          LEFT JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id AND uxc.FK_User_Id = @FK_User_Id AND uxc.Actif = 'O'
          WHERE s.Statut = 'E'
-           AND (
-               @Source = 'A'
-               OR (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
-               OR s.FK_Adherent_Id IN (SELECT Id FROM dbo.Adherents WHERE FK_User_Id = @FK_User_Id AND Actif = 'O')
-           )) AS SinistresEnCours,
-           
+           AND ((uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
+            OR s.FK_Adherent_Id IN (SELECT Id FROM dbo.Adherents WHERE FK_User_Id = @FK_User_Id AND Actif = 'O'))) AS sinistresEnCours,
+
+        (SELECT ISNULL(SUM(q.Montant), 0) FROM dbo.Quittances q
+         JOIN dbo.Polices p ON q.FK_Police_Id = p.Id
+         JOIN dbo.Clients c ON p.Fk_Client_Id = c.Id
+         LEFT JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id AND uxc.FK_User_Id = @FK_User_Id AND uxc.Actif = 'O'
+         WHERE YEAR(q.DateDu) = YEAR(GETDATE())
+           AND (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))) AS primeAnnuelle,
+
         (SELECT ISNULL(SUM(q.Solde), 0) FROM dbo.Quittances q
          JOIN dbo.Polices p ON q.FK_Police_Id = p.Id
          JOIN dbo.Clients c ON p.Fk_Client_Id = c.Id
          LEFT JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id AND uxc.FK_User_Id = @FK_User_Id AND uxc.Actif = 'O'
          WHERE q.Solde > 0
-           AND (
-               @Source = 'A'
-               OR (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
-           )) AS TotalImpayes;
+           AND (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))) AS totalImpayes;
+
+    -- Statistiques par branche (nombre de polices)
+    SELECT 
+        p.Branche AS label, 
+        COUNT(*) AS value
+    FROM dbo.Polices p
+    LEFT JOIN dbo.Clients c ON p.Fk_Client_Id = c.Id
+    LEFT JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id AND uxc.FK_User_Id = @FK_User_Id AND uxc.Actif = 'O'
+    LEFT JOIN dbo.Adherents a ON p.Id = a.FK_Police_Id AND a.FK_User_Id = @FK_User_Id AND a.Actif = 'O'
+    WHERE (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
+       OR a.Id IS NOT NULL
+    GROUP BY p.Branche;
+
+    -- Statistiques mensuelles (primes et impayés)
+    SELECT 
+        FORMAT(q.DateDu, 'MMM', 'fr-FR') AS month,
+        MONTH(q.DateDu) AS month_num,
+        SUM(ISNULL(q.Montant, 0)) AS total,
+        SUM(ISNULL(q.Solde, 0)) AS impayes
+    FROM dbo.Quittances q
+    INNER JOIN dbo.Polices p ON q.FK_Police_Id = p.Id
+    LEFT JOIN dbo.Clients c ON p.Fk_Client_Id = c.Id
+    LEFT JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id AND uxc.FK_User_Id = @FK_User_Id AND uxc.Actif = 'O'
+    WHERE (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
+      AND YEAR(q.DateDu) = YEAR(GETDATE())
+    GROUP BY FORMAT(q.DateDu, 'MMM', 'fr-FR'), MONTH(q.DateDu)
+    ORDER BY MONTH(q.DateDu);
+
+    -- Récapitulatif par branche (primes totales et impayés)
+    SELECT 
+        p.Branche AS branche,
+        SUM(ISNULL(q.Montant, 0)) AS totalPrime,
+        SUM(ISNULL(q.Solde, 0)) AS totalImpaye
+    FROM dbo.Quittances q
+    INNER JOIN dbo.Polices p ON q.FK_Police_Id = p.Id
+    LEFT JOIN dbo.Clients c ON p.Fk_Client_Id = c.Id
+    LEFT JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id AND uxc.FK_User_Id = @FK_User_Id AND uxc.Actif = 'O'
+    WHERE (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
+      AND YEAR(q.DateDu) = YEAR(GETDATE())
+    GROUP BY p.Branche;
+
+    RETURN;
 END
 GO
 
-CREATE OR ALTER PROCEDURE dbo.ps_GetStatsByPolice
+
+
+CREATE OR ALTER PROCEDURE [dbo].[ps_GetStatsByPolice]
     @FK_User_Id   INT,
     @Token        VARCHAR(MAX),
     @Source       VARCHAR(50),
@@ -1122,30 +1258,47 @@ BEGIN
         RETURN;
     END
 
+    DECLARE @PrimeAnnuelle DECIMAL(18,2) = 0;
+    DECLARE @Impayes DECIMAL(18,2) = 0;
+    DECLARE @NbRisques INT = 0;
+    DECLARE @NbAdherents INT = 0;
+    DECLARE @NbSinistres INT = 0;
+    DECLARE @NbSinistresEnCours INT = 0;
+
+    SELECT @PrimeAnnuelle = ISNULL(SUM(Montant), 0)
+    FROM dbo.Quittances 
+    WHERE FK_Police_Id = @FK_Police_Id;
+
+    SELECT @Impayes = ISNULL(SUM(Solde), 0)
+    FROM dbo.Quittances 
+    WHERE FK_Police_Id = @FK_Police_Id 
+      AND Solde > 0;
+
+    SELECT @NbRisques = COUNT(*)
+    FROM dbo.Risques 
+    WHERE FK_Police_Id = @FK_Police_Id 
+      AND Statut = 'O';
+
+    SELECT @NbAdherents = COUNT(*)
+    FROM dbo.Adherents 
+    WHERE FK_Police_Id = @FK_Police_Id;
+
+    SELECT @NbSinistres = COUNT(*)
+    FROM dbo.Sinistres s
+    WHERE s.FK_Police_Id = @FK_Police_Id;
+    
+    SELECT @NbSinistresEnCours = COUNT(*)
+    FROM dbo.Sinistres s
+    WHERE s.FK_Police_Id = @FK_Police_Id 
+      AND s.Statut = 'E';
+
     SELECT 
-        (SELECT ISNULL(SUM(Montant), 0) FROM dbo.Quittances 
-         WHERE FK_Police_Id = @FK_Police_Id 
-           AND DateDu >= DATEADD(YEAR, -1, GETDATE())) AS PrimeAnnuelle,
-
-        (SELECT ISNULL(SUM(Solde), 0) FROM dbo.Quittances 
-         WHERE FK_Police_Id = @FK_Police_Id AND Solde > 0) AS Impayes,
-
-        (SELECT COUNT(*) FROM dbo.Risques 
-         WHERE FK_Police_Id = @FK_Police_Id AND Statut = 'O') AS NbRisques,
-
-        (SELECT COUNT(*) FROM dbo.Sinistres s
-         WHERE s.FK_Police_Id = @FK_Police_Id
-           AND (
-               @Source <> 'A' 
-               OR s.FK_Adherent_Id IN (SELECT Id FROM dbo.Adherents WHERE FK_User_Id = @FK_User_Id)
-           )) AS NbSinistres,
-
-        (SELECT COUNT(*) FROM dbo.Sinistres s
-         WHERE s.FK_Police_Id = @FK_Police_Id AND s.Statut = 'E'
-           AND (
-               @Source <> 'A' 
-               OR s.FK_Adherent_Id IN (SELECT Id FROM dbo.Adherents WHERE FK_User_Id = @FK_User_Id)
-           )) AS NbSinistresEnCours;
+        @PrimeAnnuelle AS primeAnnuelle,
+        @Impayes AS impayes,
+        @NbRisques AS nbRisques,
+        @NbAdherents AS nbAdherents,
+        @NbSinistres AS nbSinistres,
+        @NbSinistresEnCours AS nbSinistresEnCours;
 END
 GO
 

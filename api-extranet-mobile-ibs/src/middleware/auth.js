@@ -26,10 +26,10 @@ module.exports = async (req, res, next) => {
 
         req.user = {
             ...decoded,
-            id:    row?.Id ?? 0,   
+            id:    row?.id ?? 0,   
             token,                 
             roles: decoded.realm_access?.roles || [],
-            extranet: row?.Extranet || 'N'
+            extranet: row?.extranet || 'N'
         };
 
         const extranetStatus = String(req.user.extranet).trim().toUpperCase();

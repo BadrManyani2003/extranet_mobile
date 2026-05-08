@@ -5,7 +5,7 @@ import { CardContent } from '@/components/ui/card'
 import SectionHeader from '@/components/shared/SectionHeader.vue'
 import StatusBadge from '@/components/shared/StatusBadge.vue'
 import EmptyState from '@/components/shared/EmptyState.vue'
-import { formatCurrency } from '@/lib/utils'
+import { formatCurrency, formatDate } from '@/lib/utils'
 
 const props = defineProps<{
   quittances: any[]
@@ -63,14 +63,14 @@ const quittancesFiltrees = computed(() => {
                   <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-none mb-1">{{ $t('quittances.from') }}</p>
                   <div class="flex items-center gap-2 text-sm font-bold text-slate-700">
                     <Calendar class="w-3.5 h-3.5 text-slate-300" />
-                    {{ quit.dateDebut }}
+                    {{ formatDate(quit.dateDebut) }}
                   </div>
                 </div>
                 <div>
                   <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-none mb-1">{{ $t('quittances.to') }}</p>
                   <div class="flex items-center gap-2 text-sm font-bold text-slate-700">
                     <ArrowRight class="w-3.5 h-3.5 text-slate-300" />
-                    {{ quit.dateFin }}
+                    {{ formatDate(quit.dateFin) }}
                   </div>
                 </div>
               </div>

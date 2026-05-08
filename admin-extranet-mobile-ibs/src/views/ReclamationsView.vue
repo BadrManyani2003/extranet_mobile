@@ -28,10 +28,10 @@ const fetchReclamations = async () => {
 const filteredReclamations = computed(() => {
   return reclamations.value.filter(r => {
     const matchesSearch = !searchQuery.value || 
-      (r.Sujet || '').toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-      (r.Client || '').toLowerCase().includes(searchQuery.value.toLowerCase())
+      (r.sujet || '').toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+      (r.client || '').toLowerCase().includes(searchQuery.value.toLowerCase())
     
-    const matchesNature = natureFilter.value === 'all' || r.Nature === natureFilter.value
+    const matchesNature = natureFilter.value === 'all' || r.nature === natureFilter.value
     
     return matchesSearch && matchesNature
   })
@@ -40,7 +40,7 @@ const filteredReclamations = computed(() => {
 const selectTicket = async (ticket: any) => {
   selectedTicket.value = ticket
   loading.value = true
-  try { messages.value = await api.data.getMessages(ticket.Id) } 
+  try { messages.value = await api.data.getMessages(ticket.id) } 
   catch (e: any) { 
     toast.error(e.message)
     console.error(e) 
@@ -57,9 +57,9 @@ const handleSendMessage = async (text: string) => {
     time: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
   })
   try { 
-    await api.admin.replyToReclamation(selectedTicket.value.Id, text)
+    await api.admin.replyToReclamation(selectedTicket.value.id, text)
     toast.success("Réponse envoyée")
-    selectedTicket.value.Statut = 'Traité'
+    selectedTicket.value.statut = 'Traité'
   } catch (e: any) { 
     toast.error(e.message)
     console.error(e) 
@@ -112,14 +112,14 @@ onMounted(fetchReclamations)
         </Button>
         <div class="flex-1">
           <div class="flex items-center gap-3">
-            <h2 class="text-xl font-black text-slate-900 line-clamp-1">{{ selectedTicket.Sujet }}</h2>
-            <Badge :class="selectedTicket.Statut === 'En cours' ? 'bg-orange-50 text-orange-600' : 'bg-emerald-50 text-emerald-600'" 
+            <h2 class="text-xl font-black text-slate-900 line-clamp-1">{{ selectedTicket.sujet }}</h2>
+            <Badge :class="selectedTicket.statut === 'En cours' ? 'bg-orange-50 text-orange-600' : 'bg-emerald-50 text-emerald-600'" 
               class="rounded-lg text-[10px] font-black uppercase tracking-widest px-2 py-0.5 border-none shadow-none">
-              {{ selectedTicket.Statut }}
+              {{ selectedTicket.statut }}
             </Badge>
           </div>
           <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">
-            Client: {{ selectedTicket.Client }} • Ticket #{{ selectedTicket.Id }} • Ouvert le {{ new Date(selectedTicket.DateReclamation).toLocaleDateString() }}
+            Client: {{ selectedTicket.client }} • Ticket #{{ selectedTicket.id }} • Ouvert le {{ new Date(selectedTicket.dateReclamation).toLocaleDateString() }}
           </p>
         </div>
       </div>

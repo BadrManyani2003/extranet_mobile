@@ -62,7 +62,9 @@ export const api = {
     getReclamations: () => request<any[]>('/reclamations/list'),
     getMessages: (reclamationId: string | number) => request<any[]>('/reclamations/detail', { body: JSON.stringify({ reclamationId }) }),
     createReclamation: (body: any) => request<any>('/reclamations/create', { body: JSON.stringify(body) }),
-    sendMessage: (reclamationId: string | number, body: any) => request<any>('/reclamations/add-message', { body: JSON.stringify({ ...body, reclamationId }) })
+    sendMessage: (reclamationId: string | number, body: any) => request<any>('/reclamations/add-message', { body: JSON.stringify({ ...body, reclamationId }) }),
+    updateStatut: (reclamationId: string | number, statut: string) => request<any>('/reclamations/update-statut', { body: JSON.stringify({ reclamationId, statut }) }),
+    deleteMessage: (messageId: number, reclamationId: number) => request<any>('/reclamations/delete-message', { body: JSON.stringify({ messageId, reclamationId }) })
   },
   
   admin: {

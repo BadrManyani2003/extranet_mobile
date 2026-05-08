@@ -91,7 +91,7 @@ const getStats = async (req, res) => {
     try {
         const { id, source, token } = ctx(req);
         const data = await Common.getDonnees(qry.getStats, [id, source, token]);
-        res.json(data[0] || []);
+        res.json(data);
     } catch (e) { res.status(500).json({ success: false, message: e.message }); }
 };
 

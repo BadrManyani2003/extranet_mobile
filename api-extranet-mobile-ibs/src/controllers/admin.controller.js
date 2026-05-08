@@ -18,9 +18,9 @@ const getUsers = async (req, res) => {
 const saveUser = async (req, res) => {
     try {
         const { id, source, token } = ctx(req);
-        const { Id = 0, Id_Auth = '', Nom, Telephone = '', Email = '', Nature = 'P', Extranet = 'N', Mobile = 'N' } = req.body;
-        const data = await Common.setDonnees(qry.saveUser, [id, token, source, Id, Id_Auth, Nom, Telephone, Email, Nature, Extranet, Mobile]);
-        res.json({ success: true, id: data[0]?.[0]?.NewId });
+        const { id: userId = 0, idAuth = '', nom, telephone = '', email = '', nature = 'P', extranet = 'N', mobile = 'N' } = req.body;
+        const data = await Common.setDonnees(qry.saveUser, [id, token, source, userId, idAuth, nom, telephone, email, nature, extranet, mobile]);
+        res.json({ success: true, id: data[0]?.[0]?.newId });
     } catch (e) { res.status(500).json({ success: false, message: e.message }); }
 };
 

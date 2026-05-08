@@ -18,6 +18,8 @@ const qry = {
     addMessageReclamation: "exec dbo.sp_AddMessageReclamation    @0, @1, @2, @3, @4, @5",
     updateReclamationStatut:"exec dbo.sp_UpdateReclamationStatus @0, @1, @2, @3, @4",
     deleteReclamation:     "exec dbo.sp_DeleteReclamation        @0, @1, @2, @3",
+    deleteMessageReclamation: "DELETE FROM ReclamationsDet WHERE Id = @0 AND Id = (SELECT MAX(Id) FROM ReclamationsDet WHERE FK_Reclamation_Id = @1)",
+    getReclamationStatut:  "SELECT Statut FROM ReclamationsIdt WHERE Id = @0",
 
     getUsers:              "exec dbo.ps_GetUsers              @0, @1, @2",
     saveUser:              "exec dbo.ps_SaveUser              @0, @1, @2, @3, @4, @5, @6, @7, @8, @9, @10",
@@ -28,8 +30,8 @@ const qry = {
     createUserFromAdherent:"exec dbo.ps_CreateUserFromAdherent @0, @1, @2, @3",
 
     updateToken:      "UPDATE sysUser SET token = @0, UpdatedAt = GETDATE() WHERE Id_Auth = @1",
-    getUserInfoByAuthId: "SELECT Id, Nom, Email, Mobile, Extranet FROM sysUser WHERE Id_Auth = @0",
-    getUserByAuthId:  "SELECT Id, token, Extranet FROM sysUser WHERE Id_Auth = @0",
+    getUserInfoByAuthId: "SELECT Id AS id, Nom AS nom, Email AS email, Mobile AS mobile, Extranet AS extranet FROM sysUser WHERE Id_Auth = @0",
+    getUserByAuthId:  "SELECT Id AS id, token, Extranet AS extranet FROM sysUser WHERE Id_Auth = @0",
 };
 
 module.exports = qry;

@@ -29,7 +29,15 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
 export const api = {
   data: {
     getPolices: () => request<any[]>('/data/polices', { method: 'POST' }),
-    getImpayes: () => request<any[]>('/data/quittances/impayes', { method: 'POST' }), 
+    getRisques: (policeId: number) => request<any[]>('/data/risques', { method: 'POST', body: JSON.stringify({ policeId }) }),
+    getSinistres: (policeId: number) => request<any[]>('/data/sinistres', { method: 'POST', body: JSON.stringify({ policeId }) }),
+    getSinistresEnCours: (policeId: number) => request<any[]>('/data/sinistres/en-cours', { method: 'POST', body: JSON.stringify({ policeId }) }),
+    getQuittances: (policeId: number) => request<any[]>('/data/quittances', { method: 'POST', body: JSON.stringify({ policeId }) }),
+    getImpayes: (policeId?: number) => request<any[]>('/data/quittances/impayes', { method: 'POST', body: JSON.stringify({ policeId }) }), 
+    getStatsByPolice: (policeId: number) => request<any>('/data/stats/police', { method: 'POST', body: JSON.stringify({ policeId }) }),
+    getAdherents: (policeId: number) => request<any[]>('/data/adherents', { method: 'POST', body: JSON.stringify({ policeId }) }),
+    getGaranties: (risqueId: number) => request<any[]>('/data/garanties', { method: 'POST', body: JSON.stringify({ risqueId }) }),
+    getPersACharge: (adherentId: number) => request<any[]>('/data/adherents/famille', { method: 'POST', body: JSON.stringify({ adherentId }) }),
     getStats: () => request<any[]>('/data/stats', { method: 'POST' }),
     getReclamations: () => request<any[]>('/reclamations/list', { method: 'POST' }),
     getMessages: (reclamationId: string | number) => request<any[]>('/reclamations/detail', { method: 'POST', body: JSON.stringify({ reclamationId }) }),
@@ -41,12 +49,12 @@ export const api = {
     getUsers: (filters = {}) => request<any[]>('/admin/users', { method: 'POST', body: JSON.stringify(filters) }),
     saveUser: (user: any) => request<any>('/admin/users/save', { method: 'POST', body: JSON.stringify(user) }),
     deleteUser: (userId: number) => request<any>('/admin/users/delete', { method: 'POST', body: JSON.stringify({ userId }) }),
-    syncKeycloak: (Id: number) => request<any>('/admin/users/sync-keycloak', { method: 'POST', body: JSON.stringify({ Id }) }),
+    syncKeycloak: (id: number) => request<any>('/admin/users/sync-keycloak', { method: 'POST', body: JSON.stringify({ id }) }),
     getClients: (filters = {}) => request<any[]>('/admin/clients', { method: 'POST', body: JSON.stringify(filters) }),
     createUserFromClient: (clientId: number) => request<any>('/admin/clients/create-user', { method: 'POST', body: JSON.stringify({ clientId }) }),
     getAdherents: (filters = {}) => request<any[]>('/admin/adherents', { method: 'POST', body: JSON.stringify(filters) }),
     createUserFromAdherent: (adherentId: number) => request<any>('/admin/adherents/create-user', { method: 'POST', body: JSON.stringify({ adherentId }) }),
     getReclamations: () => request<any[]>('/reclamations/list', { method: 'POST' }),
-    replyToReclamation: (reclamationId: string | number, Message: string) => request<any>('/reclamations/add-message', { method: 'POST', body: JSON.stringify({ reclamationId, message: Message, nature: 'A' }) })
+    replyToReclamation: (reclamationId: string | number, message: string) => request<any>('/reclamations/add-message', { method: 'POST', body: JSON.stringify({ reclamationId, message, nature: 'A' }) })
   }
 }

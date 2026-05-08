@@ -9,6 +9,7 @@ router.post('/list',          ctrl.getAll);
 router.post('/detail',        ctrl.getDetail);
 router.post('/create',        ctrl.create);
 router.post('/add-message',   ctrl.addMessage);
+router.post('/delete-message',ctrl.deleteMessage);
 router.post('/update-statut', ctrl.updateStatut);
 router.post('/delete',        ctrl.remove);
 

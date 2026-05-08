@@ -20,10 +20,10 @@ const contratsFiltres = computed(() => {
   if (!contrats.value) return []
   if (!recherchePrincipale.value) return contrats.value
   const requete = recherchePrincipale.value.toLowerCase()
-  return contrats.value.filter((c: any) => 
-    (c.Police || '').toLowerCase().includes(requete) || 
-    (c.Branche || '').toLowerCase().includes(requete) || 
-    (c.Client || '').toLowerCase().includes(requete)
+  return (contrats.value as any[]).filter((c: any) => 
+    (c.police || '').toLowerCase().includes(requete) || 
+    (c.branche || '').toLowerCase().includes(requete) || 
+    (c.client || '').toLowerCase().includes(requete)
   )
 })
 
@@ -57,7 +57,7 @@ const gererMiseAJourRecherche = ({ policeId, onglet, requete }: any) => {
       <Accordion v-else-if="contratsFiltres.length > 0" type="single" collapsible class="space-y-4">
         <ContratItem 
           v-for="contrat in contratsFiltres" 
-          :key="contrat.Id" 
+          :key="contrat.id" 
           :police="contrat"
           :getStatusBadge="obtenirBadgeStatut"
           :detailedSearchQueries="recherchesDetaillees"

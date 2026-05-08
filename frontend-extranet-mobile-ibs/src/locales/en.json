@@ -7,24 +7,30 @@
   },
   "tableau_bord": {
     "title": "Dashboard",
-    "subtitle": "Overview of your insurance coverage and active policies.",
+    "subtitle": "Overview",
     "expert_analysis": "Portfolio Analysis",
     "monthly": "Monthly",
     "annually": "Yearly",
     "premium_evolution": "Premium Evolution",
+    "unpaid_evolution": "Unpaid Evolution",
     "premium_desc": "Track premiums, contributions and payments.",
     "coverage_distribution": "Coverage Breakdown",
     "coverage_desc": "Overview of your insurance lines and guarantees.",
-    "claims_status": "Claims List",
+    "claims_status": "Claims Status",
+    "branch_financials": "Branch Financials",
     "claims_desc": "History of claims declarations, ongoing files and settlements.",
-    "total_policies": "Active Policies",
-    "last_update": "Last Update",
+    "total_policies": "My Policies",
+    "total_claims": "Total Claims",
+    "total_risks": "Insured Risks",
+    "total_adherents": "Total Members",
     "pending_claims": "Open Claims",
-    "total_unpaid": "Total Outstanding"
+    "prime_annuelle": "Annual Premium",
+    "mt_impayer": "Unpaid Amount",
+    "last_update": "Last Update"
   },
   "contrats": {
     "title": "My Policies",
-    "subtitle": "View and manage your active insurance policies.",
+    "subtitle": "Policy management",
     "search_placeholder": "Search",
     "prime_annuelle": "Annual Premium",
     "impayes": "Unpaid",
@@ -39,8 +45,8 @@
     "num": "N° police"
   },
   "risques": {
-    "title": "List of Insured Risks",
-    "subtitle": "List of items, people or activities covered by this policy.",
+    "title": "Insured risks",
+    "subtitle": "Coverage details",
     "search": "Search",
     "vehicle": "Vehicle",
     "adherent": "Member",
@@ -66,9 +72,9 @@
     "no_details": "No additional details available for this risk."
   },
   "sinistres": {
-    "title": "Claims List",
-    "desc_all": "Complete history of claims declared on this policy.",
-    "desc_ongoing": "Displaying claims files currently being processed.",
+    "title": "Claims",
+    "desc_all": "Full history",
+    "desc_ongoing": "Ongoing files",
     "search": "Search",
     "declared_on": "Declared on",
     "object": "Object concerned",
@@ -88,10 +94,10 @@
     "empty": "No claims entered for this policy."
   },
   "quittances": {
-    "title_prime": "Premium List",
-    "desc_prime": "History of premiums and receipts issued for this policy.",
+    "title_prime": "Receipts",
+    "desc_prime": "Premium history",
     "title_impayes": "Unpaid Status",
-    "desc_impayes": "List of receipts with an outstanding balance.",
+    "desc_impayes": "Outstanding balance",
     "search": "Search",
     "num": "Receipt N°",
     "from": "Period from",
@@ -106,8 +112,8 @@
     "empty_all": "No receipts available for this policy."
   },
   "vue_impayes": {
-    "title": "Unpaid Tracking",
-    "subtitle": "Manage receipts pending payment.",
+    "title": "Unpaid",
+    "subtitle": "Pending receipts",
     "search": "Search",
     "total_unpaid": "Total Unpaid",
     "items": "Pending Receipts",
@@ -116,10 +122,33 @@
     "empty": "Great! No outstanding payments currently detected in your portfolio."
   },
   "reclamations": {
-    "title": "Personal Assistant",
-    "subtitle": "Ask questions about your policies, coverages and claims.",
-    "placeholder": "Write your message here...",
-    "online": "Online"
+    "title": "Reclamations",
+    "subtitle": "Technical and commercial support",
+    "new_request": "New request",
+    "subject": "Subject",
+    "subject_placeholder": "Ex: Policy issue...",
+    "nature": "Nature",
+    "nature_r": "Reclamation",
+    "nature_d": "Information request",
+    "nature_s": "Claim",
+    "message": "Message",
+    "message_placeholder": "Describe your request...",
+    "send": "Send",
+    "cancel": "Cancel",
+    "success_msg": "Request sent!",
+    "error_msg": "Error sending request",
+    "ticket_num": "Ticket",
+    "opened_on": "Opened on",
+    "online": "Online",
+    "empty_title": "No reclamations",
+    "empty_desc": "You don't have any ongoing requests yet.",
+    "messages_count": "messages",
+    "status_updated": "Status updated successfully!",
+    "message_deleted": "Message deleted!",
+    "closed_notice": "This reclamation is closed. You can no longer send messages.",
+    "closed_error": "Action impossible: reclamation is closed.",
+    "close_ticket": "Close ticket",
+    "reopen_ticket": "Reopen ticket"
   },
   "commun": {
     "search": "Search",
@@ -143,5 +172,9 @@
     "annulé": "Canceled",
     "refusé": "Refused",
     "en_attente": "Pending"
+  },
+  "restricted": {
+    "title": "Restricted Access",
+    "description": "Please use the mobile application."
   }
 }

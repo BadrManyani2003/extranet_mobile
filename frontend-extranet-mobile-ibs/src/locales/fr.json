@@ -7,24 +7,30 @@
   },
   "tableau_bord": {
     "title": "Tableau de bord",
-    "subtitle": "Vue d'ensemble de vos garanties et de vos contrats d'assurance.",
+    "subtitle": "Vue d'ensemble",
     "expert_analysis": "Analyse du portefeuille",
     "monthly": "Mensuel",
     "annually": "Annuel",
     "premium_evolution": "Évolution des primes",
+    "unpaid_evolution": "Évolution des impayés",
     "premium_desc": "Suivi des cotisations, primes émises et règlements.",
     "coverage_distribution": "Répartition des garanties",
     "coverage_desc": "Aperçu des différentes branches et couvertures souscrites.",
-    "claims_status": "Liste des sinistres",
+    "claims_status": "Statut des sinistres",
+    "branch_financials": "Finances par branche",
     "claims_desc": "Historique des déclarations, dossiers en cours et règlements.",
-    "total_policies": "Contrats actifs",
-    "last_update": "Dernière mise à jour",
+    "total_policies": "Mes contrats",
+    "total_claims": "Total des sinistres",
+    "total_risks": "Risques assurés",
+    "total_adherents": "Total des adhérents",
     "pending_claims": "Sinistres en cours",
-    "total_unpaid": "Total des impayés"
+    "prime_annuelle": "Prime de l'année",
+    "mt_impayer": "Montant impayé",
+    "last_update": "Dernière mise à jour"
   },
   "contrats": {
     "title": "Mes polices",
-    "subtitle": "Consultez et gérez vos contrats d'assurance en vigueur.",
+    "subtitle": "Gestion des contrats",
     "search_placeholder": "Recherche",
     "prime_annuelle": "Prime annuelle",
     "impayes": "Impayés",
@@ -34,13 +40,13 @@
     "statut": "Statut",
     "branche": "Branche",
     "echeance": "Échéance",
-    "detail_button": "Détails du contrat",
+    "detail_button": "Détails",
     "support_button": "Assistance",
     "num": "N° police"
   },
   "risques": {
-    "title": "Liste des risques assurés",
-    "subtitle": "Liste des biens, personnes ou activités couverts par ce contrat.",
+    "title": "List risque assuré",
+    "subtitle": "Détails des couvertures",
     "search": "Recherche",
     "vehicle": "Véhicule",
     "adherent": "Adhérent",
@@ -66,9 +72,9 @@
     "no_details": "Aucun détail supplémentaire disponible pour ce risque."
   },
   "sinistres": {
-    "title": "Liste des sinistres",
-    "desc_all": "Historique complet des sinistres déclarés sur ce contrat.",
-    "desc_ongoing": "Affichage des dossiers de sinistres en cours de traitement.",
+    "title": "Sinistres",
+    "desc_all": "Historique complet",
+    "desc_ongoing": "Dossiers en cours",
     "search": "Recherche",
     "declared_on": "Déclaré le",
     "object": "Objet concerné",
@@ -88,10 +94,10 @@
     "empty": "Aucun sinistre saisi sur ce contrat."
   },
   "quittances": {
-    "title_prime": "Liste des quittances",
-    "desc_prime": "Historique des primes et quittances émises pour ce contrat.",
+    "title_prime": "Quittances",
+    "desc_prime": "Historique des primes",
     "title_impayes": "État des impayés",
-    "desc_impayes": "Liste des quittances présentant un solde restant dû.",
+    "desc_impayes": "Solde restant dû",
     "search": "Recherche",
     "num": "N° quittance",
     "from": "Période du",
@@ -107,7 +113,7 @@
   },
   "vue_impayes": {
     "title": "Mes impayés",
-    "subtitle": "Gérez les quittances en attente de règlement.",
+    "subtitle": "Quittances en attente",
     "search": "Recherche",
     "total_unpaid": "Total des impayés",
     "items": "Quittances en attente",
@@ -117,9 +123,32 @@
   },
   "reclamations": {
     "title": "Mes réclamations",
-    "subtitle": "Posez vos questions sur vos contrats, garanties et sinistres.",
-    "placeholder": "Écrivez votre message ici...",
-    "online": "En ligne"
+    "subtitle": "Support technique et commercial",
+    "new_request": "Nouvelle demande",
+    "subject": "Sujet",
+    "subject_placeholder": "Ex: Problème de quittance...",
+    "nature": "Nature",
+    "nature_r": "Réclamation",
+    "nature_d": "Demande d'information",
+    "nature_s": "Sinistre",
+    "message": "Message",
+    "message_placeholder": "Détaillez votre demande...",
+    "send": "Envoyer",
+    "cancel": "Annuler",
+    "success_msg": "Réclamation envoyée !",
+    "error_msg": "Erreur lors de l'envoi",
+    "ticket_num": "Ticket",
+    "opened_on": "Ouvert le",
+    "online": "En ligne",
+    "empty_title": "Aucune réclamation",
+    "empty_desc": "Vous n'avez pas encore de demande en cours.",
+    "messages_count": "messages",
+    "status_updated": "Statut mis à jour avec succès !",
+    "message_deleted": "Message supprimé !",
+    "closed_notice": "Cette réclamation est clôturée. Vous ne pouvez plus envoyer de messages.",
+    "closed_error": "Action impossible : la réclamation est clôturée.",
+    "close_ticket": "Clôturer le ticket",
+    "reopen_ticket": "Rouvrir le ticket"
   },
   "commun": {
     "search": "Recherche",
@@ -143,5 +172,9 @@
     "annulé": "Annulé",
     "refusé": "Refusé",
     "en_attente": "En attente"
+  },
+  "restricted": {
+    "title": "Accès restreint",
+    "description": "Veuillez utiliser l'application mobile."
   }
 }

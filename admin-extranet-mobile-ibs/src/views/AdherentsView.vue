@@ -54,28 +54,28 @@ onMounted(fetchAdherents)
           </TableRow>
         </TableHeader>
         <TableBody>
-          <TableRow v-for="adherent in items" :key="adherent.Id" class="hover:bg-slate-50/80 transition-colors border-b border-slate-50">
-            <TableCell class="font-bold text-slate-400 py-4">{{ adherent.Matricule || 'N/A' }}</TableCell>
+          <TableRow v-for="adherent in items" :key="adherent.id" class="hover:bg-slate-50/80 transition-colors border-b border-slate-50">
+            <TableCell class="font-bold text-slate-400 py-4">{{ adherent.matricule || 'N/A' }}</TableCell>
             <TableCell>
               <div class="flex items-center gap-3">
                 <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 shadow-sm">
                   <User class="w-4 h-4" />
                 </div>
-                <span class="font-black text-slate-900">{{ adherent.Nom }}</span>
+                <span class="font-black text-slate-900">{{ adherent.nom }}</span>
               </div>
             </TableCell>
-            <TableCell class="text-sm font-bold text-slate-600">{{ adherent.DateNaissance ? new Date(adherent.DateNaissance).toLocaleDateString() : '-' }}</TableCell>
+            <TableCell class="text-sm font-bold text-slate-600">{{ adherent.dateNaissance ? new Date(adherent.dateNaissance).toLocaleDateString() : '-' }}</TableCell>
             <TableCell>
-              <div v-if="adherent.FK_User_Id" class="flex items-center gap-2 text-emerald-600 font-bold text-xs bg-emerald-50 px-3 py-1.5 rounded-xl w-fit">
+              <div v-if="adherent.fkUserId" class="flex items-center gap-2 text-emerald-600 font-bold text-xs bg-emerald-50 px-3 py-1.5 rounded-xl w-fit">
                 <CheckCircle2 class="w-4 h-4" />
-                {{ adherent.UserNom }}
+                {{ adherent.userNom }}
               </div>
               <span v-else class="text-slate-300 font-black text-[10px] uppercase tracking-widest">Aucun</span>
             </TableCell>
             <TableCell class="text-right">
-              <Button v-if="!adherent.FK_User_Id" variant="ghost" size="sm" 
+              <Button v-if="!adherent.fkUserId" variant="ghost" size="sm" 
                 class="h-10 gap-2 rounded-xl text-slate-600 font-black text-[10px] uppercase tracking-widest hover:bg-slate-100 hover:text-slate-900 transition-all"
-                @click="handleCreateUser(adherent.Id)"
+                @click="handleCreateUser(adherent.id)"
               >
                 <UserPlus class="w-4 h-4" /> Créer Accès
               </Button>

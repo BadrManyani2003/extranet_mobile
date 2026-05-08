@@ -18,7 +18,7 @@ const toggleMenu = () => {
 onMounted(async () => {
   try {
     const response = await api.data.getUserInfo()
-    if (String(response?.user?.Extranet).trim().toUpperCase() === 'N') {
+    if (String(response?.user?.extranet).trim().toUpperCase() === 'N') {
       hasAccess.value = false
       router.push({ name: 'restricted' })
     }

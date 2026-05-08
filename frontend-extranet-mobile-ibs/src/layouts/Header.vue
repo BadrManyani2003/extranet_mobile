@@ -58,7 +58,7 @@ const handleLogout = () => {
         <button 
           @click="handleLogout"
           class="w-10 h-10 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center hover:bg-red-50 hover:text-red-600 transition-all border border-slate-200/50 group"
-          title="Déconnexion"
+          :title="$t('commun.logout')"
         >
           <LogOut class="w-5 h-5 group-hover:rotate-12 transition-transform" />
         </button>

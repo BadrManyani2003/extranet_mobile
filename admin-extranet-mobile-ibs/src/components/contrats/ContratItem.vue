@@ -8,7 +8,7 @@ import ListeRisques from './ListeRisques.vue'
 import ListeSinistres from './ListeSinistres.vue'
 import ListeQuittances from './ListeQuittances.vue'
 import { useI18n } from 'vue-i18n'
-import { formatCurrency } from '@/lib/utils'
+import { formatCurrency, formatDate, formatNumber } from '@/lib/utils'
 
 const { t } = useI18n()
 
@@ -29,10 +29,10 @@ const basculerOnglet = (onglet: string) => {
 const obtenirElementsGrille = (p: any) => [
   { id: 'numero', title: t('contrats.num'), type: 'static', value: p.numero, icon: FileText, colorClass: 'bg-slate-100 text-slate-500' },
   { id: 'branche', title: t('contrats.branche'), type: 'static', value: p.branche, icon: Tag, colorClass: 'bg-slate-100 text-slate-900' },
-  { id: 'echeance', title: t('contrats.echeance'), type: 'static', value: p.dateEcheance, icon: CalendarDays, colorClass: 'bg-slate-50 text-slate-600' },
-  { id: 'risque', title: p.branche === 'Automobile' ? (t('risques.vehicle') + 's') : (p.branche === 'Santé' ? (t('risques.adherent') + 's') : t('contrats.risques')), type: 'action', value: p.risques.length, icon: Shield, defaultColor: 'bg-slate-100 text-slate-800' },  
-  { id: 'sinistres', title: t('contrats.sinistres'), type: 'action', value: p.sinistres.length, icon: LifeBuoy, defaultColor: 'bg-slate-100 text-slate-800' },
-  { id: 'sinistres-encours', title: t('contrats.sinistres_encours'), type: 'action', value: p.sinistres.filter((s: any) => s.statut === 'En cours').length, icon: Clock, defaultColor: 'bg-slate-100 text-slate-800' },
+  { id: 'echeance', title: t('contrats.echeance'), type: 'static', value: formatDate(p.dateEcheance), icon: CalendarDays, colorClass: 'bg-slate-50 text-slate-600' },
+  { id: 'risque', title: p.branche === 'Automobile' ? (t('risques.vehicle') + 's') : (p.branche === 'Santé' ? (t('risques.adherent') + 's') : t('contrats.risques')), type: 'action', value: formatNumber(p.risques.length), icon: Shield, defaultColor: 'bg-slate-100 text-slate-800' },  
+  { id: 'sinistres', title: t('contrats.sinistres'), type: 'action', value: formatNumber(p.sinistres.length), icon: LifeBuoy, defaultColor: 'bg-slate-100 text-slate-800' },
+  { id: 'sinistres-encours', title: t('contrats.sinistres_encours'), type: 'action', value: formatNumber(p.sinistres.filter((s: any) => s.statut === 'En cours' || s.statut === 'E').length), icon: Clock, defaultColor: 'bg-slate-100 text-slate-800' },
   { id: 'prime', title: t('contrats.prime_annuelle'), type: 'action', value: formatCurrency(p.primeAnnuelle), icon: Wallet, defaultColor: 'bg-slate-200 text-slate-900' },
   { id: 'impayes', title: t('contrats.impayes'), type: 'action', value: formatCurrency(p.impayes), icon: Receipt, defaultColor: p.impayes > 0 ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-400', isRedAlert: p.impayes > 0 },
   { id: 'statut', title: t('contrats.statut'), type: 'badge', value: p.statut, icon: p.statut === 'Actif' ? CheckCircle2 : AlertCircle, colorClass: 'bg-slate-100 text-slate-500' }
