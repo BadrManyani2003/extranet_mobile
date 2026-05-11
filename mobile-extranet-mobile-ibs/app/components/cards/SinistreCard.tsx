@@ -54,7 +54,7 @@ const SinistreCard: React.FC<SinistreCardProps> = ({
       'error': 'errorBg',
       'info': 'infoBg',
       'purple': 'purpleBg',
-      'pink': 'pinkBg',
+      'pink': 'purpleBg',
     };
     
     return colorMap[iconColor] || 'backgroundGray';
@@ -99,7 +99,7 @@ const SinistreCard: React.FC<SinistreCardProps> = ({
             marginRight="m"
           >
             <Icon 
-              name={icon} 
+              name={icon as any} 
               size={24} 
               color={theme.colors[iconColor]} 
             />

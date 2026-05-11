@@ -1,10 +1,19 @@
 import path from "path"
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+// @ts-ignore
+import viteCompression from 'vite-plugin-compression'
+// @ts-ignore
+import { visualizer } from 'rollup-plugin-visualizer'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [
+    vue(),
+    viteCompression({ algorithm: 'brotliCompress' }),
+    viteCompression({ algorithm: 'gzip' }),
+    visualizer({ open: false, gzipSize: true, brotliSize: true })
+  ],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

@@ -50,7 +50,6 @@ const ContratCard: React.FC<ContratCardProps> = ({
     if (iconColor === 'error') return 'errorBg';
     if (iconColor === 'info') return 'infoBg';
     if (iconColor === 'purple') return 'purpleBg';
-    if (iconColor === 'pink') return 'pinkBg';
     return 'backgroundGray';
   };
 
@@ -93,7 +92,7 @@ const ContratCard: React.FC<ContratCardProps> = ({
             marginRight="m"
           >
             <Icon 
-              name={icon} 
+              name={icon as any} 
               size={26} 
               color={theme.colors[iconColor]} 
             />

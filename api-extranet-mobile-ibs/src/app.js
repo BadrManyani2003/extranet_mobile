@@ -16,7 +16,12 @@ const limiter = rateLimit({
 app.use(helmet());
 app.use(compression());
 app.use(limiter);
-app.use(cors());
+app.use(cors({
+    origin: '*', 
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-source'],
+    credentials: true
+}));
 app.use(express.json());
 app.use(morgan('combined')); // Better logging for production
 

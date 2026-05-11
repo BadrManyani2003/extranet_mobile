@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { onMounted, computed } from 'vue'
 import { 
   BarChart3, 
   TrendingUp, 
@@ -7,8 +7,6 @@ import {
   AlertCircle, 
   CreditCard,
   PieChart,
-  ArrowUpRight,
-  ArrowDownRight,
   ShieldCheck,
   Users
 } from 'lucide-vue-next'
@@ -17,7 +15,6 @@ import LoadingSkeleton from '@/components/shared/LoadingSkeleton.vue'
 import { api } from '@/lib/api'
 import { useI18n } from 'vue-i18n'
 import { useFetch } from '@/composables/useFetch'
-import keycloak from '@/services/keycloak'
 import { formatCurrency, formatNumber } from '@/lib/utils'
 
 const { t } = useI18n()
@@ -51,7 +48,7 @@ ChartJS.register(
 )
 
 const { data: statistiques, loading: loadingStats, execute: fetchStats } = useFetch(api.data.getStats)
-const { data: contrats, loading: loadingContrats, execute: fetchContrats } = useFetch(api.data.getPolices)
+const { loading: loadingContrats, execute: fetchContrats } = useFetch(api.data.getPolices)
 
 const chargementEnCours = computed(() => loadingStats.value || loadingContrats.value)
 

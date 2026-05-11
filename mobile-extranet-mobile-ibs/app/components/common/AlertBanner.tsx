@@ -45,7 +45,7 @@ const AlertBanner: React.FC<AlertBannerProps> = ({
         borderColor={style.bg as any}
       >
         <Icon 
-          name={icon || style.icon} 
+          name={(icon || style.icon) as any} 
           size={20} 
           color={theme.colors[style.text as keyof Theme['colors']]} 
           style={{ marginRight: 10 }} 
@@ -55,7 +55,7 @@ const AlertBanner: React.FC<AlertBannerProps> = ({
         </Text>
         {onPress && (
           <Icon 
-            name="chevron-forward" 
+            name={"chevron-forward" as any} 
             size={14} 
             color={theme.colors[style.text as keyof Theme['colors']]} 
           />

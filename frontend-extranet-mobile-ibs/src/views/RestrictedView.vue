@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ShieldAlert , ExternalLink } from 'lucide-vue-next'
+import { ShieldAlert } from 'lucide-vue-next'
 </script>
 
 <template>

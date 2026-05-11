@@ -1,9 +1,8 @@
 const router = require('express').Router();
-const ctrl   = require('../controllers/auth.controller');
-const auth   = require('../middleware/auth');
+const auth = require('../middleware/auth');
+const ctrl = require('../controllers/auth.controller');
 
-router.post('/login',   ctrl.login);
-router.post('/refresh', ctrl.refresh);
-router.get('/me', auth, ctrl.me);
+// Only /me is needed since Keycloak handles login/refresh
+router.get('/me', auth, ctrl.getMe);
 
 module.exports = router;

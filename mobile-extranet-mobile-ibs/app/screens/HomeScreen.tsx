@@ -142,15 +142,20 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   }, []);
 
   const handleLogout = () => {
+    console.log('🔘 Logout button pressed');
     Alert.alert(
       t('Déconnexion'),
       t('Confirmer déco'),
       [
         { text: t('Annuler'), style: 'cancel' },
-        { text: t('Se déconnecter'), style: 'destructive', onPress: logout },
+        { text: t('Se déconnecter'), style: 'destructive', onPress: () => {
+          console.log('✅ Confirmation received, calling logout');
+          logout();
+        }},
       ]
     );
   };
+
 
   useEffect(() => { loadAll(); }, [loadAll]);
 

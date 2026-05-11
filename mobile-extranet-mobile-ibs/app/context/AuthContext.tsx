@@ -1,18 +1,23 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { authAPI } from '../api';
-import { User } from '../types';
 
 // ============================================================
-// Types du contexte Auth
+// Types
 // ============================================================
+export interface User {
+  id: string;
+  email: string;
+  nom: string;
+  prenom: string;
+  role?: string;
+}
+
 interface AuthContextType {
   user: User | null;
   token: string | null;
   source: 'ADHERENT' | 'CLIENT' | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (identifier: string, password: string, userSource: 'ADHERENT' | 'CLIENT') => Promise<{ success: boolean }>;
   signin: (userData: User, userToken: string, userSource: 'ADHERENT' | 'CLIENT') => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -26,15 +31,15 @@ export const useAuth = (): AuthContextType => {
 };
 
 // ============================================================
-// AuthProvider
+// AuthProvider — sessions backed by Keycloak tokens
 // ============================================================
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
+  const [user, setUser]     = useState<User | null>(null);
+  const [token, setToken]   = useState<string | null>(null);
   const [source, setSource] = useState<'ADHERENT' | 'CLIENT' | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Restaurer la session au démarrage
+  // ── Restore persisted session on app start ──────────────────
   useEffect(() => {
     const restoreSession = async () => {
       try {
@@ -49,7 +54,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setSource(savedSource as 'ADHERENT' | 'CLIENT');
         }
       } catch {
-        // Session invalide, ignorer
+        // Session invalide ou corrompue — ignorer
       } finally {
         setIsLoading(false);
       }
@@ -57,53 +62,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     restoreSession();
   }, []);
 
-  const signin = useCallback(async (userData: User, userToken: string, userSource: 'ADHERENT' | 'CLIENT') => {
-    // Sauvegarder en local pour persistance
+  // ── Called after successful Keycloak authentication ─────────
+  const signin = useCallback(async (
+    userData: User,
+    userToken: string,
+    userSource: 'ADHERENT' | 'CLIENT'
+  ) => {
     await Promise.all([
       AsyncStorage.setItem('token', userToken),
       AsyncStorage.setItem('user', JSON.stringify(userData)),
       AsyncStorage.setItem('user_source', userSource),
     ]);
-
     setUser(userData);
     setToken(userToken);
     setSource(userSource);
   }, []);
 
-  const login = useCallback(async (identifier: string, password: string, userSource: 'ADHERENT' | 'CLIENT') => {
-    // On doit d'abord s'assurer que le source est mis pour l'appel login si le backend en a besoin
-    // Mais ici le login semble être global. Cependant, on le stocke pour les appels suivants.
-    await AsyncStorage.setItem('user_source', userSource);
-    
-    const data = await authAPI.login(identifier, password);
-    
-    if (!data.user || !data.access_token) {
-      throw new Error('Informations de session manquantes');
-    }
-
-    await signin(data.user, data.access_token, userSource);
-    return { success: true };
-  }, [signin]);
-
+  // ── Clear session (local only — Keycloak session on server persists) ─
   const logout = useCallback(async () => {
-    setUser(null);
-    setToken(null);
-    setSource(null);
-    
+    console.log('🔄 Logout initiated...');
     try {
+      // 1. Clear local state immediately for fast UI response
+      setUser(null);
+      setToken(null);
+      setSource(null);
+
+      // 2. Clear persisted data
       await Promise.all([
         AsyncStorage.removeItem('token'),
         AsyncStorage.removeItem('user'),
         AsyncStorage.removeItem('user_source'),
       ]);
       
-      if (user?.email && token) {
-        await authAPI.logout(user.email);
-      }
+      console.log('✅ Local session cleared successfully');
     } catch (err) {
-      console.warn("Erreur mineure durant la déconnexion:", err);
+      console.error('❌ Error during logout:', err);
     }
-  }, [user, token]);
+  }, []);
 
   return (
     <AuthContext.Provider value={{
@@ -112,7 +107,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       source,
       isAuthenticated: !!token && !!user,
       isLoading,
-      login,
       signin,
       logout,
     }}>
@@ -120,4 +114,3 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     </AuthContext.Provider>
   );
 };
-

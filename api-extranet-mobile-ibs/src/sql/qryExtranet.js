@@ -28,6 +28,7 @@ const qry = {
     createUserFromClient:  "exec dbo.ps_CreateUserFromClient  @0, @1, @2, @3",
     getAdherentsAdmin:     "exec dbo.sp_GetAdherents          @0, @1, @2, @3",
     createUserFromAdherent:"exec dbo.ps_CreateUserFromAdherent @0, @1, @2, @3",
+    syncKeycloak:          "exec dbo.ps_SyncKeycloak           @0, @1, @2, @3",
 
     updateToken:         "exec dbo.sp_UpdateToken @0, @1",
     getUserInfoByAuthId: "exec dbo.sp_GetUserInfoByAuthId @0",

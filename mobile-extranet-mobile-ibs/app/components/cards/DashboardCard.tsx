@@ -45,9 +45,9 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
       'purple': 'purpleBg',
       'purpleLight': 'purpleBg',
       'purpleDark': 'purpleBg',
-      'pink': 'pinkBg',
-      'pinkLight': 'pinkBg',
-      'pinkDark': 'pinkBg',
+      'pink': 'purpleBg',
+      'pinkLight': 'purpleBg',
+      'pinkDark': 'purpleBg',
     };
     
     return colorMap[color] || 'backgroundGray';
@@ -92,7 +92,7 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
           marginRight="m"
         >
           <Icon 
-            name={iconName} 
+            name={iconName as any} 
             size={28} 
             color={theme.colors[color]} 
           />

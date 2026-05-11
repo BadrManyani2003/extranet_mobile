@@ -85,11 +85,11 @@ const AppHeader: React.FC<AppHeaderProps> = ({
         <Box width={rsp.scale(60)} alignItems="flex-start">
           {showBackButton ? (
             <TouchableOpacity onPress={onBackPress} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-              <Icon name={leftIconName || 'chevron-back'} size={24} color={theme.colors[iconColor]} />
+              <Icon name={(leftIconName || 'chevron-back') as any} size={24} color={theme.colors[iconColor]} />
             </TouchableOpacity>
           ) : leftIconName ? (
             <TouchableOpacity onPress={onBackPress} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-              <Icon name={leftIconName} size={24} color={theme.colors[iconColor]} />
+              <Icon name={leftIconName as any} size={24} color={theme.colors[iconColor]} />
             </TouchableOpacity>
           ) : null}
         </Box>
@@ -109,7 +109,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
               <Box position="relative" backgroundColor="backgroundGray" width={34} height={34} borderRadius="round" alignItems="center" justifyContent="center">
-                <Icon name={rightIconName} size={22} color={theme.colors[iconColor]} />
+                <Icon name={rightIconName as any} size={22} color={theme.colors[iconColor]} />
                 {showNotificationBadge && notificationCount > 0 && (
                   <Box 
                     position="absolute"

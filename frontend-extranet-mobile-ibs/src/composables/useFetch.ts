@@ -14,7 +14,7 @@ export function useFetch<T>(apiMethod: (...args: any[]) => Promise<T>) {
       return data.value
     } catch (e: any) {
       error.value = e.message || 'Une erreur est survenue'
-      toast.error(error.value)
+      toast.error(error.value || 'Une erreur est survenue')
       throw e
     } finally {
       loading.value = false

@@ -12,7 +12,15 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     if (keycloak.token) headers.set('Authorization', `Bearer ${keycloak.token}`)
   }
 
-  const response = await fetch(`${BASE_URL}${endpoint}`, { ...options, headers })
+  let url = `${BASE_URL}${endpoint}`
+  if (options.method === 'GET' && options.body) {
+    const params = JSON.parse(options.body as string)
+    const queryString = new URLSearchParams(params).toString()
+    if (queryString) url += `?${queryString}`
+    delete options.body
+  }
+
+  const response = await fetch(url, { ...options, headers })
   const result = await response.json().catch(() => ({ error: true, message: 'JSON Parse Error' }))
 
   if (!response.ok || result?.error || result?.success === false) {
@@ -28,17 +36,17 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
 
 export const api = {
   data: {
-    getPolices: () => request<any[]>('/data/polices', { method: 'POST' }),
-    getRisques: (policeId: number) => request<any[]>('/data/risques', { method: 'POST', body: JSON.stringify({ policeId }) }),
-    getSinistres: (policeId: number) => request<any[]>('/data/sinistres', { method: 'POST', body: JSON.stringify({ policeId }) }),
-    getSinistresEnCours: (policeId: number) => request<any[]>('/data/sinistres/en-cours', { method: 'POST', body: JSON.stringify({ policeId }) }),
-    getQuittances: (policeId: number) => request<any[]>('/data/quittances', { method: 'POST', body: JSON.stringify({ policeId }) }),
-    getImpayes: (policeId?: number) => request<any[]>('/data/quittances/impayes', { method: 'POST', body: JSON.stringify({ policeId }) }), 
-    getStatsByPolice: (policeId: number) => request<any>('/data/stats/police', { method: 'POST', body: JSON.stringify({ policeId }) }),
-    getAdherents: (policeId: number) => request<any[]>('/data/adherents', { method: 'POST', body: JSON.stringify({ policeId }) }),
-    getGaranties: (risqueId: number) => request<any[]>('/data/garanties', { method: 'POST', body: JSON.stringify({ risqueId }) }),
-    getPersACharge: (adherentId: number) => request<any[]>('/data/adherents/famille', { method: 'POST', body: JSON.stringify({ adherentId }) }),
-    getStats: () => request<any[]>('/data/stats', { method: 'POST' }),
+    getPolices: () => request<any[]>('/data/polices', { method: 'GET' }),
+    getRisques: (policeId: number) => request<any[]>('/data/risques', { method: 'GET', body: JSON.stringify({ policeId }) }),
+    getSinistres: (policeId: number) => request<any[]>('/data/sinistres', { method: 'GET', body: JSON.stringify({ policeId }) }),
+    getSinistresEnCours: (policeId: number) => request<any[]>('/data/sinistres/en-cours', { method: 'GET', body: JSON.stringify({ policeId }) }),
+    getQuittances: (policeId: number) => request<any[]>('/data/quittances', { method: 'GET', body: JSON.stringify({ policeId }) }),
+    getImpayes: (policeId?: number) => request<any[]>('/data/quittances/impayes', { method: 'GET', body: JSON.stringify({ policeId: policeId || '' }) }), 
+    getStatsByPolice: (policeId: number) => request<any>('/data/stats/police', { method: 'GET', body: JSON.stringify({ policeId }) }),
+    getAdherents: (policeId: number) => request<any[]>('/data/adherents', { method: 'GET', body: JSON.stringify({ policeId }) }),
+    getGaranties: (risqueId: number) => request<any[]>('/data/garanties', { method: 'GET', body: JSON.stringify({ risqueId }) }),
+    getPersACharge: (adherentId: number) => request<any[]>('/data/adherents/famille', { method: 'GET', body: JSON.stringify({ adherentId }) }),
+    getStats: () => request<any[]>('/data/stats', { method: 'GET' }),
     getReclamations: () => request<any[]>('/reclamations/list', { method: 'POST' }),
     getMessages: (reclamationId: string | number) => request<any[]>('/reclamations/detail', { method: 'POST', body: JSON.stringify({ reclamationId }) }),
     createReclamation: (body: any) => request<any>('/reclamations/create', { method: 'POST', body: JSON.stringify(body) }),

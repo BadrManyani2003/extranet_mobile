@@ -1,6 +1,6 @@
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { LoginResponse, Police, Quittance, Sinistre, SinReglement } from '../types';
+import { Police, Quittance, Sinistre, SinReglement } from '../types';
 
 // ============================================================
 // Configuration de base de l'API
@@ -33,25 +33,54 @@ async function authHeaders(): Promise<Record<string, string>> {
   return {
     ...defaultHeaders,
     'Authorization': `Bearer ${token}`,
-    'x-source': source,
+    'x-source': 'M',
   };
 }
 
-/** Helper pour faire les requêtes POST authentifiées */
-async function authPost<T>(endpoint: string, body: Record<string, unknown> = {}): Promise<T> {
+/** Helper générique pour les requêtes API */
+async function apiRequest<T>(
+  endpoint: string, 
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'GET', 
+  body: any = null
+): Promise<T> {
   const headers = await authHeaders();
+  const url = new URL(`${BASE_URL}${endpoint}`);
   
-  try {
-    const response = await fetch(`${BASE_URL}${endpoint}`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(body),
-    });
+  const options: RequestInit = {
+    method,
+    headers,
+  };
 
-    const data = await response.json();
+  if (method === 'GET' && body) {
+    Object.keys(body).forEach(key => {
+      if (body[key] !== null && body[key] !== undefined) {
+        url.searchParams.append(key, String(body[key]));
+      }
+    });
+  } else if (body) {
+    options.body = JSON.stringify(body);
+  }
+
+  try {
+    const response = await fetch(url.toString(), options);
+    
+    // Si la réponse est vide (204 No Content)
+    if (response.status === 204) return {} as T;
+
+    const contentType = response.headers.get('content-type');
+    let data: any;
+
+    if (contentType && contentType.includes('application/json')) {
+      data = await response.json();
+    } else {
+      const text = await response.text();
+      data = { message: text };
+    }
 
     if (!response.ok) {
       const errorMsg = data.message || data.error || `Erreur serveur (${response.status})`;
+      // Debug log for developer
+      console.error(`[API Error] ${method} ${endpoint}:`, response.status, data);
       throw new Error(errorMsg);
     }
 
@@ -66,42 +95,14 @@ async function authPost<T>(endpoint: string, body: Record<string, unknown> = {})
 // Auth API
 // ============================================================
 export const authAPI = {
-  /** Connexion : email/username + password → retourne user + token */
-  login: async (identifier: string, password: string): Promise<{ success: boolean; message: string; access_token?: string; refresh_token?: string; user?: any }> => {
-    const response = await fetch(`${BASE_URL}/auth/login`, {
-      method: 'POST',
-      headers: defaultHeaders,
-      body: JSON.stringify({ username: identifier, password }),
-    });
-    const result = await response.json();
-    if (!response.ok) {
-      throw new Error(result.message || 'Erreur de connexion');
-    }
-    return {
-      success: result.success,
-      message: result.message,
-      access_token: result.access_token,
-      refresh_token: result.refresh_token,
-      user: result.user,
-    };
-  },
-
-  /** Récupérer les infos de l'utilisateur connecté */
+  /** Récupérer les infos de l'utilisateur connecté (depuis le JWT Keycloak) */
   me: async (): Promise<any> => {
-    const headers = await authHeaders();
-    const response = await fetch(`${BASE_URL}/auth/me`, {
-      method: 'GET',
-      headers,
-    });
-    const result = await response.json();
-    if (!response.ok) throw new Error(result.message || 'Erreur');
-    return result;
+    return apiRequest<any>('/auth/me', 'GET');
   },
 
-  /** Déconnexion */
-  logout: async (login: string): Promise<void> => {
-    // Le backend n'a pas forcément de route logout si c'est du pur JWT/Keycloak géré côté client
-    // Mais on peut appeler une route si elle existe
+  /** Déconnexion locale */
+  logout: async (): Promise<void> => {
+    // Géré côté AuthContext
   },
 };
 
@@ -114,7 +115,8 @@ export const policesAPI = {
     souscripteur?: string;
     compagnie?: string;
   }): Promise<Police[]> => {
-    return authPost<Police[]>('/data/polices', {
+    // On passe en GET car c'est une récupération de données
+    return apiRequest<Police[]>('/data/polices', 'GET', {
       num_police: filters?.num_police || null,
       souscripteur: filters?.souscripteur || null,
       compagnie: filters?.compagnie || null,
@@ -127,13 +129,13 @@ export const policesAPI = {
 // ============================================================
 export const quittancesAPI = {
   getAll: async (policeId?: number): Promise<Quittance[]> => {
-    return authPost<Quittance[]>('/data/quittances', {
+    return apiRequest<Quittance[]>('/data/quittances', 'GET', {
       policeId: policeId || null,
     });
   },
 
   getImpayees: async (policeId?: number): Promise<Quittance[]> => {
-    return authPost<Quittance[]>('/data/quittances/impayes', {
+    return apiRequest<Quittance[]>('/data/quittances/impayes', 'GET', {
       policeId: policeId || null,
       enCour: 'O'
     });
@@ -145,13 +147,13 @@ export const quittancesAPI = {
 // ============================================================
 export const sinistresAPI = {
   getAll: async (policeId?: number): Promise<Sinistre[]> => {
-    return authPost<Sinistre[]>('/data/sinistres', {
+    return apiRequest<Sinistre[]>('/data/sinistres', 'GET', {
       policeId: policeId || null,
     });
   },
 
   getEnCours: async (policeId?: number): Promise<Sinistre[]> => {
-    return authPost<Sinistre[]>('/data/sinistres/en-cours', {
+    return apiRequest<Sinistre[]>('/data/sinistres/en-cours', 'GET', {
       policeId: policeId || null,
     });
   },
@@ -162,15 +164,16 @@ export const sinistresAPI = {
 // ============================================================
 export const adherentsAPI = {
   getAll: async (policeId?: number): Promise<any[]> => {
-    return authPost<any[]>('/data/adherents', {
+    return apiRequest<any[]>('/data/adherents', 'GET', {
       policeId: policeId || null,
     });
   },
 
   getFamille: async (adherentId: number): Promise<any[]> => {
-    return authPost<any[]>('/data/adherents/famille', {
+    return apiRequest<any[]>('/data/adherents/famille', 'GET', {
       adherentId,
     });
   },
 };
+
 

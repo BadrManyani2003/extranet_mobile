@@ -23,7 +23,7 @@ export const EmptyView: React.FC<EmptyViewProps> = ({
         marginBottom="m"
       >
         <Icon 
-          name={icon} 
+          name={icon as any} 
           size={42} 
           color={theme.colors.textTertiary} 
         />

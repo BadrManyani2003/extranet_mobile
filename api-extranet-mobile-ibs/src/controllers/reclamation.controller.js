@@ -1,72 +1,80 @@
-const Common = require('../common/Common');
-const qry    = require('../sql/qryExtranet');
+const reclamationService = require('../services/reclamation.service');
+const { success, error } = require('../common/response');
 
-const ctx = (req) => ({
-    id:     req.user.id,
+const getContext = (req) => ({
+    userId: req.user.id,
     token:  req.user.token,
-    source: req.headers['x-source']
+    source: req.headers['x-source'] || 'M'
 });
 
-const getAll = async (req, res) => {
+const getReclamations = async (req, res) => {
     try {
-        const { id, source, token } = ctx(req);
-        const data = await Common.getDonnees(qry.getReclamations, [id, source, token]);
-        res.json(data[0] || []);
-    } catch (e) { res.status(500).json({ success: false, message: e.message }); }
+        const { userId, source, token } = getContext(req);
+        const result = await reclamationService.getReclamations(userId, source, token);
+        success(res, result[0] || []);
+    } catch (e) { error(res, e.message); }
 };
 
-const getDetail = async (req, res) => {
+const getReclamationDetails = async (req, res) => {
     try {
-        const { id, source, token } = ctx(req);
+        const { userId, source, token } = getContext(req);
         const { reclamationId } = req.body;
-        const data = await Common.getDonnees(qry.getReclamationDetails, [id, source, token, reclamationId]);
-        res.json(data[0] || []);
-    } catch (e) { res.status(500).json({ success: false, message: e.message }); }
+        const result = await reclamationService.getReclamationDetails(userId, source, token, reclamationId);
+        success(res, result[0] || []);
+    } catch (e) { error(res, e.message); }
 };
 
-const create = async (req, res) => {
+const createReclamation = async (req, res) => {
     try {
-        const { id, source, token } = ctx(req);
+        const { userId, source, token } = getContext(req);
         const { sujet, nature, message } = req.body;
-        const data = await Common.setDonnees(qry.createReclamation, [id, source, token, sujet, nature, message]);
-        res.json({ success: true, id: data[0]?.[0]?.id });
-    } catch (e) { res.status(500).json({ success: false, message: e.message }); }
+        const result = await reclamationService.createReclamation(userId, source, token, sujet, nature, message);
+        success(res, result[0]?.[0] || {});
+    } catch (e) { error(res, e.message); }
 };
 
 const addMessage = async (req, res) => {
     try {
-        const { id, source, token } = ctx(req);
+        const { userId, source, token } = getContext(req);
         const { reclamationId, nature, message } = req.body;
-        await Common.setDonnees(qry.addMessageReclamation, [id, source, token, reclamationId, nature, message]);
-        res.json({ success: true });
-    } catch (e) { res.status(500).json({ success: false, message: e.message }); }
+        await reclamationService.addMessage(userId, source, token, reclamationId, nature, message);
+        success(res, { success: true });
+    } catch (e) { error(res, e.message); }
+};
+
+const updateStatus = async (req, res) => {
+    try {
+        const { userId, source, token } = getContext(req);
+        const { reclamationId, status, statut } = req.body;
+        await reclamationService.updateStatus(userId, source, token, reclamationId, status || statut);
+        success(res, { success: true });
+    } catch (e) { error(res, e.message); }
+};
+
+const deleteReclamation = async (req, res) => {
+    try {
+        const { userId, source, token } = getContext(req);
+        const { reclamationId } = req.body;
+        await reclamationService.deleteReclamation(userId, source, token, reclamationId);
+        success(res, { success: true });
+    } catch (e) { error(res, e.message); }
 };
 
 const deleteMessage = async (req, res) => {
     try {
-        const { id, token } = ctx(req);
+        const { userId, token } = getContext(req);
         const { messageId } = req.body;
-        await Common.setDonnees(qry.deleteMessageReclamation, [id, token, messageId]);
-        res.json({ success: true });
-    } catch (e) { res.status(500).json({ success: false, message: e.message }); }
+        await reclamationService.deleteMessage(userId, token, messageId);
+        success(res, { success: true });
+    } catch (e) { error(res, e.message); }
 };
 
-const updateStatut = async (req, res) => {
-    try {
-        const { id, source, token } = ctx(req);
-        const { reclamationId, statut } = req.body;
-        await Common.setDonnees(qry.updateReclamationStatut, [id, source, token, reclamationId, statut]);
-        res.json({ success: true });
-    } catch (e) { res.status(500).json({ success: false, message: e.message }); }
+module.exports = {
+    getReclamations,
+    getReclamationDetails,
+    createReclamation,
+    addMessage,
+    updateStatus,
+    deleteReclamation,
+    deleteMessage
 };
-
-const remove = async (req, res) => {
-    try {
-        const { id, source, token } = ctx(req);
-        const { reclamationId } = req.body;
-        await Common.setDonnees(qry.deleteReclamation, [id, source, token, reclamationId]);
-        res.json({ success: true });
-    } catch (e) { res.status(500).json({ success: false, message: e.message }); }
-};
-
-module.exports = { getAll, getDetail, create, addMessage, deleteMessage, updateStatut, remove };

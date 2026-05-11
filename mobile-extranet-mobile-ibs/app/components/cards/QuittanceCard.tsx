@@ -53,7 +53,7 @@ const QuittanceCard: React.FC<QuittanceCardProps> = ({
       'error': 'errorBg',
       'info': 'infoBg',
       'purple': 'purpleBg',
-      'pink': 'pinkBg',
+      'pink': 'purpleBg',
       'textTertiary': 'backgroundGray',
     };
     
@@ -99,7 +99,7 @@ const QuittanceCard: React.FC<QuittanceCardProps> = ({
             marginRight="m"
           >
             <Icon 
-              name={icon} 
+              name={icon as any} 
               size={26} 
               color={theme.colors[iconColor]} 
             />

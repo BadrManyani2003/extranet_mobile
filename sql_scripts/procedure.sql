@@ -87,7 +87,7 @@ BEGIN
         ISNULL(s.MT_Franchise, 0) AS mtFranchise,
         ISNULL(s.Observations, '') AS observation,
         CASE 
-            WHEN p.Branche = 'Santé' THEN a.Nom
+            WHEN p.Branche = 'Santé' THEN a.NomComplet
             ELSE ISNULL(r.Libelle, '-')
         END AS objet,
         CASE 
@@ -138,7 +138,7 @@ BEGIN
         ISNULL(s.MT_Franchise, 0) AS mtFranchise,
         ISNULL(s.Observations, '') AS observation,
         CASE 
-            WHEN p.Branche = 'Santé' THEN a.Nom
+            WHEN p.Branche = 'Santé' THEN a.NomComplet
             ELSE ISNULL(r.Libelle, '-')
         END AS objet,
         CASE 
@@ -323,7 +323,7 @@ BEGIN
 
     SELECT 
         a.Id AS id,
-        RTRIM(LTRIM(ISNULL(a.Nom, '') + ' ' + ISNULL(a.Prenom, ''))) AS nom,
+        a.NomComplet AS nom,
         a.Email AS email,
         a.NumAdhesion AS numAdhesion,
         a.Matricule AS matricule,
@@ -798,7 +798,7 @@ BEGIN
     END
     
     DECLARE @Nom VARCHAR(255), @Email VARCHAR(255), @NewUserId INT;
-    SELECT @Nom = Nom, @Email = Email FROM dbo.Adherents WHERE Id = @FK_Adherent_Id;
+    SELECT @Nom = NomComplet, @Email = Email FROM dbo.Adherents WHERE Id = @FK_Adherent_Id;
     
     IF @Nom IS NULL
     BEGIN
@@ -1104,4 +1104,4 @@ BEGIN
     DELETE FROM dbo.ReclamationsDet WHERE Id = @MessageId;
     RETURN;
 END
-GO
+GO 

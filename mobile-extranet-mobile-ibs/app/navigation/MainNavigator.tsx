@@ -29,8 +29,6 @@ import { useTranslation } from '../utils/i18n';
 
 // Screens
 import LoginScreen from '../screens/LoginScreen';
-import RegisterScreen from '../screens/RegisterScreen';
-import ForgotPasswordScreen from '../screens/ForgotPasswordScreen';
 import HomeScreen from '../screens/HomeScreen';
 import ContratScreen from '../screens/ContratScreen';
 import QuittanceScreen from '../screens/QuittanceScreen';
@@ -40,8 +38,6 @@ import ProfileScreen from '../screens/ProfileScreen';
 // ─── Navigation Types ──────────────────────────────────────────────────────────
 export type RootStackParamList = {
   Login: undefined;
-  Register: undefined;
-  ForgotPassword: undefined;
   MainTabs: undefined;
 };
 
@@ -155,7 +151,7 @@ const TabButton: React.FC<TabButtonProps> = ({ routeName, focused, onPress, colo
           ]}
         >
           <Icon
-            name={focused ? config.active : config.inactive}
+            name={(focused ? config.active : config.inactive) as any}
             size={iconSize}
             color={iconColor as string}
           />
@@ -337,16 +333,6 @@ const MainNavigator: React.FC = () => {
               name="Login"
               component={LoginScreen}
               options={{ animation: 'none' }}
-            />
-            <Stack.Screen
-              name="Register"
-              component={RegisterScreen}
-              options={{ animation: 'slide_from_right' }}
-            />
-            <Stack.Screen
-              name="ForgotPassword"
-              component={ForgotPasswordScreen}
-              options={{ animation: 'slide_from_bottom' }}
             />
           </>
         )}
