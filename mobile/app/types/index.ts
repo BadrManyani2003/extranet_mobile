@@ -36,6 +36,8 @@ export interface Police {
   date_effet: string;
   date_souscription: string;
   statut: string;
+  statut_variant?: 'success' | 'warning' | 'error' | 'neutral';
+  is_active?: number;
   renouvelable: boolean;
   prime_totale?: number;
   date_echeance?: string;
@@ -54,8 +56,9 @@ export interface Quittance {
   prime_totale: number;
   montant_encaisse: number;
   montant_impaye: number;
-  etat: string;
   statut: string;
+  statut_variant?: 'success' | 'warning' | 'error' | 'neutral';
+  is_active?: number;
 }
 
 // --- Sinistre ---
@@ -71,8 +74,11 @@ export interface Sinistre {
   date_sinistre: string;
   lieu_sinistre: string;
   responsable: number;
-  sort: string;
-  etat: string;
+  statut: string;
+  statut_variant?: 'success' | 'warning' | 'error' | 'neutral';
+  is_active?: number;
+  objet?: string;
+  identifiant?: string;
 }
 
 // --- Règlement sinistre ---

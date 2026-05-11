@@ -2,7 +2,7 @@ import React from 'react';
 import { TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { Box, Text } from '../../theme/restyle';
 import { useTheme } from '@shopify/restyle';
-import Icon from '@expo/vector-icons/Ionicons';
+import { Ionicons as Icon } from '@expo/vector-icons';
 import { Theme } from '../../theme/theme';
 
 type ContratCardProps = {

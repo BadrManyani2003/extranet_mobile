@@ -6,7 +6,7 @@ import {
   Platform,
 } from 'react-native';
 import { useTheme } from '@shopify/restyle';
-import Icon from '@expo/vector-icons/Ionicons';
+import { Ionicons as Icon } from '@expo/vector-icons';
 import { Box, Text } from '../../theme/restyle';
 import { Theme } from '../../theme/theme';
 import { rsp } from '../../utils/responsive';

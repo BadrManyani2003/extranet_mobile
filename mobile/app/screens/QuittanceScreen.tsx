@@ -8,7 +8,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { useTheme } from '@shopify/restyle';
-import Icon from '@expo/vector-icons/Ionicons';
+import { Ionicons as Icon } from '@expo/vector-icons';
 
 import { useAuth } from '../context/AuthContext';
 import { quittancesAPI } from '../api';
@@ -53,12 +53,7 @@ const QuittanceDetailModal: React.FC<{
 }> = ({ quittance, visible, onClose, onPay }) => {
   const isImpaye = Number(quittance.montant_impaye || 0) > 0;
   
-  const getStatusVariant = (statut: string) => {
-    const s = statut?.toUpperCase()?.trim();
-    if (s === 'REGLEE' || s === 'PAYEE' || s === 'SOLDEE') return 'success';
-    if (s === 'IMPAYEE' || s === 'A PAYER') return 'error';
-    return 'neutral';
-  };
+
 
   return (
     <CardUp visible={visible} onClose={onClose} title="Récapitulatif Financier" subtitle={`Quittance N° ${quittance.num_quittance}`}>
@@ -71,7 +66,7 @@ const QuittanceDetailModal: React.FC<{
             <Section title="Informations Dossier" padding>
                <InfoRow label="Référence" value={quittance.num_quittance} icon="finger-print" />
                <InfoRow label="Branche" value={quittance.branche || 'NON SPÉCIFIÉ'} icon="layers" />
-               <InfoRow label="État Dossier" value={quittance.statut} valueColor={getStatusVariant(quittance.statut) as any} icon="shield-checkmark" isLast />
+               <InfoRow label="État Dossier" value={quittance.statut} valueColor={quittance.statut_variant as any} icon="shield-checkmark" isLast />
             </Section>
           );
           if (item === 'dates') return (
@@ -106,12 +101,7 @@ const QuittanceItem: React.FC<{ item: Quittance; index: number; onPress: () => v
   const theme = useTheme<Theme>();
   const isImpaye = Number(item.montant_impaye || 0) > 0;
 
-  const getStatusVariant = (statut: string) => {
-    const s = statut?.toUpperCase()?.trim();
-    if (s === 'REGLEE' || s === 'PAYEE' || s === 'SOLDEE') return 'success';
-    if (s === 'IMPAYEE' || s === 'A PAYER') return 'error';
-    return 'neutral';
-  };
+
 
   return (
     <TouchableOpacity activeOpacity={0.9} onPress={onPress}>
@@ -130,7 +120,7 @@ const QuittanceItem: React.FC<{ item: Quittance; index: number; onPress: () => v
                </Box>
                <Text variant="labelBold" color="text" fontSize={12} fontWeight="700">{item.branche || 'Assurance'}</Text>
             </Box>
-            <StatusBadge label={item.statut} variant={getStatusVariant(item.statut) as any} />
+            <StatusBadge label={item.statut} variant={item.statut_variant as any} />
           </Box>
 
           <Box padding="m" borderBottomWidth={1} borderBottomColor="border">

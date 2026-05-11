@@ -21,7 +21,7 @@ const getPersACharge = (userId, source, token, adherentId) => db.execute(qry.get
 
 const getStats = (userId, source, token) => db.execute(qry.getStats, [userId, source, token]);
 
-const getStatsByPolice = (userId, token, source, policeId) => db.execute(qry.getStatsByPolice, [userId, token, source, policeId]);
+const getStatsByPolice = (userId, source, token, policeId) => db.execute(qry.getStatsByPolice, [userId, token, source, policeId]);
 
 module.exports = {
     getPolices,

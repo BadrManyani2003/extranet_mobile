@@ -17,7 +17,7 @@ import {
   Text,
   PixelRatio,
 } from 'react-native';
-import Icon from '@expo/vector-icons/Ionicons';
+import { Ionicons as Icon } from '@expo/vector-icons';
 import { useTheme } from '@shopify/restyle';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 

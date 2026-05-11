@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import Icon from '@expo/vector-icons/Ionicons';
+import { Ionicons as Icon } from '@expo/vector-icons';
 import { useTheme } from '@shopify/restyle';
 import * as AuthSession from 'expo-auth-session';
 import { jwtDecode } from 'jwt-decode';

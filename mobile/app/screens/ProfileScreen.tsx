@@ -10,7 +10,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { useTheme } from '@shopify/restyle';
-import Icon from '@expo/vector-icons/Ionicons';
+import { Ionicons as Icon } from '@expo/vector-icons';
 
 import { useAuth } from '../context/AuthContext';
 import { useThemeContext } from '../context/ThemeContext';

@@ -1,3 +1,7 @@
+-- ============================================================
+--  IBS EXTRANET MOBILE - PROCÉDURES STOCKÉES
+-- ============================================================
+
 USE [IBS_Extranet_Mobile]
 GO
 
@@ -5,6 +9,10 @@ SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
+
+-- ──────────────────────────────────────────────────────────────────────────────
+-- 1. GESTION DES POLICES (CONTRATS)
+-- ──────────────────────────────────────────────────────────────────────────────
 
 CREATE OR ALTER PROCEDURE dbo.sp_GetPolices
     @FK_User_Id INT,
@@ -32,6 +40,12 @@ BEGIN
             WHEN 'M' THEN 'Mise en demeure' 
             ELSE p.Statut 
         END AS statut,
+        CASE p.Statut 
+            WHEN 'E' THEN 'success' 
+            WHEN 'S' THEN 'warning' 
+            ELSE 'error' 
+        END AS statut_variant,
+        CASE WHEN p.Statut = 'E' THEN 1 ELSE 0 END AS is_active,
         p.Module AS module,
         c.RaisonSociale AS client,
         c.Particulier AS particulier,
@@ -81,6 +95,13 @@ BEGIN
             WHEN 'R' THEN 'Réouvert' 
             ELSE s.Statut 
         END AS statut,
+        CASE s.Statut 
+            WHEN 'E' THEN 'warning' 
+            WHEN 'C' THEN 'success' 
+            WHEN 'R' THEN 'error' 
+            ELSE 'neutral' 
+        END AS statut_variant,
+        CASE WHEN s.Statut = 'E' THEN 1 ELSE 0 END AS is_active,
         ISNULL(s.MT_Indemnite, 0) AS mtRembourse,
         ISNULL(s.MT_Dommages, 0) AS mtDommage,
         ISNULL(s.MT_Dommages, 0) AS mtFrais,
@@ -200,6 +221,9 @@ BEGIN
 END
 GO
 
+-- ──────────────────────────────────────────────────────────────────────────────
+-- 3. GESTION DES QUITTANCES (FINANCIER)
+-- ──────────────────────────────────────────────────────────────────────────────
 CREATE OR ALTER PROCEDURE dbo.sp_GetQuittances
     @FK_User_Id INT,
     @Source CHAR(1),
@@ -225,12 +249,19 @@ BEGIN
         q.DateEcheance AS dateEcheance,
         CASE q.Statut 
             WHEN 'E' THEN 'En cours' 
-            WHEN 'S' THEN 'Suspendu' 
-            WHEN 'R' THEN 'Résilié' 
+            WHEN 'S' THEN 'Suspendue' 
+            WHEN 'R' THEN 'Réglée' 
             WHEN 'M' THEN 'Mise en demeure' 
             WHEN 'A' THEN 'Annulée' 
             ELSE q.Statut 
-        END AS statut
+        END AS statut,
+        CASE q.Statut 
+            WHEN 'E' THEN 'error' 
+            WHEN 'S' THEN 'warning' 
+            WHEN 'R' THEN 'success' 
+            ELSE 'neutral' 
+        END AS statut_variant,
+        CASE WHEN q.Statut = 'R' THEN 1 ELSE 0 END AS is_active
     FROM dbo.Quittances q
     INNER JOIN dbo.Polices p ON q.FK_Police_Id = p.Id
     INNER JOIN dbo.Clients c ON p.Fk_Client_Id = c.Id
@@ -447,6 +478,13 @@ BEGIN
             WHEN 'T' THEN 'Traité' 
             ELSE r.Statut 
         END AS statut,
+        CASE r.Statut 
+            WHEN 'E' THEN 'warning' 
+            WHEN 'C' THEN 'success' 
+            WHEN 'T' THEN 'info' 
+            ELSE 'neutral' 
+        END AS statut_variant,
+        CASE WHEN r.Statut = 'E' THEN 1 ELSE 0 END AS is_active,
         r.DateStatut AS dateStatut,
         CASE r.Nature 
             WHEN 'R' THEN 'Réclamation' 
@@ -1117,13 +1155,13 @@ BEGIN
     
     IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
     BEGIN
-        RAISERROR('Session expir�e', 16, 1);
+        RAISERROR('Session expiree', 16, 1);
         RETURN;
     END
 
     IF EXISTS (SELECT 1 FROM dbo.UsersXClients WHERE FK_Client_Id = @FK_Client_Id)
     BEGIN
-        RAISERROR('Ce client est d�j� li� � un utilisateur', 16, 1);
+        RAISERROR('Ce client est deja lie a un utilisateur', 16, 1);
         RETURN;
     END
 
@@ -1144,7 +1182,7 @@ BEGIN
     
     IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
     BEGIN
-        RAISERROR('Session expir�e', 16, 1);
+        RAISERROR('Session expiree', 16, 1);
         RETURN;
     END
 

@@ -8,7 +8,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { useTheme } from '@shopify/restyle';
-import Icon from '@expo/vector-icons/Ionicons';
+import { Ionicons as Icon } from '@expo/vector-icons';
 
 import { useAuth } from '../context/AuthContext';
 import { policesAPI } from '../api';
@@ -36,12 +36,9 @@ const usePolices = () => {
   [data]);
 
   const stats = useMemo(() => {
-    const actives = sortedData.filter(p => {
-      const s = p.statut?.toUpperCase()?.trim();
-      return s === 'EN VIGUEUR' || s === 'ACTIF' || s === 'VALIDE';
-    }).length;
-    return { total: sortedData.length, actives };
-  }, [sortedData]);
+    const actives = (data || []).filter(p => p.is_active === 1).length;
+    return { total: (data || []).length, actives };
+  }, [data]);
 
   return { polices: sortedData, stats, loading, error, refresh: load };
 };
@@ -52,12 +49,7 @@ const ContratDetailModal: React.FC<{
   visible: boolean;
   onClose: () => void;
 }> = ({ police, visible, onClose }) => {
-  const getStatusVariant = (statut: string) => {
-    const s = statut?.toUpperCase()?.trim();
-    if (s === 'EN VIGUEUR' || s === 'ACTIF' || s === 'VALIDE') return 'success';
-    if (s === 'ÉCHU' || s === 'EXPIRÉ' || s === 'RÉSILLIÉ') return 'error';
-    return 'neutral';
-  };
+
 
   return (
     <CardUp visible={visible} onClose={onClose} title="Expertise Contrat" subtitle={`Police N° ${police.num_police}`}>
@@ -70,7 +62,7 @@ const ContratDetailModal: React.FC<{
             <Section title="VOTRE CONTRAT" padding>
                <InfoRow label="Identifiant" value={police.num_police} icon="card" />
                <InfoRow label="Branche" value={police.branche} icon="layers" />
-               <InfoRow label="État Dossier" value={police.statut} valueColor={getStatusVariant(police.statut) as any} icon={getStatusVariant(police.statut) === 'success' ? 'checkmark-circle' : 'alert-circle'} isLast />
+               <InfoRow label="État Dossier" value={police.statut} valueColor={police.statut_variant as any} icon={police.statut_variant === 'success' ? 'checkmark-circle' : 'alert-circle'} isLast />
             </Section>
           );
           if (item === 'assure') return (
@@ -99,14 +91,7 @@ const ContratDetailModal: React.FC<{
 
 const ContratItem: React.FC<{ item: Police; onPress: () => void }> = ({ item, onPress }) => {
   const theme = useTheme<Theme>();
-  const getStatusVariant = (statut: string) => {
-    const s = statut?.toUpperCase()?.trim();
-    if (s === 'EN VIGUEUR' || s === 'ACTIF' || s === 'VALIDE') return 'success';
-    if (s === 'ÉCHU' || s === 'EXPIRÉ' || s === 'RÉSILLIÉ') return 'error';
-    return 'neutral';
-  };
-
-  const isSuccess = getStatusVariant(item.statut) === 'success';
+  const isSuccess = item.statut_variant === 'success';
 
   return (
     <TouchableOpacity activeOpacity={0.9} onPress={onPress}>
@@ -125,7 +110,7 @@ const ContratItem: React.FC<{ item: Police; onPress: () => void }> = ({ item, on
                </Box>
                <Text variant="labelBold" color="text" fontSize={12} fontWeight="700">{item.branche?.toUpperCase() || 'ASSURANCE'}</Text>
             </Box>
-            <StatusBadge label={item.statut} variant={getStatusVariant(item.statut) as any} />
+            <StatusBadge label={item.statut} variant={item.statut_variant as any} />
           </Box>
 
           <Box padding="m" borderBottomWidth={1} borderBottomColor="border">

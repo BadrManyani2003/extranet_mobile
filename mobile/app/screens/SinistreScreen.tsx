@@ -8,7 +8,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { useTheme } from '@shopify/restyle';
-import Icon from '@expo/vector-icons/Ionicons';
+import { Ionicons as Icon } from '@expo/vector-icons';
 
 import { useAuth } from '../context/AuthContext';
 import { sinistresAPI } from '../api';
@@ -37,8 +37,8 @@ const useSinistres = () => {
   [data]);
 
   const stats = useMemo(() => {
-    const enCours = sortedData.filter(s => s.etat?.trim() === 'E').length;
-    return { total: sortedData.length, enCours };
+    const enCours = (data || []).filter(s => s.is_active === 1).length;
+    return { total: (data || []).length, enCours };
   }, [sortedData]);
 
   return { sinistres: sortedData, stats, loading, error, refresh: load };
@@ -51,7 +51,7 @@ const SinistreDetailModal: React.FC<{
   onClose: () => void;
 }> = ({ sinistre, visible, onClose }) => {
   const { t } = useTranslation();
-  const isEnCours = sinistre.etat?.trim() === 'E';
+  const isEnCours = sinistre.is_active === 1;
 
   return (
     <CardUp visible={visible} onClose={onClose} title={t('Détail du Sinistre')} subtitle={`Dossier N° ${sinistre.id}`}>
@@ -64,7 +64,7 @@ const SinistreDetailModal: React.FC<{
             <Section title={t('IDENTITÉ DU DOSSIER')} padding>
                <InfoRow label={t('Police')} value={sinistre.num_police || '-'} icon="shield-checkmark" />
                <InfoRow label={t('Compagnie')} value={sinistre.compagnie || t('NON PRÉCISÉ')} icon="business" />
-               <InfoRow label={t('État Dossier')} value={isEnCours ? t('EN COURS') : t('CLÔTURÉ')} valueColor={isEnCours ? 'warning' : 'success'} icon="flag" isLast />
+               <InfoRow label={t('État Dossier')} value={sinistre.statut} valueColor={sinistre.statut_variant as any} icon="flag" isLast />
             </Section>
           );
           if (item === 'expertise') return (
@@ -94,7 +94,7 @@ const SinistreDetailModal: React.FC<{
 
 const SinistreItem: React.FC<{ item: Sinistre; onPress: () => void }> = ({ item, onPress }) => {
   const theme = useTheme<Theme>();
-  const isEnCours = item.etat?.trim() === 'E';
+  const isEnCours = item.is_active === 1;
 
   return (
     <TouchableOpacity activeOpacity={0.9} onPress={onPress}>
@@ -113,12 +113,12 @@ const SinistreItem: React.FC<{ item: Sinistre; onPress: () => void }> = ({ item,
                </Box>
                <Text variant="labelBold" color="text" fontSize={12} fontWeight="700">DOSSIER SINISTRE</Text>
             </Box>
-            <StatusBadge label={isEnCours ? 'OUVERT' : 'CLÔTURÉ'} variant={isEnCours ? 'warning' : 'success'} />
+            <StatusBadge label={item.statut} variant={item.statut_variant as any} />
           </Box>
 
           <Box padding="m" borderBottomWidth={1} borderBottomColor="border">
              <Text variant="bodySmall" color="textSecondary" fontWeight="600">ID #{item.id}</Text>
-             <Text variant="title" color="text" fontSize={rsp.normalize(18)} fontWeight="700" marginVertical="xxs">{item.branche || 'Automobile'}</Text>
+             <Text variant="title" color="text" fontSize={rsp.normalize(18)} fontWeight="700" marginVertical="xxs">{item.objet || item.branche || 'Sinistre'}</Text>
              <Text variant="bodySmall" color="textSecondary" fontWeight="600">Police: {item.num_police || '-'}</Text>
           </Box>
 

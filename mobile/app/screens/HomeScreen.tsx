@@ -10,15 +10,18 @@ import {
   StyleSheet,
 } from 'react-native';
 import { useTheme } from '@shopify/restyle';
-import Icon from '@expo/vector-icons/Ionicons';
+import { Ionicons as Icon } from '@expo/vector-icons';
 import { CompositeScreenProps } from '@react-navigation/native';
 import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
 
+// --- Context & API ---
 import { useAuth } from '../context/AuthContext';
 import { policesAPI, quittancesAPI, sinistresAPI } from '../api';
 import { Police, Quittance, Sinistre } from '../types';
+
+// --- Theme & UI ---
 import { Theme } from '../theme/theme';
 import { Box, Text } from '../theme/restyle';
 import { useApiCall, formatMontant } from '../hooks/useApiCall';
@@ -36,9 +39,9 @@ import {
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-// ─────────────────────────────────────────────────────────────────
-// KPI Card - Meta Inspired
-// ─────────────────────────────────────────────────────────────────
+
+// --- Composant KPI ---
+
 interface KpiCardProps {
   icon: string;
   iconColor: string;
@@ -114,9 +117,8 @@ const KpiCard: React.FC<KpiCardProps> = ({
   );
 };
 
-// ─────────────────────────────────────────────────────────────────
-// HomeScreen Component - Meta Style
-// ─────────────────────────────────────────────────────────────────
+// --- Ecran Accueil ---
+
 type HomeScreenProps = CompositeScreenProps<
   BottomTabScreenProps<TabParamList, 'Accueil'>,
   NativeStackScreenProps<RootStackParamList>
@@ -187,17 +189,14 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const impayees = impayeesCall.data ?? [];
 
   const totalPolices = polices.length;
-  const policesActives = polices.filter(p => {
-    const s = p.statut?.toUpperCase()?.trim();
-    return s === 'EN VIGUEUR' || s === 'ACTIF' || s === 'VALIDE';
-  }).length;
+  const policesActives = polices.filter(p => p.is_active === 1).length;
 
   const totalQuittances = quittances.length;
   const nbImpayees = impayees.length;
   const totalImpaye = impayees.reduce((s, q) => s + Number(q.montant_impaye || 0), 0);
 
   const totalSinistres = sinistres.length;
-  const sinistresEnCours = sinistres.filter(s => s.etat?.trim() === 'E').length;
+  const sinistresEnCours = sinistres.filter(s => s.is_active === 1).length;
 
   const prenom = user?.nom?.split(' ')[0] || t('Assuré');
 

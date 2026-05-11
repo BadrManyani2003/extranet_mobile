@@ -33,7 +33,7 @@ async function authHeaders(): Promise<Record<string, string>> {
   return {
     ...defaultHeaders,
     'Authorization': `Bearer ${token}`,
-    'x-source': 'M',
+    'x-source': source === 'ADHERENT' ? 'M' : 'E',
   };
 }
 
