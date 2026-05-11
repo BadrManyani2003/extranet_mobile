@@ -67,11 +67,6 @@ const isSameGroup = (m1: any, m2: any) => {
             </div>
 
             <div class="flex flex-col relative group" :class="(msg.sender === 'user' || msg.nature === 'C') ? 'items-end' : 'items-start'">
-              <button v-if="selectedTicket?.statut !== 'Clôturé' && selectedTicket?.statut !== 'C' && msg.fkUserId === currentUserId && index === messages.length - 1" 
-                @click="handleDelete(msg.id)"
-                class="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg z-10">
-                <span class="text-xs font-bold">×</span>
-              </button>
               <div class="px-6 py-4 rounded-[1.5rem] text-sm font-bold leading-relaxed shadow-sm transition-all"
                 :class="[
                   (msg.sender === 'user' || msg.nature === 'C') ? 'bg-slate-900 text-white' : 'bg-white text-slate-700 border border-slate-100',
@@ -92,22 +87,5 @@ const isSameGroup = (m1: any, m2: any) => {
         <div ref="bottom" class="h-px"></div>
       </div>
     </ScrollArea>
-
-    <div class="p-6 bg-white border-t border-slate-100">
-      <div v-if="selectedTicket?.statut === 'Clôturé' || selectedTicket?.statut === 'C'" class="max-w-4xl mx-auto p-4 bg-slate-50 rounded-2xl border border-dashed border-slate-200 text-center text-slate-400 font-bold text-sm">
-        {{ $t('reclamations.closed_notice') || 'Cette réclamation est clôturée. Vous ne pouvez plus envoyer de messages.' }}
-      </div>
-      <div v-else class="max-w-4xl mx-auto flex items-center gap-4 bg-slate-50 p-2.5 rounded-3xl border border-slate-200 focus-within:ring-4 focus-within:ring-slate-900/5 focus-within:border-slate-900/10 transition-all">
-        <Input 
-          v-model="nouveauMessage" 
-          @keyup.enter="handleSend"
-          :placeholder="$t('reclamations.message_placeholder') || 'Tapez votre message ici...'" 
-          class="border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-slate-700 font-bold h-12"
-        />
-        <Button @click="handleSend" class="rounded-2xl w-12 h-12 bg-slate-900 hover:bg-black text-white shadow-xl shadow-slate-200 shrink-0" size="icon">
-          <Send class="w-5 h-5" />
-        </Button>
-      </div>
-    </div>
   </div>
 </template>

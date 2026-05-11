@@ -71,7 +71,7 @@ const SinistreDetailModal: React.FC<{
             <Section title={t('DÉCLARATION & ÉVÉNEMENT')} padding>
                <InfoRow label={t('Date Sinistre')} value={formatDate(sinistre.date_sinistre)} icon="calendar" />
                <InfoRow label={t('Date Décl.')} value={formatDate(sinistre.date_dec_client)} icon="time-outline" />
-               <InfoRow label={t('Expertise')} value={sinistre.sort || t('EN ATTENTE')} icon="analytics-outline" isLast />
+               <InfoRow label={t('Expertise')} value={t('EN ATTENTE')} icon="analytics-outline" isLast />
             </Section>
           );
           return (
@@ -83,8 +83,7 @@ const SinistreDetailModal: React.FC<{
         }}
         ListFooterComponent={
           <Box paddingHorizontal="l" marginTop="m" paddingBottom="xl">
-            <Button label={t('Prendre Rendez-vous Expert')} variant="primary" icon="calendar-outline" onPress={() => {}} />
-            <Button label={t('Partager le dossier')} variant="secondary" icon="share-social-outline" style={{ marginTop: 12 }} onPress={() => {}} />
+            {/* Consultation only */}
           </Box>
         }
       />
@@ -106,12 +105,12 @@ const SinistreItem: React.FC<{ item: Sinistre; onPress: () => void }> = ({ item,
           overflow="hidden"
           style={styles.card}
         >
-          <Box paddingHorizontal="m" paddingVertical="s" backgroundColor="backgroundGray" flexDirection="row" justifyContent="space-between" alignItems="center">
+          <Box paddingHorizontal="m" paddingVertical="s" backgroundColor="background" flexDirection="row" justifyContent="space-between" alignItems="center">
             <Box flexDirection="row" alignItems="center">
                <Box backgroundColor={isEnCours ? "warning" : "success"} width={24} height={24} borderRadius="round" alignItems="center" justifyContent="center" marginRight="s">
                   <Icon name={isEnCours ? "alert-circle" : "checkmark-done"} size={12} color="white" />
                </Box>
-               <Text variant="labelBold" color="text" fontSize={12} fontWeight="700">DOSSIER SINISTRE</Text>
+               <Text variant="bodySmall" color="text" fontSize={12} fontWeight="700">DOSSIER SINISTRE</Text>
             </Box>
             <StatusBadge label={item.statut} variant={item.statut_variant as any} />
           </Box>
@@ -157,8 +156,8 @@ const SinistreScreen: React.FC = () => {
         contentContainerStyle={{ paddingBottom: 120 }}
       >
         <Box paddingVertical="xl" paddingHorizontal="m">
-            <Text variant="header" color="text" fontSize={rsp.normalize(26)} fontWeight="700">Mes Dossiers Sinistres</Text>
-            <Text variant="bodySmall" color="textSecondary" fontWeight="600">Suivi en temps réel de vos déclarations d'experts</Text>
+            <Text variant="header" color="text" fontSize={rsp.normalize(26)} fontWeight="700">Mes Sinistres</Text>
+            <Text variant="bodySmall" color="textSecondary" fontWeight="600">Suivi de vos dossiers</Text>
         </Box>
 
         <Box marginBottom="m">

@@ -176,4 +176,20 @@ export const adherentsAPI = {
   },
 };
 
-
+// ============================================================
+// Réclamations API
+// ============================================================
+export const reclamationsAPI = {
+  getAll: async (): Promise<any[]> => {
+    return apiRequest<any[]>('/reclamations', 'GET');
+  },
+  getDetails: async (reclamationId: number): Promise<any[]> => {
+    return apiRequest<any[]>('/reclamations/details', 'POST', { reclamationId });
+  },
+  create: async (sujet: string, nature: string, message: string): Promise<any> => {
+    return apiRequest<any>('/reclamations', 'POST', { sujet, nature, message });
+  },
+  addMessage: async (reclamationId: number, message: string, nature: string = 'C'): Promise<void> => {
+    return apiRequest<void>('/reclamations/message', 'POST', { reclamationId, message, nature });
+  },
+};

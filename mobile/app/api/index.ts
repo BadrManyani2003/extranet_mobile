@@ -1,1 +1,1 @@
-export { authAPI, policesAPI, quittancesAPI, sinistresAPI } from './config';
+export { authAPI, policesAPI, quittancesAPI, sinistresAPI, reclamationsAPI } from './config';

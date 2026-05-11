@@ -80,8 +80,7 @@ const ContratDetailModal: React.FC<{
         }}
         ListFooterComponent={
           <Box paddingHorizontal="l" marginTop="m" paddingBottom="xl">
-            <Button label="Demande de renouvellement" variant="primary" icon="refresh-outline" onPress={() => {}} />
-            <Button label="Imprimer l'attestation" variant="secondary" icon="print-outline" style={{ marginTop: 12 }} onPress={() => {}} />
+            {/* Consultation only */}
           </Box>
         }
       />
@@ -103,12 +102,12 @@ const ContratItem: React.FC<{ item: Police; onPress: () => void }> = ({ item, on
           overflow="hidden"
           style={styles.card}
         >
-          <Box paddingHorizontal="m" paddingVertical="s" backgroundColor="backgroundGray" flexDirection="row" justifyContent="space-between" alignItems="center">
+          <Box paddingHorizontal="m" paddingVertical="s" backgroundColor="background" flexDirection="row" justifyContent="space-between" alignItems="center">
             <Box flexDirection="row" alignItems="center">
                <Box backgroundColor={isSuccess ? "success" : "error"} width={24} height={24} borderRadius="round" alignItems="center" justifyContent="center" marginRight="s">
                   <Icon name={isSuccess ? "shield-checkmark" : "shield-half"} size={12} color="white" />
                </Box>
-               <Text variant="labelBold" color="text" fontSize={12} fontWeight="700">{item.branche?.toUpperCase() || 'ASSURANCE'}</Text>
+               <Text variant="bodySmall" color="text" fontSize={12} fontWeight="700">{item.branche?.toUpperCase() || 'ASSURANCE'}</Text>
             </Box>
             <StatusBadge label={item.statut} variant={item.statut_variant as any} />
           </Box>
@@ -154,8 +153,8 @@ const ContratScreen: React.FC = () => {
         contentContainerStyle={{ paddingBottom: 120 }}
       >
         <Box paddingVertical="xl" paddingHorizontal="m">
-            <Text variant="header" color="text" fontSize={rsp.normalize(26)} fontWeight="700">Portefeuille Assurances</Text>
-            <Text variant="bodySmall" color="textSecondary" fontWeight="600">Gérez vos garanties et attestations en un clic</Text>
+            <Text variant="header" color="text" fontSize={rsp.normalize(26)} fontWeight="700">Mes Contrats</Text>
+            <Text variant="bodySmall" color="textSecondary" fontWeight="600">Consultation de vos garanties</Text>
         </Box>
 
         <Box paddingHorizontal="m" marginBottom="l">

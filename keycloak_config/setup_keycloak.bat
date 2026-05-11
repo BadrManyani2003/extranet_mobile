@@ -1,140 +1,163 @@
 @echo off
 setlocal enabledelayedexpansion
 
-:: ============================================================
-::  CONFIGURATION KEYCLOAK - EXTRANET MOBILE
-:: ============================================================
-
-:: --- 1. CONFIGURATION SECTION ---
-set KEYCLOAK_URL=http://localhost:8080
+:: ================= CONFIG =================
+set KEYCLOAK_URL=http://localhost:8180
 set ADMIN_USER=admin
-set ADMIN_PASS=admin
+set /p ADMIN_PASS=Password:
+
 set REALM_NAME=ask_extranet_mobile
 
-:: Client IDs
 set CLIENT_ADMIN=client_admin
 set CLIENT_EXTRANET=client_extranet
 set CLIENT_MOBILE=client_mobile
 set CLIENT_API=client_api
 
-:: Redirect URIs
 set REDIRECT_ADMIN=http://localhost:5173/*
 set REDIRECT_EXTRANET=http://localhost:5174/*
 set REDIRECT_MOBILE=assurplus://*
 
-:: Path to kcadm.bat
 set KCADM_PATH=C:\keycloak\bin\kcadm.bat
 
-:: UI Styling
-set SEP=------------------------------------------------------------
-set CHECK=^[[92m[OK]^[[0m
-set WARN=^[[93m[SKIP]^[[0m
-set FAIL=^[[91m[ERROR]^[[0m
-
-:: --- 2. INITIALIZATION ---
 cls
-echo %SEP%
-echo   INITIALISATION KEYCLOAK : %REALM_NAME%
-echo %SEP%
+echo ------------------------------------------------------------
+echo KEYCLOAK AUTO CONFIG : %REALM_NAME%
+echo ------------------------------------------------------------
 
-:: Verify kcadm path
-if not exist "%KCADM_PATH%" (
-    echo.
-    echo ❌ ERROR: Keycloak CLI not found at: %KCADM_PATH%
-    echo Please update KCADM_PATH in this script.
-    pause
-    exit /b 1
-)
-
-:: --- 3. AUTHENTICATION ---
-echo.
-echo [1/5] Authenticating to Master Realm...
+:: ================= LOGIN =================
+echo [1/6] Login...
 call %KCADM_PATH% config credentials --server %KEYCLOAK_URL% --realm master --user %ADMIN_USER% --password %ADMIN_PASS% >nul 2>&1
-
-if %ERRORLEVEL% NEQ 0 (
-    echo    ❌ Failed to connect to %KEYCLOAK_URL%
-    echo    Check if Keycloak is running and your admin credentials are correct.
-    pause
+if errorlevel 1 (
+    echo ERROR LOGIN
     exit /b 1
 )
-echo    ✅ Authenticated successfully.
+echo OK
 
-:: --- 4. REALM CREATION ---
-echo.
-echo [2/5] Setting up Realm: %REALM_NAME%...
+:: ================= REALM =================
+echo [2/6] Realm...
 call %KCADM_PATH% get realms/%REALM_NAME% >nul 2>&1
-if %ERRORLEVEL% EQU 0 (
-    echo    ⚠️  Realm already exists. Skipping creation.
-) else (
-    call %KCADM_PATH% create realms -s realm=%REALM_NAME% -s enabled=true -s displayName="ASK Extranet Mobile" >nul
-    if %ERRORLEVEL% EQU 0 (
-        echo    ✅ Realm created successfully.
-    ) else (
-        echo    ❌ Failed to create realm.
-        pause
-        exit /b 1
-    )
-)
+if errorlevel 1 (
+    call %KCADM_PATH% create realms -s realm=%REALM_NAME% -s enabled=true >nul
+    echo CREATED
+) else echo SKIP
 
-:: --- 5. ROLES CREATION ---
-echo.
-echo [3/5] Deploying Business Roles...
+:: ================= ROLES =================
+echo [3/6] Roles...
 for %%r in (admincab comercialcab client adherent) do (
-    call %KCADM_PATH% get roles -r %REALM_NAME% --fields name | findstr /i "%%r" >nul 2>&1
-    if !ERRORLEVEL! EQU 0 (
-        echo    ⚠️  Role '%%r' already exists.
-    ) else (
+    call %KCADM_PATH% get roles/%%r -r %REALM_NAME% >nul 2>&1
+    if errorlevel 1 (
         call %KCADM_PATH% create roles -r %REALM_NAME% -s name=%%r >nul
-        echo    ✅ Role '%%r' created.
+        echo OK %%r
+    ) else echo SKIP %%r
+)
+
+:: ================= CLIENTS =================
+echo [4/6] Clients...
+
+call :CREATE_CLIENT "%CLIENT_ADMIN%"    "%REDIRECT_ADMIN%"    true
+call :CREATE_CLIENT "%CLIENT_EXTRANET%" "%REDIRECT_EXTRANET%" true
+call :CREATE_CLIENT "%CLIENT_MOBILE%"   "%REDIRECT_MOBILE%"   true
+
+:: API CLIENT (confidential, service account)
+call %KCADM_PATH% get clients -r %REALM_NAME% > tmp_clients.json 2>nul
+findstr /C:"\"clientId\" : \"%CLIENT_API%\"" tmp_clients.json >nul
+if errorlevel 1 (
+    echo CREATE %CLIENT_API%
+    call %KCADM_PATH% create clients -r %REALM_NAME% ^
+     -s clientId=%CLIENT_API% ^
+     -s enabled=true ^
+     -s publicClient=false ^
+     -s serviceAccountsEnabled=true ^
+     -s clientAuthenticatorType=client-secret >nul 2>&1
+) else echo SKIP %CLIENT_API%
+del tmp_clients.json >nul 2>&1
+
+:: ================= UUID =================
+echo [5/6] UUID...
+
+set CLIENT_UUID=
+
+:: Dump all clients to a temp file
+call %KCADM_PATH% get clients -r %REALM_NAME% --fields id,clientId > tmp_uuid.json 2>nul
+
+:: Parse : on cherche l'id juste avant "clientId" : "client_admin"
+:: Strategy : read line by line, keep last "id" line seen before matching clientId
+set _LAST_ID=
+set _FOUND=0
+for /f "usebackq delims=" %%L in ("tmp_uuid.json") do (
+    set _LINE=%%L
+    echo !_LINE! | findstr /C:"\"id\"" >nul && (
+        set _RAW_ID=!_LINE!
+        set _RAW_ID=!_RAW_ID:* : =!
+        set _RAW_ID=!_RAW_ID:"=!
+        set _RAW_ID=!_RAW_ID:,=!
+        set _LAST_ID=!_RAW_ID!
+    )
+    echo !_LINE! | findstr /C:"\"clientId\" : \"%CLIENT_ADMIN%\"" >nul && (
+        set CLIENT_UUID=!_LAST_ID!
+        set _FOUND=1
     )
 )
 
-:: --- 6. CLIENTS DEPLOYMENT ---
-echo.
-echo [4/5] Configuring OIDC Clients...
+del tmp_uuid.json >nul 2>&1
 
-:: --- Client: ADMIN ---
-call %KCADM_PATH% get clients -r %REALM_NAME% --fields clientId | findstr /i "%CLIENT_ADMIN%" >nul 2>&1
-if !ERRORLEVEL! NEQ 0 (
-    echo    📦 Deploying %CLIENT_ADMIN%...
-    call %KCADM_PATH% create clients -r %REALM_NAME% -s clientId=%CLIENT_ADMIN% -s enabled=true -s publicClient=true -s redirectUris=["%REDIRECT_ADMIN%"] -s webOrigins=["*"] -s standardFlowEnabled=true >nul
-    echo       ✅ Done.
-) else ( echo    ⚠️  %CLIENT_ADMIN% already exists. )
+if "!CLIENT_UUID!"=="" (
+    echo ERROR : UUID not found for %CLIENT_ADMIN%
+    exit /b 1
+)
+echo UUID = !CLIENT_UUID!
 
-:: --- Client: EXTRANET ---
-call %KCADM_PATH% get clients -r %REALM_NAME% --fields clientId | findstr /i "%CLIENT_EXTRANET%" >nul 2>&1
-if !ERRORLEVEL! NEQ 0 (
-    echo    📦 Deploying %CLIENT_EXTRANET%...
-    call %KCADM_PATH% create clients -r %REALM_NAME% -s clientId=%CLIENT_EXTRANET% -s enabled=true -s publicClient=true -s redirectUris=["%REDIRECT_EXTRANET%"] -s webOrigins=["*"] -s standardFlowEnabled=true >nul
-    echo       ✅ Done.
-) else ( echo    ⚠️  %CLIENT_EXTRANET% already exists. )
+:: ================= CLIENT ROLES =================
+echo [6/6] Client Roles...
 
-:: --- Client: MOBILE ---
-call %KCADM_PATH% get clients -r %REALM_NAME% --fields clientId | findstr /i "%CLIENT_MOBILE%" >nul 2>&1
-if !ERRORLEVEL! NEQ 0 (
-    echo    📦 Deploying %CLIENT_MOBILE%...
-    call %KCADM_PATH% create clients -r %REALM_NAME% -s clientId=%CLIENT_MOBILE% -s enabled=true -s publicClient=true -s redirectUris=["%REDIRECT_MOBILE%","http://localhost:19006/*"] -s webOrigins=["*"] -s standardFlowEnabled=true >nul
-    echo       ✅ Done.
-) else ( echo    ⚠️  %CLIENT_MOBILE% already exists. )
+call %KCADM_PATH% get clients/!CLIENT_UUID!/roles/mobile-user -r %REALM_NAME% >nul 2>&1
+if errorlevel 1 (
+    call %KCADM_PATH% create clients/!CLIENT_UUID!/roles -r %REALM_NAME% -s name=mobile-user >nul
+    echo OK mobile-user
+) else echo SKIP mobile-user
 
-:: --- Client: API ---
-call %KCADM_PATH% get clients -r %REALM_NAME% --fields clientId | findstr /i "%CLIENT_API%" >nul 2>&1
-if !ERRORLEVEL! NEQ 0 (
-    echo    📦 Deploying %CLIENT_API%...
-    call %KCADM_PATH% create clients -r %REALM_NAME% -s clientId=%CLIENT_API% -s enabled=true -s publicClient=false -s bearerOnly=true >nul
-    echo       ✅ Done.
-) else ( echo    ⚠️  %CLIENT_API% already exists. )
+call %KCADM_PATH% get clients/!CLIENT_UUID!/roles/mobile-admin -r %REALM_NAME% >nul 2>&1
+if errorlevel 1 (
+    call %KCADM_PATH% create clients/!CLIENT_UUID!/roles -r %REALM_NAME% -s name=mobile-admin >nul
+    echo OK mobile-admin
+) else echo SKIP mobile-admin
 
-:: --- 7. SUMMARY ---
-echo.
-echo %SEP%
-echo   🎉 DEPLOYMENT COMPLETE
-echo %SEP%
-echo   Realm   : %REALM_NAME%
-echo   Roles   : admincab, comercialcab, client, adherent
-echo   Clients : %CLIENT_ADMIN%, %CLIENT_EXTRANET%, %CLIENT_MOBILE%, %CLIENT_API%
-echo %SEP%
-echo.
-echo Task finished. You can now use your .env files.
+echo ------------------------------------------------------------
+echo DONE SUCCESSFULLY
+echo ------------------------------------------------------------
 pause
 exit /b 0
+
+
+:: ================================================================
+:: SUBROUTINE : CREATE_CLIENT
+::   %1 = clientId
+::   %2 = redirectUri
+::   %3 = publicClient (true/false)
+:: ================================================================
+:CREATE_CLIENT
+setlocal enabledelayedexpansion
+
+set _NAME=%~1
+set _REDIRECT=%~2
+set _PUBLIC=%~3
+
+call %KCADM_PATH% get clients -r %REALM_NAME% > tmp_check.json 2>nul
+findstr /C:"\"clientId\" : \"!_NAME!\"" tmp_check.json >nul
+
+if errorlevel 1 (
+    echo CREATE !_NAME!
+    call %KCADM_PATH% create clients -r %REALM_NAME% ^
+     -s clientId=!_NAME! ^
+     -s enabled=true ^
+     -s publicClient=!_PUBLIC! ^
+     -s "redirectUris=[\"!_REDIRECT!\"]" ^
+     -s "webOrigins=[\"*\"]" ^
+     -s standardFlowEnabled=true >nul 2>&1
+) else (
+    echo SKIP !_NAME!
+)
+
+del tmp_check.json >nul 2>&1
+endlocal
+exit /b

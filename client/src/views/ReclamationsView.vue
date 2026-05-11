@@ -17,7 +17,7 @@ import keycloak from '@/services/keycloak'
 
 const { t } = useI18n()
 
-const isCabinet = ref(keycloak.hasRealmRole('admincab') || keycloak.hasRealmRole('comercialcab'))
+const isCabinet = ref(keycloak.hasRole('admincab') || keycloak.hasRole('comercialcab'))
 
 const { data: reclamations, loading: loadingList, execute: fetchReclamations } = useFetch(api.data.getReclamations)
 const { data: messages, loading: loadingChat, execute: fetchMessages } = useFetch(api.data.getMessages)
@@ -134,9 +134,6 @@ onMounted(() => {
         <div>
           <h2 class="text-2xl font-black text-slate-900">{{ $t('reclamations.title') }}</h2>
         </div>
-        <Button @click="isNewDialogOpen = true" class="rounded-2xl h-12 gap-2 bg-slate-900 shadow-xl shadow-slate-200">
-          <Plus class="w-5 h-5" /> {{ $t('reclamations.new_request') }}
-        </Button>
       </div>
 
       <ReclamationList :reclamations="reclamations || []" :loading="loadingList" @select="selectTicket" />
@@ -157,16 +154,6 @@ onMounted(() => {
           </div>
           <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">{{ $t('reclamations.ticket_num') }} #{{ selectedTicket.id }} • {{ $t('reclamations.opened_on') }} {{ new Date(selectedTicket.dateReclamation).toLocaleDateString() }}</p>
         </div>
-        <div v-if="isCabinet" class="flex items-center gap-2">
-          <Button v-if="(selectedTicket.statut === 'En cours' || selectedTicket.statut === 'E')" 
-            variant="outline" size="sm" @click="handleUpdateStatus('C')" class="rounded-xl font-bold text-xs h-9 border-slate-200">
-            {{ $t('reclamations.close_ticket') || 'Clôturer' }}
-          </Button>
-          <Button v-else 
-            variant="outline" size="sm" @click="handleUpdateStatus('E')" class="rounded-xl font-bold text-xs h-9 border-slate-200">
-            {{ $t('reclamations.reopen_ticket') || 'Rouvrir' }}
-          </Button>
-        </div>
       </div>
 
       <ReclamationChat 
@@ -175,40 +162,7 @@ onMounted(() => {
         :selected-ticket="selectedTicket" 
         :is-cabinet="isCabinet"
         :current-user-id="currentUser?.id"
-        @send="handleSendMessage" 
-        @delete-message="handleDeleteMessage"
       />
     </template>
   </div>
-
-  <Dialog v-model:open="isNewDialogOpen">
-    <DialogContent class="sm:max-w-[600px] rounded-[2.5rem] shadow-2xl p-0 overflow-hidden border-none font-['Outfit']">
-      <DialogHeader class="p-10 bg-slate-50/50 border-b border-slate-100">
-        <DialogTitle class="text-2xl font-black text-slate-900">{{ $t('reclamations.new_request') }}</DialogTitle>
-        <DialogDescription class="text-slate-500 font-medium">{{ $t('reclamations.subtitle') }}</DialogDescription>
-      </DialogHeader>
-      <div class="p-10 space-y-6">
-        <div class="space-y-2">
-          <Label class="text-xs font-black uppercase tracking-widest text-slate-400">{{ $t('reclamations.subject') }}</Label>
-          <Input v-model="newTicket.sujet" :placeholder="$t('reclamations.subject_placeholder')" class="rounded-2xl h-12 border-slate-200" />
-        </div>
-        <div class="space-y-2">
-          <Label class="text-xs font-black uppercase tracking-widest text-slate-400">{{ $t('reclamations.nature') }}</Label>
-          <select v-model="newTicket.nature" class="w-full h-12 bg-white border border-slate-200 rounded-2xl px-4 text-sm font-bold outline-none focus:ring-4 focus:ring-slate-900/5 focus:border-slate-900 transition-all">
-            <option value="R">{{ $t('reclamations.nature_r') }}</option>
-            <option value="D">{{ $t('reclamations.nature_d') }}</option>
-            <option value="S">{{ $t('reclamations.nature_s') }}</option>
-          </select>
-        </div>
-        <div class="space-y-2">
-          <Label class="text-xs font-black uppercase tracking-widest text-slate-400">{{ $t('reclamations.message') }}</Label>
-          <Textarea v-model="newTicket.message" :placeholder="$t('reclamations.message_placeholder')" class="rounded-2xl min-h-[120px] border-slate-200" />
-        </div>
-      </div>
-      <DialogFooter class="p-10 bg-slate-50/50 border-t border-slate-100 flex items-center justify-between">
-        <Button variant="ghost" @click="isNewDialogOpen = false" class="rounded-2xl px-8 font-black text-slate-500">{{ $t('reclamations.cancel') }}</Button>
-        <Button @click="handleCreateTicket" class="rounded-2xl bg-slate-900 px-10 shadow-xl shadow-slate-200">{{ $t('reclamations.send') }}</Button>
-      </DialogFooter>
-    </DialogContent>
-  </Dialog>
 </template>

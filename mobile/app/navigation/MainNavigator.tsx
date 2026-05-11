@@ -34,19 +34,22 @@ import ContratScreen from '../screens/ContratScreen';
 import QuittanceScreen from '../screens/QuittanceScreen';
 import SinistreScreen from '../screens/SinistreScreen';
 import ProfileScreen from '../screens/ProfileScreen';
-
-// ─── Navigation Types ──────────────────────────────────────────────────────────
-export type RootStackParamList = {
-  Login: undefined;
-  MainTabs: undefined;
-};
+import ReclamationScreen from '../screens/ReclamationScreen';
+import ReclamationDetailScreen from '../screens/ReclamationDetailScreen';
 
 export type TabParamList = {
   Accueil: undefined;
   Contrats: undefined;
   Quittances: undefined;
   Sinistres: undefined;
+  Reclamations: undefined;
   Profil: undefined;
+};
+
+export type RootStackParamList = {
+  Login: undefined;
+  MainTabs: undefined;
+  ReclamationDetail: { reclamationId: number; sujet: string };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -82,6 +85,7 @@ const getTabConfig = (colors: Theme['colors'], t: any) => ({
   Contrats: { label: t('Contrats'), active: 'shield-checkmark', inactive: 'shield-checkmark-outline', accentColor: colors.primary, accentBg: colors.primaryBg },
   Quittances: { label: t('Quittances'), active: 'receipt', inactive: 'receipt-outline', accentColor: colors.primary, accentBg: colors.primaryBg },
   Sinistres: { label: t('Sinistres'), active: 'warning', inactive: 'warning-outline', accentColor: colors.primary, accentBg: colors.primaryBg },
+  Reclamations: { label: t("Besoin d'aide ?"), icon: 'chatbubbles', active: 'chatbubbles', inactive: 'chatbubbles-outline', accentColor: colors.primary, accentBg: colors.primaryBg },
   Profil: { label: t('Profil'), active: 'person-circle', inactive: 'person-circle-outline', accentColor: colors.primary, accentBg: colors.primaryBg },
 });
 
@@ -286,6 +290,7 @@ const BottomTabs: React.FC = () => {
           </>
         )}
         <Tab.Screen name="Sinistres" component={SinistreScreen} />
+        <Tab.Screen name="Reclamations" component={ReclamationScreen} />
         <Tab.Screen name="Profil" component={ProfileScreen} />
       </Tab.Navigator>
     </View>
@@ -334,7 +339,10 @@ const MainNavigator: React.FC = () => {
         }}
       >
         {isAuthenticated ? (
-          <Stack.Screen name="MainTabs" component={BottomTabs} />
+          <>
+            <Stack.Screen name="MainTabs" component={BottomTabs} />
+            <Stack.Screen name="ReclamationDetail" component={ReclamationDetailScreen} />
+          </>
         ) : (
           <>
             <Stack.Screen

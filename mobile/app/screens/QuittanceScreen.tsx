@@ -85,11 +85,7 @@ const QuittanceDetailModal: React.FC<{
         }}
         ListFooterComponent={
           <Box paddingHorizontal="l" marginTop="m" paddingBottom="xl">
-            {isImpaye ? (
-              <Button label="Régulariser Maintenant" variant="primary" icon="card-outline" onPress={() => onPay?.()} />
-            ) : (
-              <Button label="Obtenir mon Reçu" variant="secondary" icon="document-text-outline" onPress={() => {}} />
-            )}
+            {/* Consultation only */}
           </Box>
         }
       />
@@ -113,12 +109,12 @@ const QuittanceItem: React.FC<{ item: Quittance; index: number; onPress: () => v
           overflow="hidden"
           style={styles.card}
         >
-          <Box paddingHorizontal="m" paddingVertical="s" backgroundColor="backgroundGray" flexDirection="row" justifyContent="space-between" alignItems="center">
+          <Box paddingHorizontal="m" paddingVertical="s" backgroundColor="background" flexDirection="row" justifyContent="space-between" alignItems="center">
             <Box flexDirection="row" alignItems="center">
                <Box backgroundColor="primary" width={24} height={24} borderRadius="round" alignItems="center" justifyContent="center" marginRight="s">
                   <Icon name="receipt" size={12} color="white" />
                </Box>
-               <Text variant="labelBold" color="text" fontSize={12} fontWeight="700">{item.branche || 'Assurance'}</Text>
+               <Text variant="bodySmall" color="text" fontSize={12} fontWeight="700">{item.branche || 'Assurance'}</Text>
             </Box>
             <StatusBadge label={item.statut} variant={item.statut_variant as any} />
           </Box>
@@ -132,7 +128,7 @@ const QuittanceItem: React.FC<{ item: Quittance; index: number; onPress: () => v
                </Box>
                 <TouchableOpacity onPress={isImpaye ? onPay : onPress}>
                    <Box 
-                     backgroundColor={isImpaye ? "error" : "buttonSecondaryBg"} 
+                     backgroundColor={"primaryBg"} 
                      paddingHorizontal="m" 
                      paddingVertical="xxs" 
                      borderRadius="s"
@@ -145,7 +141,7 @@ const QuittanceItem: React.FC<{ item: Quittance; index: number; onPress: () => v
                         fontWeight="700" 
                         fontSize={rsp.normalize(11)}
                       >
-                        {isImpaye ? 'RÉGLER' : 'DÉTAILS'}
+                        {'DÉTAILS'}
                       </Text>
                    </Box>
                 </TouchableOpacity>
@@ -184,8 +180,8 @@ const QuittanceScreen: React.FC = () => {
         contentContainerStyle={{ paddingBottom: 120 }}
       >
         <Box paddingVertical="xl" paddingHorizontal="m">
-            <Text variant="header" color="text" fontSize={rsp.normalize(26)} fontWeight="700">Votre Solde Actuel</Text>
-            <Text variant="bodySmall" color="textSecondary" fontWeight="600">Récapitulatif de vos quittances et règlements</Text>
+            <Text variant="header" color="text" fontSize={rsp.normalize(26)} fontWeight="700">Facturation</Text>
+            <Text variant="bodySmall" color="textSecondary" fontWeight="600">Consultez vos quittances</Text>
         </Box>
 
         <Box marginBottom="m">
