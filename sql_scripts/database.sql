@@ -308,10 +308,6 @@ CREATE NONCLUSTERED INDEX IX_ReclamationsIdt_Statut ON dbo.ReclamationsIdt(Statu
 CREATE NONCLUSTERED INDEX IX_ReclamationsDet_Reclamation ON dbo.ReclamationsDet(FK_Reclamation_Id);
 GO
 
-
--------------------------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------------------------
-
 USE [IBS_Extranet_Mobile]
 GO
 
@@ -559,7 +555,6 @@ BEGIN
 END
 GO
 
-
 CREATE OR ALTER PROCEDURE [dbo].[sp_GetImpayes]
     @FK_User_Id INT,
     @Source CHAR(1),
@@ -797,6 +792,9 @@ BEGIN
     IF EXISTS (SELECT 1 FROM dbo.ReclamationsIdt WHERE Id = @FK_Reclamation_Id 
                AND (@Source = 'A' OR @Source = 'C' OR FK_User_Client = @FK_User_Id))
     BEGIN
+        DECLARE @LastMsgId INT;
+        SELECT @LastMsgId = MAX(Id) FROM dbo.ReclamationsDet WHERE FK_Reclamation_Id = @FK_Reclamation_Id;
+
         SELECT 
             rd.Id AS id,
             rd.DateMessage AS dateMessage,
@@ -807,7 +805,8 @@ BEGIN
             END AS nature,
             rd.Message AS message,
             rd.FK_User_Id AS fkUserId,
-            u.Nom AS envoyeur
+            u.Nom AS envoyeur,
+            CASE WHEN rd.FK_User_Id = @FK_User_Id AND rd.Id = @LastMsgId THEN 1 ELSE 0 END AS canDelete
         FROM dbo.ReclamationsDet rd
         INNER JOIN dbo.sysUser u ON rd.FK_User_Id = u.Id
         WHERE rd.FK_Reclamation_Id = @FK_Reclamation_Id
@@ -871,14 +870,12 @@ BEGIN
         RETURN;
     END
 
-    -- Check status
     IF EXISTS (SELECT 1 FROM dbo.ReclamationsIdt WHERE Id = @FK_Reclamation_Id AND Statut = 'C')
     BEGIN
         RAISERROR('La réclamation est clôturée', 16, 1);
         RETURN;
     END
 
-    -- Check authorization (Client owner OR Admin/Cabinet)
     IF EXISTS (SELECT 1 FROM dbo.ReclamationsIdt 
                WHERE Id = @FK_Reclamation_Id 
                AND (@Source IN ('A', 'C') OR FK_User_Client = @FK_User_Id))
@@ -1177,7 +1174,6 @@ BEGIN
 END
 GO
 
-
 CREATE OR ALTER PROCEDURE [dbo].[sp_GetStats]
     @FK_User_Id INT,
     @Source     CHAR(1),
@@ -1192,7 +1188,6 @@ BEGIN
         RETURN;
     END
 
-    -- Statistiques principales
     SELECT 
         (SELECT COUNT(DISTINCT p.Id) FROM dbo.Polices p 
          LEFT JOIN dbo.Clients c ON p.Fk_Client_Id = c.Id
@@ -1223,7 +1218,6 @@ BEGIN
          WHERE q.Solde > 0
            AND (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))) AS totalImpayes;
 
-    -- Statistiques par branche (nombre de polices)
     SELECT 
         p.Branche AS label, 
         COUNT(*) AS value
@@ -1235,7 +1229,6 @@ BEGIN
        OR a.Id IS NOT NULL
     GROUP BY p.Branche;
 
-    -- Statistiques mensuelles (primes et impayés)
     SELECT 
         FORMAT(q.DateDu, 'MMM', 'fr-FR') AS month,
         MONTH(q.DateDu) AS month_num,
@@ -1250,7 +1243,6 @@ BEGIN
     GROUP BY FORMAT(q.DateDu, 'MMM', 'fr-FR'), MONTH(q.DateDu)
     ORDER BY MONTH(q.DateDu);
 
-    -- Récapitulatif par branche (primes totales et impayés)
     SELECT 
         p.Branche AS branche,
         SUM(ISNULL(q.Montant, 0)) AS totalPrime,
@@ -1266,8 +1258,6 @@ BEGIN
     RETURN;
 END
 GO
-
-
 
 CREATE OR ALTER PROCEDURE [dbo].[ps_GetStatsByPolice]
     @FK_User_Id   INT,
@@ -1354,10 +1344,6 @@ BEGIN
     RETURN;
 END
 GO
--------------------------------------------------------------------------------------------------------------
--- NEW PROCEDURES (Relay Helpers)
--------------------------------------------------------------------------------------------------------------
-GO
 
 CREATE OR ALTER PROCEDURE dbo.sp_GetReclamationStatut
     @ReclamationId INT
@@ -1406,100 +1392,26 @@ BEGIN
     
     IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
     BEGIN
-        RAISERROR('Session expir�e', 16, 1);
+        RAISERROR('Session expirée', 16, 1);
         RETURN;
     END
 
-    IF EXISTS (SELECT 1 FROM dbo.ReclamationsDet WHERE Id = @MessageId AND FK_User_Id = @FK_User_Id)
-    BEGIN
-        DELETE FROM dbo.ReclamationsDet WHERE Id = @MessageId;
-        RETURN;
-    END
-    
-    RAISERROR('Non autoris� � supprimer ce message', 16, 1);
-    RETURN;
-END
-GO
-
-CREATE OR ALTER PROCEDURE dbo.sp_DeleteMessageReclamation
-    @FK_User_Id INT,
-    @Token      VARCHAR(MAX),
-    @MessageId  INT
-AS
-BEGIN
-    SET NOCOUNT ON;
-    
-    IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
-    BEGIN
-        RAISERROR(''Session expirée'', 16, 1);
-        RETURN;
-    END
-
-    -- Check if it is the owner
     IF NOT EXISTS (SELECT 1 FROM dbo.ReclamationsDet WHERE Id = @MessageId AND FK_User_Id = @FK_User_Id)
     BEGIN
-        RAISERROR(''Non autorisé à supprimer ce message'', 16, 1);
+        RAISERROR('Non autorisé à supprimer ce message', 16, 1);
         RETURN;
     END
 
-    -- Check if it is the last message of this reclamation
     DECLARE @FK_Reclamation_Id INT;
     SELECT @FK_Reclamation_Id = FK_Reclamation_Id FROM dbo.ReclamationsDet WHERE Id = @MessageId;
 
     IF EXISTS (SELECT 1 FROM dbo.ReclamationsDet WHERE FK_Reclamation_Id = @FK_Reclamation_Id AND Id > @MessageId)
     BEGIN
-        RAISERROR(''Impossible de supprimer : ce n''''est pas le dernier message'', 16, 1);
+        RAISERROR('Impossible de supprimer : ce n''est pas le dernier message', 16, 1);
         RETURN;
     END
 
     DELETE FROM dbo.ReclamationsDet WHERE Id = @MessageId;
-    RETURN;
-END
-GO
-
-CREATE OR ALTER PROCEDURE dbo.sp_GetReclamationDetails
-    @FK_User_Id INT,
-    @Source CHAR(1),
-    @Token VARCHAR(MAX),
-    @FK_Reclamation_Id INT
-AS
-BEGIN
-    SET NOCOUNT ON;
-    
-    IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
-    BEGIN
-        RAISERROR(''Session expirée'', 16, 1);
-        RETURN;
-    END
-
-    IF EXISTS (SELECT 1 FROM dbo.ReclamationsIdt WHERE Id = @FK_Reclamation_Id 
-               AND (@Source IN (''A'', ''C'') OR FK_User_Client = @FK_User_Id))
-    BEGIN
-        -- Identify the last message ID for this reclamation
-        DECLARE @LastMsgId INT;
-        SELECT @LastMsgId = MAX(Id) FROM dbo.ReclamationsDet WHERE FK_Reclamation_Id = @FK_Reclamation_Id;
-
-        SELECT 
-            rd.Id AS id,
-            rd.DateMessage AS dateMessage,
-            CASE rd.Nature 
-                WHEN ''C'' THEN ''Client'' 
-                WHEN ''A'' THEN ''Admin'' 
-                ELSE rd.Nature 
-            END AS nature,
-            rd.Message AS message,
-            rd.FK_User_Id AS fkUserId,
-            u.Nom AS envoyeur,
-            CASE WHEN rd.FK_User_Id = @FK_User_Id AND rd.Id = @LastMsgId THEN 1 ELSE 0 END AS canDelete
-        FROM dbo.ReclamationsDet rd
-        INNER JOIN dbo.sysUser u ON rd.FK_User_Id = u.Id
-        WHERE rd.FK_Reclamation_Id = @FK_Reclamation_Id
-        ORDER BY rd.DateMessage ASC;
-        
-        RETURN;
-    END
-    
-    RAISERROR(''Réclamation introuvable'', 16, 1);
     RETURN;
 END
 GO
