@@ -1,5 +1,7 @@
 const Common = require('../common/Common');
 const qry    = require('../sql/qryExtranet');
+const axios  = require('axios');
+const qs     = require('qs');
 
 const ctx = (req) => ({
     id:     req.user.id,
@@ -68,8 +70,73 @@ const createUserFromAdherent = async (req, res) => {
 };
 
 const syncKeycloak = async (req, res) => {
-    
-    res.json({ success: true });
+    try {
+        const { id: userId } = req.body;
+        if (!userId) return res.status(400).json({ success: false, message: 'ID utilisateur requis.' });
+
+        const userResult = await Common.getDonnees("SELECT Id, Nom, Email FROM sysUser WHERE Id = @0", [userId]);
+        const user = userResult[0]?.[0];
+        if (!user) return res.status(404).json({ success: false, message: 'Utilisateur non trouvé.' });
+        if (!user.Email) return res.status(400).json({ success: false, message: 'L\'utilisateur n\'a pas d\'email.' });
+
+        const tokenRes = await axios.post(`${process.env.KEYCLOAK_AUTH_SERVER_URL}realms/${process.env.KEYCLOAK_REALM}/protocol/openid-connect/token`, qs.stringify({
+            grant_type:    'client_credentials',
+            client_id:     process.env.KEYCLOAK_CLIENT_ID,
+            client_secret: process.env.KEYCLOAK_SECRET
+        }), { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
+
+        const adminToken = tokenRes.data.access_token;
+        const kcUrl = `${process.env.KEYCLOAK_AUTH_SERVER_URL}admin/realms/${process.env.KEYCLOAK_REALM}/users`;
+
+        const kcUsersRes = await axios.get(`${kcUrl}?email=${user.Email}`, {
+            headers: { Authorization: `Bearer ${adminToken}` }
+        });
+
+        let kcUser = kcUsersRes.data.find(u => u.email?.toLowerCase() === user.Email.toLowerCase());
+
+        if (!kcUser) {
+            const names = (user.Nom || '').split(' ');
+            const firstName = names[0] || '';
+            const lastName = names.slice(1).join(' ') || '-';
+
+            const newUser = {
+                username:      user.Email,
+                email:         user.Email,
+                firstName:     firstName,
+                lastName:      lastName,
+                enabled:       true,
+                emailVerified: true,
+                credentials: [{
+                    type:      'password',
+                    value:     'Ibs@2026',
+                    temporary: true
+                }]
+            };
+
+            await axios.post(kcUrl, newUser, {
+                headers: { Authorization: `Bearer ${adminToken}`, 'Content-Type': 'application/json' }
+            });
+
+            const kcUsersRetry = await axios.get(`${kcUrl}?email=${user.Email}`, {
+                headers: { Authorization: `Bearer ${adminToken}` }
+            });
+            kcUser = kcUsersRetry.data.find(u => u.email?.toLowerCase() === user.Email.toLowerCase());
+        }
+
+        if (!kcUser) {
+            return res.status(500).json({ success: false, message: 'Erreur lors de la création/récupération sur Keycloak.' });
+        }
+
+        await Common.setDonnees("UPDATE sysUser SET Id_Auth = @0, UpdatedAt = GETDATE() WHERE Id = @1", [kcUser.id, userId]);
+
+        res.json({ success: true, message: 'Synchronisation et connexion réussies.' });
+
+    } catch (e) {
+        console.error('Sync Error:', e.response?.data || e.message);
+        const status = e.response?.status || 500;
+        const msg = e.response?.data?.error || e.response?.data?.errorMessage || e.message;
+        res.status(status).json({ success: false, message: `Erreur Keycloak: ${msg}` });
+    }
 };
 
 module.exports = {

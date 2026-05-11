@@ -15,6 +15,7 @@
     "clsx": "^2.1.1",
     "keycloak-js": "^26.2.4",
     "lucide-vue-next": "^1.0.0",
+    "pinia": "^3.0.4",
     "reka-ui": "^2.9.6",
     "tailwind-merge": "^3.5.0",
     "vue": "^3.5.32",
@@ -31,10 +32,12 @@
     "@vue/tsconfig": "^0.9.1",
     "autoprefixer": "^10.5.0",
     "postcss": "^8.5.13",
+    "rollup-plugin-visualizer": "^7.0.1",
     "tailwindcss": "^4.2.4",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "~6.0.2",
     "vite": "^6.4.2",
+    "vite-plugin-compression": "^0.5.1",
     "vue-tsc": "^3.2.7"
   }
 }

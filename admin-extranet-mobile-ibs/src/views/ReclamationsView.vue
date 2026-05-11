@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import { ChevronLeft } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -12,8 +12,44 @@ const reclamations = ref<any[]>([])
 const selectedTicket = ref<any>(null)
 const messages = ref<any[]>([])
 const loading = ref(true)
+const loadingChat = ref(false)
 const searchQuery = ref('')
 const natureFilter = ref('all')
+const currentUser = ref<any>(null)
+
+let pollingInterval: any = null
+
+const startPolling = () => {
+  stopPolling()
+  pollingInterval = setInterval(() => {
+    if (selectedTicket.value && !loadingChat.value) {
+      api.data.getMessages(selectedTicket.value.id).then(res => {
+        messages.value = res
+      }).catch(console.error)
+    }
+  }, 5000)
+}
+
+const stopPolling = () => {
+  if (pollingInterval) {
+    clearInterval(pollingInterval)
+    pollingInterval = null
+  }
+}
+
+watch(selectedTicket, (newVal) => {
+  if (newVal) startPolling()
+  else stopPolling()
+})
+
+onUnmounted(stopPolling)
+
+const fetchUserInfo = async () => {
+  try {
+    const res = await api.admin.getMe()
+    currentUser.value = res.user
+  } catch (e) { console.error(e) }
+}
 
 const fetchReclamations = async () => {
   loading.value = true
@@ -39,13 +75,13 @@ const filteredReclamations = computed(() => {
 
 const selectTicket = async (ticket: any) => {
   selectedTicket.value = ticket
-  loading.value = true
+  loadingChat.value = true
   try { messages.value = await api.data.getMessages(ticket.id) } 
   catch (e: any) { 
     toast.error(e.message)
     console.error(e) 
   } 
-  finally { loading.value = false }
+  finally { loadingChat.value = false }
 }
 
 const handleSendMessage = async (text: string) => {
@@ -53,8 +89,9 @@ const handleSendMessage = async (text: string) => {
   messages.value.push({
     id: Date.now(),
     text,
-    sender: 'admin',
-    time: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+    envoyeur: 'Conseiller IBS',
+    nature: 'Admin',
+    dateMessage: new Date().toISOString()
   })
   try { 
     await api.admin.replyToReclamation(selectedTicket.value.id, text)
@@ -66,7 +103,33 @@ const handleSendMessage = async (text: string) => {
   }
 }
 
-onMounted(fetchReclamations)
+const handleStatusUpdate = async (statut: string) => {
+  if (!selectedTicket.value) return
+  try {
+    await api.admin.updateStatus(selectedTicket.value.id, statut)
+    selectedTicket.value.statut = statut === 'E' ? 'En cours' : (statut === 'T' ? 'Traité' : 'Clôturé')
+    toast.success("Statut mis à jour")
+  } catch (e: any) {
+    toast.error(e.message)
+  }
+}
+
+const handleDeleteMessage = async (messageId: number) => {
+  if (!selectedTicket.value) return
+  if (!confirm("Supprimer ce message ?")) return
+  try {
+    await api.admin.deleteMessage(messageId, selectedTicket.value.id)
+    messages.value = messages.value.filter(m => m.id !== messageId)
+    toast.success("Message supprimé")
+  } catch (e: any) {
+    toast.error(e.message)
+  }
+}
+
+onMounted(() => {
+  fetchReclamations()
+  fetchUserInfo()
+})
 </script>
 
 <template>
@@ -94,9 +157,9 @@ onMounted(fetchReclamations)
               class="w-full h-12 bg-slate-50 border border-slate-200 rounded-2xl px-6 text-sm font-bold outline-none focus:ring-4 focus:ring-slate-900/5 focus:border-slate-900 transition-all"
             >
               <option value="all">Toutes les natures</option>
-              <option value="R">Réclamations</option>
-              <option value="D">Demandes d'info</option>
-              <option value="S">Sinistres</option>
+              <option value="Réclamation">Réclamations</option>
+              <option value="Demande d'info">Demandes d'info</option>
+              <option value="Sinistre">Sinistres</option>
             </select>
           </div>
         </div>
@@ -122,9 +185,14 @@ onMounted(fetchReclamations)
             Client: {{ selectedTicket.client }} • Ticket #{{ selectedTicket.id }} • Ouvert le {{ new Date(selectedTicket.dateReclamation).toLocaleDateString() }}
           </p>
         </div>
+        <div class="flex gap-2">
+          <Button v-if="selectedTicket.statut !== 'En cours'" size="sm" variant="outline" @click="handleStatusUpdate('E')" class="rounded-xl border-orange-200 text-orange-600 hover:bg-orange-50 font-bold text-[10px] uppercase tracking-wider">En cours</Button>
+          <Button v-if="selectedTicket.statut !== 'Traité'" size="sm" variant="outline" @click="handleStatusUpdate('T')" class="rounded-xl border-emerald-200 text-emerald-600 hover:bg-emerald-50 font-bold text-[10px] uppercase tracking-wider">Traité</Button>
+          <Button v-if="selectedTicket.statut !== 'Clôturé'" size="sm" variant="outline" @click="handleStatusUpdate('C')" class="rounded-xl border-slate-200 text-slate-600 hover:bg-slate-50 font-bold text-[10px] uppercase tracking-wider">Clôturer</Button>
+        </div>
       </div>
 
-      <ReclamationChat :messages="messages" :loading="loading" :selected-ticket="selectedTicket" @send="handleSendMessage" />
+      <ReclamationChat :messages="messages" :loading="loading" :selected-ticket="selectedTicket" :current-user-id="currentUser?.id" @send="handleSendMessage" @delete-message="handleDeleteMessage" />
     </template>
   </div>
 </template>

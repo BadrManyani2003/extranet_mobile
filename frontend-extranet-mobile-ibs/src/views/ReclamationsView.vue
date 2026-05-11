@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Plus, ChevronLeft } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
@@ -25,6 +25,41 @@ const { data: messages, loading: loadingChat, execute: fetchMessages } = useFetc
 const selectedTicket = ref<any>(null)
 const isNewDialogOpen = ref(false)
 const newTicket = ref({ sujet: '', nature: 'R', message: '' })
+const currentUser = ref<any>(null)
+
+let pollingInterval: any = null
+
+const startPolling = () => {
+  stopPolling()
+  pollingInterval = setInterval(() => {
+    if (selectedTicket.value && !loadingChat.value) {
+      api.data.getMessages(selectedTicket.value.id).then(res => {
+        messages.value = res
+      }).catch(console.error)
+    }
+  }, 5000)
+}
+
+const stopPolling = () => {
+  if (pollingInterval) {
+    clearInterval(pollingInterval)
+    pollingInterval = null
+  }
+}
+
+watch(selectedTicket, (newVal) => {
+  if (newVal) startPolling()
+  else stopPolling()
+})
+
+onUnmounted(stopPolling)
+
+const fetchUserInfo = async () => {
+  try {
+    const res = await api.data.getUserInfo()
+    currentUser.value = res.user
+  } catch (e) { console.error(e) }
+}
 
 const selectTicket = async (ticket: any) => {
   selectedTicket.value = ticket
@@ -86,7 +121,10 @@ const handleDeleteMessage = async (msgId: number) => {
   }
 }
 
-onMounted(fetchReclamations)
+onMounted(() => {
+  fetchReclamations()
+  fetchUserInfo()
+})
 </script>
 
 <template>
@@ -136,6 +174,7 @@ onMounted(fetchReclamations)
         :loading="loadingChat" 
         :selected-ticket="selectedTicket" 
         :is-cabinet="isCabinet"
+        :current-user-id="currentUser?.id"
         @send="handleSendMessage" 
         @delete-message="handleDeleteMessage"
       />

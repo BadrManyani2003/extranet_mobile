@@ -16,7 +16,6 @@ export const initKeycloak = (onAuthenticated: () => void) => {
   })
     .then((authenticated) => {
       if (authenticated) {
-        console.log(keycloak.subject)
         const url = new URL(window.location.href);
         url.hash = ''; 
         window.history.replaceState({}, document.title, url.toString());
