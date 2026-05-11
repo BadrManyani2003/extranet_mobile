@@ -1105,3 +1105,49 @@ BEGIN
     RETURN;
 END
 GO 
+CREATE OR ALTER PROCEDURE dbo.ps_LinkUserToClient
+    @FK_User_Id     INT,
+    @Token          VARCHAR(MAX),
+    @Source         VARCHAR(50),
+    @FK_Target_User_Id INT,
+    @FK_Client_Id   INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
+    BEGIN
+        RAISERROR('Session expir�e', 16, 1);
+        RETURN;
+    END
+
+    IF EXISTS (SELECT 1 FROM dbo.UsersXClients WHERE FK_Client_Id = @FK_Client_Id)
+    BEGIN
+        RAISERROR('Ce client est d�j� li� � un utilisateur', 16, 1);
+        RETURN;
+    END
+
+    INSERT INTO dbo.UsersXClients (FK_User_Id, FK_Client_Id, Actif)
+    VALUES (@FK_Target_User_Id, @FK_Client_Id, 'O');
+END
+GO
+
+CREATE OR ALTER PROCEDURE dbo.ps_LinkUserToAdherent
+    @FK_User_Id     INT,
+    @Token          VARCHAR(MAX),
+    @Source         VARCHAR(50),
+    @FK_Target_User_Id INT,
+    @FK_Adherent_Id INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
+    BEGIN
+        RAISERROR('Session expir�e', 16, 1);
+        RETURN;
+    END
+
+    UPDATE dbo.Adherents SET FK_User_Id = @FK_Target_User_Id WHERE Id = @FK_Adherent_Id;
+END
+GO

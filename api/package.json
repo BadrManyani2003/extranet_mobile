@@ -1,0 +1,27 @@
+{
+  "name": "mobile-server-v2",
+  "version": "2.0.0",
+  "description": "Server v2 for IBS Extranet Mobile",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js"
+  },
+  "dependencies": {
+    "axios": "^1.16.0",
+    "compression": "^1.8.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^8.5.1",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "jwks-rsa": "^4.0.1",
+    "morgan": "^1.10.0",
+    "mssql": "^12.5.0",
+    "qs": "^6.15.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  }
+}
