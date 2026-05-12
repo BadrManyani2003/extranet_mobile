@@ -35,10 +35,10 @@ class KeycloakService {
         onLoad: 'login-required',
         checkLoginIframe: false,
         pkceMethod: 'S256',
-        enableLogging: true,
       });
-
+      
       if (authenticated) {
+        console.log('🔑 Authenticated User ID (id_auth):', this.keycloak.subject);
         this.isInitialized = true;
         this.setupTokenRefresh();
         this.cleanUrl();

@@ -34,15 +34,13 @@ const AlertBanner: React.FC<AlertBannerProps> = ({
   return (
     <TouchableOpacity activeOpacity={0.8} onPress={onPress}>
       <Box 
-        backgroundColor={style.bg as any} 
+        backgroundColor={style.bg as keyof Theme['colors']} 
         padding="m" 
         borderRadius="l" 
         flexDirection="row" 
         alignItems="center" 
-        marginHorizontal="l" 
-        marginBottom="m" 
         borderWidth={1} 
-        borderColor={style.bg as any}
+        borderColor={style.bg as keyof Theme['colors']}
       >
         <Icon 
           name={(icon || style.icon) as any} 
@@ -50,7 +48,7 @@ const AlertBanner: React.FC<AlertBannerProps> = ({
           color={theme.colors[style.text as keyof Theme['colors']]} 
           style={{ marginRight: 10 }} 
         />
-        <Text variant="caption" color={style.text as any} fontWeight="700" flex={1}>
+        <Text variant="caption" color={style.text as keyof Theme['colors']} fontWeight="700" flex={1}>
           {message}
         </Text>
         {onPress && (

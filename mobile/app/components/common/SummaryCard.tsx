@@ -36,7 +36,6 @@ const SummaryCard: React.FC<SummaryCardProps> = ({
 
   return (
     <Box 
-      marginHorizontal="l" 
       padding="m" 
       borderRadius="m" 
       backgroundColor="cardBackground" 
@@ -58,7 +57,7 @@ const SummaryCard: React.FC<SummaryCardProps> = ({
             width={44} 
             height={44} 
             borderRadius="round" 
-            backgroundColor={active.bg as any} 
+            backgroundColor={active.bg as keyof Theme['colors']} 
             alignItems="center" 
             justifyContent="center"
             marginRight="m"
@@ -87,7 +86,7 @@ const SummaryCard: React.FC<SummaryCardProps> = ({
             <Text variant="caption" color="textSecondary" fontWeight="600" fontSize={rsp.normalize(13)}>
               {amountLabel}
             </Text>
-            <Text variant="header" color={active.main as any} fontSize={rsp.normalize(24)} fontWeight="700">
+            <Text variant="header" color={active.main as keyof Theme['colors']} fontSize={rsp.normalize(24)} fontWeight="700">
               {amount}
             </Text>
           </Box>

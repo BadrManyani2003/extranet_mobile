@@ -31,7 +31,7 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({
 
   return (
     <Box 
-      backgroundColor={bg as any} 
+      backgroundColor={bg as keyof Theme['colors']} 
       paddingHorizontal="s" 
       paddingVertical="xxs" 
       borderRadius="round" 
@@ -47,7 +47,7 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({
       />
       <Text 
         variant="labelBold" 
-        color={text as any} 
+        color={text as keyof Theme['colors']} 
         fontSize={11} 
         fontWeight="700"
       >

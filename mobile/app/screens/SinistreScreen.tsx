@@ -160,7 +160,7 @@ const SinistreScreen: React.FC = () => {
             <Text variant="bodySmall" color="textSecondary" fontWeight="600">Suivi de vos dossiers</Text>
         </Box>
 
-        <Box marginBottom="m">
+        <Box marginBottom="m" marginHorizontal="m">
           <SummaryCard 
               title="Suivi de Dossiers" 
               subtitle="Statistiques de vos incidents en attente." 

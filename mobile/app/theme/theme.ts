@@ -17,10 +17,23 @@ const palette = {
   background:   '#F8FAFC',
   cardBg:       '#FFFFFF',
   border:       '#E2E8F0',
+  borderLight:  '#F1F5F9',
   
   success:      '#10B981',
   warning:      '#F59E0B',
   error:        '#EF4444',
+  
+  successBg:    '#ECFDF5',
+  warningBg:    '#FFFBEB',
+  errorBg:      '#FEF2F2',
+  
+  info:         '#3B82F6',
+  infoBg:       '#EFF6FF',
+  
+  purple:       '#8B5CF6',
+  purpleBg:     '#F5F3FF',
+  
+  backgroundGray:'#F1F5F9',
 };
 
 const lightTheme = createTheme({
@@ -37,13 +50,33 @@ const lightTheme = createTheme({
     textInverse: palette.white,
     
     border: palette.border,
+    borderLight: palette.borderLight,
     
     success: palette.success,
+    successBg: palette.successBg,
+    successLight: palette.successBg,
+    
     warning: palette.warning,
+    warningBg: palette.warningBg,
+    warningLight: palette.warningBg,
+    
     error: palette.error,
+    errorBg: palette.errorBg,
+    errorLight: palette.errorBg,
+    
+    info: palette.info,
+    infoBg: palette.infoBg,
+    infoLight: palette.infoBg,
+    
+    purple: palette.purple,
+    purpleBg: palette.purpleBg,
+    
+    backgroundGray: palette.backgroundGray,
+    backgroundLight: palette.backgroundGray,
     
     transparent: 'transparent',
     white: palette.white,
+    buttonSecondaryBg: palette.backgroundGray,
   },
   spacing: {
     none: 0,
@@ -77,6 +110,14 @@ const lightTheme = createTheme({
       fontSize: rsp.normalize(18),
       fontWeight: '700',
     },
+    cardTitle: {
+      fontSize: rsp.normalize(16),
+      fontWeight: '700',
+    },
+    button: {
+      fontSize: rsp.normalize(15),
+      fontWeight: '600',
+    },
     body: {
       fontSize: rsp.normalize(15),
     },
@@ -91,6 +132,14 @@ const lightTheme = createTheme({
     caption: {
       fontSize: rsp.normalize(12),
       color: 'textTertiary',
+    },
+    label: {
+      fontSize: rsp.normalize(12),
+      fontWeight: '500',
+    },
+    labelBold: {
+      fontSize: rsp.normalize(12),
+      fontWeight: '700',
     },
   },
 });

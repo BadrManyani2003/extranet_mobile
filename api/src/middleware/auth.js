@@ -34,13 +34,18 @@ module.exports = async (req, res, next) => {
 
     const token = authHeader.split(' ')[1];
 
+    const issuer = `${keycloakConfig.authServerUrl.replace(/\/$/, '')}/realms/${keycloakConfig.realm}`;
+
     jwt.verify(token, getKey, {
-        issuer: `${keycloakConfig.authServerUrl}/realms/${keycloakConfig.realm}`,
+        issuer: issuer,
         algorithms: ['RS256']
     }, async (err, decoded) => {
         if (err) {
             console.error('❌ JWT Verification Error:', err.message);
-            return error(res, 'Token invalide ou expiré.', 401);
+            if (err.name === 'TokenExpiredError') {
+                return error(res, 'Token expiré.', 401);
+            }
+            return error(res, `Token invalide : ${err.message}`, 401);
         }
 
         try {
@@ -63,7 +68,7 @@ module.exports = async (req, res, next) => {
             // Extranet Access Check
             const extranetStatus = String(req.user.extranet).trim().toUpperCase();
             if (extranetStatus === 'N' && !req.path.includes('/auth/me')) {
-                return error(res, "Vous n'avez pas l'accès à l'extranet. Veuillez utiliser l'application mobile.", 403);
+                return error(res, "Accès extranet non autorisé pour ce profil.", 403);
             }
 
             next();

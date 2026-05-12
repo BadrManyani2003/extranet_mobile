@@ -35,9 +35,9 @@ CREATE TABLE dbo.sysUser
     Telephone VARCHAR(20) NULL,
     Email VARCHAR(255) NULL,
     Nature CHAR(1) NULL,
-    Extranet CHAR(1) NOT NULL CONSTRAINT DF_sysUser_Extranet DEFAULT 'N',
-    Mobile CHAR(1) NOT NULL CONSTRAINT DF_sysUser_Mobile DEFAULT 'N',
-    CreatedAt DATETIME2 NOT NULL CONSTRAINT DF_sysUser_CreatedAt DEFAULT GETDATE(),
+    Extranet CHAR(1) NOT NULL DEFAULT 'N',
+    Mobile CHAR(1) NOT NULL DEFAULT 'N',
+    CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE(),
     UpdatedAt DATETIME2 NULL,
     CONSTRAINT PK_sysUser PRIMARY KEY CLUSTERED (Id),
     CONSTRAINT UQ_sysUser_Email UNIQUE NONCLUSTERED (Email)
@@ -50,9 +50,9 @@ CREATE TABLE dbo.Postes_Autorises
     FK_User_Id INT NOT NULL,
     Libelle VARCHAR(255) NOT NULL,
     Identifiant VARCHAR(255) NULL,
-    Actif CHAR(1) NOT NULL CONSTRAINT DF_Postes_Autorises_Actif DEFAULT 'O',
+    Actif CHAR(1) NOT NULL  DEFAULT 'O',
     DateActivation DATETIME2 NULL,
-    CreatedAt DATETIME2 NOT NULL CONSTRAINT DF_Postes_Autorises_CreatedAt DEFAULT GETDATE(),
+    CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE(),
     CONSTRAINT PK_Postes_Autorises PRIMARY KEY CLUSTERED (Id),
     CONSTRAINT FK_PostesAutorises_User FOREIGN KEY (FK_User_Id) REFERENCES dbo.sysUser(Id) ON DELETE CASCADE
 );
@@ -85,7 +85,7 @@ CREATE TABLE dbo.Compagnies
 (
     Id INT NOT NULL IDENTITY(1,1),
     RaisonSociale VARCHAR(255) NOT NULL,
-    CreatedAt DATETIME2 NOT NULL CONSTRAINT DF_Compagnies_CreatedAt DEFAULT GETDATE(),
+    CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE(),
     CONSTRAINT PK_Compagnies PRIMARY KEY CLUSTERED (Id)
 );
 GO
@@ -95,11 +95,11 @@ CREATE TABLE dbo.Clients
     Id INT NOT NULL,
     Fk_Client_Id INT NULL,
     RaisonSociale VARCHAR(255) NOT NULL,
-    Particulier CHAR(1) NOT NULL CONSTRAINT DF_Clients_Particulier DEFAULT 'N',
+    Particulier CHAR(1) NOT NULL DEFAULT 'N',
     Email VARCHAR(255) NULL,
     Adresse VARCHAR(500) NULL,
     Telephone VARCHAR(20) NULL,
-    CreatedAt DATETIME2 NOT NULL CONSTRAINT DF_Clients_CreatedAt DEFAULT GETDATE(),
+    CreatedAt DATETIME2 NOT NULL  DEFAULT GETDATE(),
     UpdatedAt DATETIME2 NULL,
     CONSTRAINT PK_Clients PRIMARY KEY CLUSTERED (Id),
     CONSTRAINT FK_Clients_Parent FOREIGN KEY (Fk_Client_Id) REFERENCES dbo.Clients(Id),
@@ -111,8 +111,8 @@ CREATE TABLE dbo.UsersXClients
 (
     FK_User_Id INT NOT NULL,
     FK_Client_Id INT NOT NULL,
-    Actif CHAR(1) NOT NULL CONSTRAINT DF_UsersXClients_Actif DEFAULT 'O',
-    CreatedAt DATETIME2 NOT NULL CONSTRAINT DF_UsersXClients_CreatedAt DEFAULT GETDATE(),
+    Actif CHAR(1) NOT NULL  DEFAULT 'O',
+    CreatedAt DATETIME2 NOT NULL  DEFAULT GETDATE(),
     CONSTRAINT PK_UsersXClients PRIMARY KEY CLUSTERED (FK_User_Id, FK_Client_Id),
     CONSTRAINT FK_UXC_User FOREIGN KEY (FK_User_Id) REFERENCES dbo.sysUser(Id) ON DELETE CASCADE,
     CONSTRAINT FK_UXC_Client FOREIGN KEY (FK_Client_Id) REFERENCES dbo.Clients(Id) ON DELETE CASCADE
@@ -131,7 +131,7 @@ CREATE TABLE dbo.Polices
     Statut CHAR(1) NULL,
     Module VARCHAR(100) NULL,
     DateEffet DATE NULL,
-    CreatedAt DATETIME2 NOT NULL CONSTRAINT DF_Polices_CreatedAt DEFAULT GETDATE(),
+    CreatedAt DATETIME2 NOT NULL  DEFAULT GETDATE(),
     UpdatedAt DATETIME2 NULL,
     CONSTRAINT PK_Polices PRIMARY KEY CLUSTERED (Id),
     CONSTRAINT FK_Polices_Client FOREIGN KEY (Fk_Client_Id) REFERENCES dbo.Clients(Id),
@@ -149,9 +149,9 @@ CREATE TABLE dbo.Adherents
     NumAdhesion VARCHAR(100) NULL,
     Matricule VARCHAR(100) NULL,
     DateNaissance DATE NULL,
-    Actif CHAR(1) NOT NULL CONSTRAINT DF_Adherents_Actif DEFAULT 'O',
+    Actif CHAR(1) NOT NULL DEFAULT 'O',
     Telephone VARCHAR(20) NULL,
-    CreatedAt DATETIME2 NOT NULL CONSTRAINT DF_Adherents_CreatedAt DEFAULT GETDATE(),
+    CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE(),
     UpdatedAt DATETIME2 NULL,
     CONSTRAINT PK_Adherents PRIMARY KEY CLUSTERED (Id),
     CONSTRAINT FK_Adherents_Police FOREIGN KEY (FK_Police_Id) REFERENCES dbo.Polices(Id) ON DELETE CASCADE,
@@ -169,7 +169,7 @@ CREATE TABLE dbo.PersACharge
     Lien VARCHAR(100) NULL,
     DateNaissance DATE NULL,
     DateAdhesion DATE NULL,
-    CreatedAt DATETIME2 NOT NULL CONSTRAINT DF_PersACharge_CreatedAt DEFAULT GETDATE(),
+    CreatedAt DATETIME2 NOT NULL  DEFAULT GETDATE(),
     CONSTRAINT PK_PersACharge PRIMARY KEY CLUSTERED (Id),
     CONSTRAINT FK_PersACharge_Adherent FOREIGN KEY (FK_Adherent_Id) REFERENCES dbo.Adherents(Id) ON DELETE CASCADE
 );
@@ -186,7 +186,7 @@ CREATE TABLE dbo.Risques
     DateEcheance DATE NULL,
     NumeroIBS VARCHAR(100) NULL,
     Statut CHAR(1) NULL,
-    CreatedAt DATETIME2 NOT NULL CONSTRAINT DF_Risques_CreatedAt DEFAULT GETDATE(),
+    CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE(),
     UpdatedAt DATETIME2 NULL,
     CONSTRAINT PK_Risques PRIMARY KEY CLUSTERED (Id),
     CONSTRAINT FK_Risques_Police FOREIGN KEY (FK_Police_Id) REFERENCES dbo.Polices(Id) ON DELETE CASCADE,
@@ -201,7 +201,7 @@ CREATE TABLE dbo.Garanties
     Libelle VARCHAR(255) NOT NULL,
     Capital DECIMAL(18,2) NULL,
     Franchise DECIMAL(18,2) NULL,
-    CreatedAt DATETIME2 NOT NULL CONSTRAINT DF_Garanties_CreatedAt DEFAULT GETDATE(),
+    CreatedAt DATETIME2 NOT NULL  DEFAULT GETDATE(),
     CONSTRAINT PK_Garanties PRIMARY KEY CLUSTERED (Id),
     CONSTRAINT FK_Garanties_Risque FOREIGN KEY (FK_Risque_Id) REFERENCES dbo.Risques(Id) ON DELETE CASCADE
 );
@@ -222,7 +222,7 @@ CREATE TABLE dbo.Sinistres
     MT_Franchise DECIMAL(18,2) NULL,
     MT_Indemnite DECIMAL(18,2) NULL,
     Observations VARCHAR(max) NULL,
-    CreatedAt DATETIME2 NOT NULL CONSTRAINT DF_Sinistres_CreatedAt DEFAULT GETDATE(),
+    CreatedAt DATETIME2 NOT NULL  DEFAULT GETDATE(),
     UpdatedAt DATETIME2 NULL,
     CONSTRAINT PK_Sinistres PRIMARY KEY CLUSTERED (Id),
     CONSTRAINT FK_Sinistres_Risque FOREIGN KEY (FK_Risque_Id) REFERENCES dbo.Risques(Id),
@@ -243,7 +243,7 @@ CREATE TABLE dbo.Quittances
     Solde DECIMAL(18,2) NULL,
     DateEcheance DATE NULL,
     Statut CHAR(1) NULL,
-    CreatedAt DATETIME2 NOT NULL CONSTRAINT DF_Quittances_CreatedAt DEFAULT GETDATE(),
+    CreatedAt DATETIME2 NOT NULL  DEFAULT GETDATE(),
     UpdatedAt DATETIME2 NULL,
     CONSTRAINT PK_Quittances PRIMARY KEY CLUSTERED (Id),
     CONSTRAINT FK_Quittances_Police FOREIGN KEY (FK_Police_Id) REFERENCES dbo.Polices(Id) ON DELETE CASCADE,
@@ -255,12 +255,12 @@ CREATE TABLE dbo.ReclamationsIdt
 (
     Id INT NOT NULL IDENTITY(1,1),
     FK_User_Client INT NOT NULL,
-    DateReclamation DATETIME2 NOT NULL CONSTRAINT DF_ReclamationsIdt_DateReclamation DEFAULT GETDATE(),
+    DateReclamation DATETIME2 NOT NULL DEFAULT GETDATE(),
     Sujet VARCHAR(255) NULL,
-    Statut CHAR(1) NOT NULL CONSTRAINT DF_ReclamationsIdt_Statut DEFAULT 'E',
+    Statut CHAR(1) NOT NULL  DEFAULT 'E',
     DateStatut DATETIME2 NULL,
     Nature CHAR(1) NULL,
-    CreatedAt DATETIME2 NOT NULL CONSTRAINT DF_ReclamationsIdt_CreatedAt DEFAULT GETDATE(),
+    CreatedAt DATETIME2 NOT NULL  DEFAULT GETDATE(),
     CONSTRAINT PK_ReclamationsIdt PRIMARY KEY CLUSTERED (Id),
     CONSTRAINT FK_ReclamIdt_User FOREIGN KEY (FK_User_Client) REFERENCES dbo.sysUser(Id)
 );
@@ -271,7 +271,7 @@ CREATE TABLE dbo.ReclamationsDet
     Id INT NOT NULL IDENTITY(1,1),
     FK_Reclamation_Id INT NOT NULL,
     FK_User_Id INT NOT NULL,
-    DateMessage DATETIME2 NOT NULL CONSTRAINT DF_ReclamationsDet_DateMessage DEFAULT GETDATE(),
+    DateMessage DATETIME2 NOT NULL  DEFAULT GETDATE(),
     Nature CHAR(1) NULL,
     Message VARCHAR(2000) NULL,
     CONSTRAINT PK_ReclamationsDet PRIMARY KEY CLUSTERED (Id),

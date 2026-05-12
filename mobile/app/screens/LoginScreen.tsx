@@ -49,9 +49,9 @@ const LoginScreen: React.FC<Props> = () => {
 
   useEffect(() => {
     Animated.parallel([
-      Animated.spring(logoScale,  { toValue: 1, bounciness: 4, useNativeDriver: true }),
-      Animated.timing(opacity,    { toValue: 1, duration: 800, useNativeDriver: true }),
-      Animated.spring(formSlide,  { toValue: 0, bounciness: 4, speed: 10, delay: 100, useNativeDriver: true }),
+      Animated.spring(logoScale,  { toValue: 1, bounciness: 4, useNativeDriver: Platform.OS !== 'web' }),
+      Animated.timing(opacity,    { toValue: 1, duration: 800, useNativeDriver: Platform.OS !== 'web' }),
+      Animated.spring(formSlide,  { toValue: 0, bounciness: 4, speed: 10, delay: 100, useNativeDriver: Platform.OS !== 'web' }),
     ]).start();
   }, []);
 
@@ -147,13 +147,16 @@ const LoginScreen: React.FC<Props> = () => {
                 alignItems="center"
                 justifyContent="center"
                 marginBottom="l"
-                style={{
-                  shadowColor: c.primary,
-                  shadowOffset: { width: 0, height: 12 },
-                  shadowOpacity: 0.35,
-                  shadowRadius: 20,
-                  elevation: 12,
-                }}
+                style={Platform.select({
+                  ios: {
+                    shadowColor: c.primary,
+                    shadowOffset: { width: 0, height: 12 },
+                    shadowOpacity: 0.35,
+                    shadowRadius: 20,
+                  },
+                  android: { elevation: 12 },
+                  web: { boxShadow: `0 12px 20px ${c.primary}59` }
+                })}
               >
                 <Icon name={"shield-checkmark" as any} size={48} color="#FFF" />
               </Box>
@@ -196,13 +199,16 @@ const LoginScreen: React.FC<Props> = () => {
                 borderWidth={1}
                 borderColor="borderLight"
                 marginBottom="xl"
-                style={{
-                  shadowColor: c.primary,
-                  shadowOffset: { width: 0, height: 4 },
-                  shadowOpacity: 0.08,
-                  shadowRadius: 12,
-                  elevation: 4,
-                }}
+                style={Platform.select({
+                  ios: {
+                    shadowColor: c.primary,
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.08,
+                    shadowRadius: 12,
+                  },
+                  android: { elevation: 4 },
+                  web: { boxShadow: `0 4px 12px ${c.primary}14` }
+                })}
               >
                 <Box flexDirection="row" alignItems="center" marginBottom="m">
                   <Box

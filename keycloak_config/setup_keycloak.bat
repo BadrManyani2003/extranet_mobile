@@ -2,7 +2,7 @@
 setlocal enabledelayedexpansion
 
 :: ================= CONFIG =================
-set KEYCLOAK_URL=http://localhost:8180
+set KEYCLOAK_URL=http://localhost:8080
 set ADMIN_USER=admin
 set /p ADMIN_PASS=Password:
 

@@ -184,7 +184,7 @@ const QuittanceScreen: React.FC = () => {
             <Text variant="bodySmall" color="textSecondary" fontWeight="600">Consultez vos quittances</Text>
         </Box>
 
-        <Box marginBottom="m">
+        <Box marginBottom="m" marginHorizontal="m">
           <SummaryCard 
               title="Situation Globale" 
               subtitle="Montant total des impayés à régler." 

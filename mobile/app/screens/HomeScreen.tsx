@@ -137,7 +137,6 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
               borderColor="border"
               flexDirection="row"
               alignItems="center"
-              marginHorizontal="l"
             >
               <Box backgroundColor="primaryBg" width={40} height={40} borderRadius="round" alignItems="center" justifyContent="center" marginRight="m">
                 <Icon name="chatbubble-ellipses" size={20} color={theme.colors.primary} />

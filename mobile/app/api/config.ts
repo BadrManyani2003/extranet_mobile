@@ -1,6 +1,7 @@
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Police, Quittance, Sinistre, SinReglement } from '../types';
+import { authEvents } from '../utils/events';
 
 // ============================================================
 // Configuration de base de l'API
@@ -78,6 +79,9 @@ async function apiRequest<T>(
     }
 
     if (!response.ok) {
+      if (response.status === 401) {
+        authEvents.emit('unauthorized');
+      }
       const errorMsg = data.message || data.error || `Erreur serveur (${response.status})`;
       // Debug log for developer
       console.error(`[API Error] ${method} ${endpoint}:`, response.status, data);

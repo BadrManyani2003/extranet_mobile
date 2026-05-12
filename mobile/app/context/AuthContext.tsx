@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { authAPI } from '../api';
+import { authEvents } from '../utils/events';
 
 // ============================================================
 // Types
@@ -40,29 +42,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [source, setSource] = useState<'ADHERENT' | 'CLIENT' | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // ── Restore persisted session on app start ──────────────────
-  useEffect(() => {
-    const restoreSession = async () => {
-      try {
-        const [savedToken, savedUser, savedSource] = await Promise.all([
-          AsyncStorage.getItem('token'),
-          AsyncStorage.getItem('user'),
-          AsyncStorage.getItem('user_source'),
-        ]);
-        if (savedToken && savedUser) {
-          setToken(savedToken);
-          setUser(JSON.parse(savedUser));
-          setSource(savedSource as 'ADHERENT' | 'CLIENT');
-        }
-      } catch {
-        // Session invalide ou corrompue — ignorer
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    restoreSession();
-  }, []);
-
   // ── Called after successful Keycloak authentication ─────────
   const signin = useCallback(async (
     userData: User,
@@ -79,7 +58,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setSource(userSource);
   }, []);
 
-  // ── Clear session (local only — Keycloak session on server persists) ─
   const logout = useCallback(async () => {
     console.log('🔄 Logout initiated...');
     try {
@@ -100,6 +78,54 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.error('❌ Error during logout:', err);
     }
   }, []);
+
+  // ── Restore persisted session on app start ──────────────────
+  useEffect(() => {
+    const restoreSession = async () => {
+      try {
+        const [savedToken, savedUser, savedSource] = await Promise.all([
+          AsyncStorage.getItem('token'),
+          AsyncStorage.getItem('user'),
+          AsyncStorage.getItem('user_source'),
+        ]);
+        if (savedToken && savedUser) {
+          const token = savedToken;
+          const user = JSON.parse(savedUser);
+          const source = savedSource as 'ADHERENT' | 'CLIENT';
+
+          setToken(token);
+          setUser(user);
+          setSource(source);
+
+          // Verify token with backend
+          try {
+            const freshUser = await authAPI.me();
+            // Optional: update local user with fresh data from DB
+            setUser(prev => ({ ...prev, ...freshUser }));
+          } catch (err) {
+            console.log('🔄 Token verification failed on startup:', err);
+            // If it's a 401 (handled by interceptor) or other error, logout
+            logout();
+          }
+        }
+      } catch {
+        // Session invalide ou corrompue — ignorer
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    restoreSession();
+  }, [logout]);
+
+  // ── Handle unauthorized event from API ──────────────────────
+  useEffect(() => {
+    const handleUnauthorized = () => {
+      console.log('⚠️ Unauthorized access detected, logging out...');
+      logout();
+    };
+    authEvents.on('unauthorized', handleUnauthorized);
+    return () => authEvents.off('unauthorized', handleUnauthorized);
+  }, [logout]);
 
   return (
     <AuthContext.Provider value={{

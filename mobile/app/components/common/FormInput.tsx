@@ -58,7 +58,8 @@ const FormInput: React.FC<FormInputProps> = ({
         height={rsp.verticalScale(55)}
         style={Platform.select({
           ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.02, shadowRadius: 4 },
-          android: { elevation: 1 }
+          android: { elevation: 1 },
+          web: { boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }
         })}
       >
         {icon && (

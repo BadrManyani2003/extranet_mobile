@@ -204,6 +204,7 @@ const styles = StyleSheet.create({
     ...Platform.select({
       ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 3 },
       android: { elevation: 2 },
+      web: { boxShadow: '0 1px 3px rgba(0,0,0,0.1)' },
     }),
   }
 });

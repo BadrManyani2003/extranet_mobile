@@ -45,7 +45,8 @@ const CardUp: React.FC<CardUpProps> = ({ visible, onClose, title, subtitle, chil
               shadowOpacity: 0.15, 
               shadowRadius: 24 
             },
-            android: { elevation: 20 }
+            android: { elevation: 20 },
+            web: { boxShadow: '0 -12px 24px rgba(0,0,0,0.15)' }
           })}
         >
           {/* Handle */}
