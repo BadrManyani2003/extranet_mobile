@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as WebBrowser from 'expo-web-browser';
 import { authAPI } from '../api';
@@ -50,11 +50,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     userToken: string,
     userSource: 'ADHERENT' | 'CLIENT'
   ) => {
+    // Le token est stocké de manière chiffrée
+    await SecureStore.setItemAsync('token', userToken);
+    
+    // Les infos non sensibles restent dans AsyncStorage
     await Promise.all([
-      AsyncStorage.setItem('token', userToken),
       AsyncStorage.setItem('user', JSON.stringify(userData)),
       AsyncStorage.setItem('user_source', userSource),
     ]);
+    
     setUser(userData);
     setToken(userToken);
     setSource(userSource);
@@ -67,7 +71,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setSource(null);
 
       await Promise.all([
-        AsyncStorage.removeItem('token'),
+        SecureStore.deleteItemAsync('token'),
         AsyncStorage.removeItem('user'),
         AsyncStorage.removeItem('user_source'),
       ]);
@@ -83,17 +87,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const restoreSession = async () => {
       try {
-        const [savedToken, savedUser, savedSource] = await Promise.all([
-          AsyncStorage.getItem('token'),
+        const savedToken = await SecureStore.getItemAsync('token');
+        const [savedUser, savedSource] = await Promise.all([
           AsyncStorage.getItem('user'),
           AsyncStorage.getItem('user_source'),
         ]);
+
         if (savedToken && savedUser) {
-          const token = savedToken;
           const user = JSON.parse(savedUser);
           const source = savedSource as 'ADHERENT' | 'CLIENT';
 
-          setToken(token);
+          setToken(savedToken);
           setUser(user);
           setSource(source);
 
@@ -105,7 +109,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         }
       } catch {
-        // Session invalide ou corrompue — ignorer
+        // Session invalide ou corrompue
       } finally {
         setIsLoading(false);
       }

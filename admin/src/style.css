@@ -88,33 +88,21 @@
   }
 }
 
-/* Print Styles */
-@media print {
-  .no-print, 
-  aside, 
-  header, 
-  nav,
-  .print\:hidden {
-    display: none !important;
+/* Custom Utilities for Project Consistency */
+@layer utilities {
+  .table-header-text {
+    @apply font-black text-slate-900 uppercase tracking-widest text-[10px];
+  }
+  
+  .status-badge {
+    @apply rounded-lg text-[9px] font-black uppercase tracking-widest px-2 py-1 shadow-none border-none;
+  }
+  
+  .glass-card {
+    @apply bg-white border border-slate-200 rounded-[2.5rem] shadow-xl shadow-slate-200/50 overflow-hidden;
   }
 
-  main {
-    margin: 0 !important;
-    padding: 0 !important;
-    height: auto !important;
-    overflow: visible !important;
-  }
-
-  .mx-auto {
-    margin: 0 !important;
-    max-width: none !important;
-  }
-
-  .shadow-xl, .shadow-sm, .shadow-md {
-    box-shadow: none !important;
-  }
-
-  .border {
-    border-color: #e2e8f0 !important;
+  .premium-button {
+    @apply rounded-xl font-black uppercase tracking-widest text-[10px] transition-all duration-200;
   }
 }

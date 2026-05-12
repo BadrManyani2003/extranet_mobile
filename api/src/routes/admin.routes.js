@@ -4,7 +4,7 @@ const ctrl = require('../controllers/admin.controller');
 
 router.use(auth);
 // Only admins and commercials can access admin routes
-router.use(auth.checkRole(['admincab', 'comercialcab']));
+router.use(auth.checkRole(['admin_cabinet', 'commercial_cabinet']));
 
 router.post('/users',                   ctrl.getUsers);
 router.post('/users/save',              ctrl.saveUser);

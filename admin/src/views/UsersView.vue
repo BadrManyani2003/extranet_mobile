@@ -114,10 +114,10 @@ onMounted(fetchUsers)
       <Table class="border-t border-slate-100">
         <TableHeader class="bg-slate-50/50">
           <TableRow>
-            <TableHead class="font-black text-slate-900 uppercase tracking-widest text-[10px] py-6">Identité</TableHead>
-            <TableHead class="font-black text-slate-900 uppercase tracking-widest text-[10px]">Rôles Keycloak</TableHead>
-            <TableHead class="font-black text-slate-900 uppercase tracking-widest text-[10px]">Accès</TableHead>
-            <TableHead class="text-right font-black text-slate-900 uppercase tracking-widest text-[10px]">Actions</TableHead>
+            <TableHead class="table-header-text py-6">Identité</TableHead>
+            <TableHead class="table-header-text">Rôles Keycloak</TableHead>
+            <TableHead class="table-header-text">Accès</TableHead>
+            <TableHead class="text-right table-header-text">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -153,7 +153,7 @@ onMounted(fetchUsers)
             </TableCell>
             <TableCell class="text-right">
               <div class="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                <Button v-if="user.idAuth" variant="ghost" size="sm" class="h-9 px-3 text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-900 hover:text-white rounded-xl" @click="openRoles(user)">
+                <Button v-if="user.idAuth" variant="ghost" size="sm" class="h-9 px-3 premium-button text-slate-600 hover:bg-slate-900 hover:text-white" @click="openRoles(user)">
                   <ShieldCheck class="w-4 h-4 mr-2" /> Rôles
                 </Button>
                 <Button variant="ghost" size="icon" class="h-9 w-9 rounded-xl hover:bg-slate-200" @click="openEdit(user)"><Edit class="w-4 h-4 text-slate-600" /></Button>

@@ -1,23 +1,25 @@
-const router = require('express').Router();
-const auth   = require('../middleware/auth');
-const ctrl   = require('../controllers/data.controller');
+const express = require('express');
+const router  = express.Router();
+const ctrl    = require('../controllers/data.controller');
+const auth    = require('../middleware/auth');
 
 router.use(auth);
+router.use(auth.checkRole(['admin_cabinet', 'commercial_cabinet', 'client', 'adherent']));
 
-// Generic check: at least one of these roles is required for ANY data access
-router.use(auth.checkRole(['admincab', 'comercialcab', 'client', 'adherent']));
+// --- Routes de base ---
+router.get('/polices',              auth.checkRole(['admin_cabinet', 'commercial_cabinet', 'client', 'adherent']), ctrl.getPolices);
+router.get('/stats',                auth.checkRole(['admin_cabinet', 'commercial_cabinet', 'client', 'adherent']), ctrl.getStats);
+router.get('/stats/police',         auth.checkRole(['admin_cabinet', 'commercial_cabinet', 'client', 'adherent']), ctrl.getStatsByPolice);
 
-// Specific restrictions
-router.get('/polices',              auth.checkRole(['admincab', 'comercialcab', 'client', 'adherent']), ctrl.getPolices);
-router.get('/stats',                auth.checkRole(['admincab', 'comercialcab', 'client', 'adherent']), ctrl.getStats);
-router.get('/stats/police',         auth.checkRole(['admincab', 'comercialcab', 'client', 'adherent']), ctrl.getStatsByPolice);
-router.get('/sinistres',            ctrl.getSinistres); // Allowed for all (adherent & client)
-router.get('/sinistres/en-cours',   ctrl.getSinistresEnCours);
-router.get('/risques',              auth.checkRole(['admincab', 'comercialcab', 'client', 'adherent']), ctrl.getRisques);
-router.get('/garanties',            auth.checkRole(['admincab', 'comercialcab', 'client', 'adherent']), ctrl.getGaranties);
-router.get('/quittances',           auth.checkRole(['admincab', 'comercialcab', 'client']), ctrl.getQuittances);
-router.get('/quittances/impayes',   auth.checkRole(['admincab', 'comercialcab', 'client']), ctrl.getImpayes);
-router.get('/adherents',            auth.checkRole(['admincab', 'comercialcab', 'client']), ctrl.getAdherents);
-router.get('/adherents/famille',    ctrl.getPersACharge); // Allowed for all
+// --- Contrats & Risques ---
+router.get('/risques',              auth.checkRole(['admin_cabinet', 'commercial_cabinet', 'client', 'adherent']), ctrl.getRisques);
+router.get('/garanties',            auth.checkRole(['admin_cabinet', 'commercial_cabinet', 'client', 'adherent']), ctrl.getGaranties);
+router.get('/quittances',           auth.checkRole(['admin_cabinet', 'commercial_cabinet', 'client']), ctrl.getQuittances);
+router.get('/quittances/impayes',   auth.checkRole(['admin_cabinet', 'commercial_cabinet', 'client']), ctrl.getImpayes);
+router.get('/adherents',            auth.checkRole(['admin_cabinet', 'commercial_cabinet', 'client']), ctrl.getAdherents);
+router.get('/adherent/personnes',   auth.checkRole(['admin_cabinet', 'commercial_cabinet', 'client', 'adherent']), ctrl.getPersACharge);
+router.get('/sinistres',            auth.checkRole(['admin_cabinet', 'commercial_cabinet', 'client', 'adherent']), ctrl.getSinistres);
+router.get('/sinistres/encours',    auth.checkRole(['admin_cabinet', 'commercial_cabinet', 'client', 'adherent']), ctrl.getSinistresEnCours);
+ // Allowed for all
 
 module.exports = router;

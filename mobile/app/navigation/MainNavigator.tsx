@@ -276,7 +276,10 @@ const BottomTabs: React.FC = () => {
   const c = theme.colors;
   
   const userRoles = user?.roles || [];
-  const isClient = userRoles.some(r => r.toLowerCase() === 'client' || r.toLowerCase() === 'admincab' || r.toLowerCase() === 'comercialcab');
+  const isClient = userRoles.some(r => {
+    const role = r.toLowerCase();
+    return role === 'client' || role === 'admin_cabinet' || role === 'commercial_cabinet';
+  });
 
   return (
     <View style={{ flex: 1, backgroundColor: c.background }}>
@@ -309,7 +312,7 @@ const MainNavigator: React.FC = () => {
 
   const userRoles = user?.roles || [];
   const hasAccess = userRoles.some(r => 
-    ['client', 'adherent', 'admincab', 'comercialcab'].includes(r.toLowerCase())
+    ['client', 'adherent', 'admin_cabinet', 'commercial_cabinet'].includes(r.toLowerCase())
   ) && (user as any)?.extranet !== 'N';
 
   if (isLoading) {

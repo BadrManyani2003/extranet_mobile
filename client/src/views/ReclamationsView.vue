@@ -73,13 +73,13 @@ onMounted(() => { fetchReclamations(); fetchUserInfo(); })
 <template>
   <PageContainer title="Réclamations" subtitle="Suivez vos demandes et communiquez avec nos conseillers.">
     <template #actions>
-      <Button v-if="!selectedTicket" @click="isNewDialogOpen = true" class="rounded-xl bg-slate-900 hover:bg-slate-800 shadow-xl shadow-slate-100 gap-2 px-6">
+      <Button v-if="!selectedTicket" @click="isNewDialogOpen = true" class="premium-button bg-slate-900 hover:bg-slate-800 shadow-xl shadow-slate-100 gap-2 px-6 h-12">
         <Plus class="w-5 h-5" />
-        <span class="font-bold tracking-tight">Nouvelle demande</span>
+        Nouvelle demande
       </Button>
     </template>
 
-    <div class="h-[calc(100vh-16rem)] flex flex-col bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden">
+    <div class="h-[calc(100vh-16rem)] flex flex-col glass-card border-slate-100">
       <template v-if="!selectedTicket">
         <ReclamationList :reclamations="reclamations || []" :loading="loadingList" @select="selectTicket" />
       </template>
@@ -93,11 +93,11 @@ onMounted(() => { fetchReclamations(); fetchUserInfo(); })
             <div class="flex items-center gap-3">
               <h2 class="text-lg font-black text-slate-900 line-clamp-1 tracking-tight">{{ selectedTicket.sujet }}</h2>
               <Badge :class="(selectedTicket.statut === 'En cours' || selectedTicket.statut === 'E') ? 'bg-orange-50 text-orange-600' : 'bg-emerald-50 text-emerald-600'" 
-                class="rounded-lg text-[10px] font-black uppercase tracking-widest px-2.5 py-1 border-none shadow-none">
+                class="status-badge px-2.5 py-1">
                 {{ (selectedTicket.statut === 'E' || selectedTicket.statut === 'En cours') ? 'En cours' : 'Clôturé' }}
               </Badge>
             </div>
-            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1 flex items-center gap-2">
+            <p class="table-header-text mt-1 flex items-center gap-2">
               <span>Ticket #{{ selectedTicket.id }}</span>
               <span class="w-1 h-1 rounded-full bg-slate-200"></span>
               <span>Ouvert le {{ new Date(selectedTicket.dateReclamation).toLocaleDateString() }}</span>
@@ -136,7 +136,7 @@ onMounted(() => { fetchReclamations(); fetchUserInfo(); })
               <button v-for="n in [{id:'R',l:'Réclamation'}, {id:'D',l:'Devis'}, {id:'S',l:'Sinistre'}]" :key="n.id"
                 @click="newTicket.nature = n.id"
                 :class="newTicket.nature === n.id ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'"
-                class="h-10 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all">
+                class="h-10 rounded-xl table-header-text transition-all">
                 {{ n.l }}
               </button>
             </div>
@@ -149,7 +149,7 @@ onMounted(() => { fetchReclamations(); fetchUserInfo(); })
         </div>
 
         <DialogFooter class="p-10 bg-slate-50/50 border-t border-slate-100">
-          <Button @click="handleCreateTicket" :disabled="!newTicket.sujet || !newTicket.message" class="w-full h-12 rounded-xl bg-slate-900 font-black uppercase tracking-widest shadow-xl">
+          <Button @click="handleCreateTicket" :disabled="!newTicket.sujet || !newTicket.message" class="w-full h-12 premium-button bg-slate-900 shadow-xl">
             Envoyer la demande
           </Button>
         </DialogFooter>

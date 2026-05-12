@@ -32,8 +32,8 @@ class KeycloakService {
 
     try {
       const authenticated = await this.keycloak.init({
-        onLoad: 'login-required',
-        checkLoginIframe: false,
+        onLoad: 'check-sso', // Changé de 'login-required' pour permettre des pages publiques
+        silentCheckSsoRedirectUri: window.location.origin + '/silent-check-sso.html',
         pkceMethod: 'S256',
         enableLogging: true,
       });
@@ -104,6 +104,10 @@ class KeycloakService {
 
   public getSubject(): string | undefined {
     return this.keycloak.subject;
+  }
+
+  public async updateToken(minValidity: number): Promise<boolean> {
+    return await this.keycloak.updateToken(minValidity);
   }
 }
 

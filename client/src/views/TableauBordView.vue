@@ -23,12 +23,12 @@ const chartOptions = {
   plugins: {
     legend: {
       position: 'bottom' as const,
-      labels: { usePointStyle: true, padding: 20, font: { family: 'Outfit', size: 10, weight: 'bold' } }
+      labels: { usePointStyle: true, padding: 20, font: { family: 'Outfit', size: 10, weight: 'bold' as const } }
     },
     tooltip: {
       backgroundColor: '#0f172a',
       padding: 12,
-      titleFont: { family: 'Outfit', size: 12, weight: 'bold' },
+      titleFont: { family: 'Outfit', size: 12, weight: 'bold' as const },
       bodyFont: { family: 'Outfit', size: 11 },
       cornerRadius: 8
     }
@@ -87,7 +87,7 @@ onMounted(() => {
     </div>
 
     <div v-else class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-      <Card v-for="stat in statsCards" :key="stat.title" class="border-none shadow-sm rounded-[2rem] bg-white overflow-hidden group">
+      <Card v-for="stat in statsCards" :key="stat.title" class="glass-card group border-none">
         <CardContent class="p-6 flex flex-col items-center text-center gap-3">
           <div :class="['w-12 h-12 rounded-2xl flex items-center justify-center bg-slate-50 transition-transform group-hover:scale-110', stat.color]">
             <component :is="stat.icon" class="w-6 h-6" />
@@ -101,9 +101,9 @@ onMounted(() => {
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
-      <Card class="lg:col-span-2 border-none shadow-sm rounded-[2.5rem] bg-white p-8 md:p-10">
+      <Card class="lg:col-span-2 glass-card p-8 md:p-10 border-none">
         <div class="flex items-center justify-between mb-8">
-          <CardTitle class="text-xl font-black text-slate-900 tracking-tight uppercase tracking-widest text-sm">Évolution des Primes</CardTitle>
+          <CardTitle class="text-xl font-black text-slate-900 tracking-tight uppercase tracking-widest text-[10px]">Évolution des Primes</CardTitle>
           <TrendingUp class="w-5 h-5 text-slate-400" />
         </div>
         <div class="h-[300px] w-full">
@@ -111,9 +111,9 @@ onMounted(() => {
         </div>
       </Card>
 
-      <Card class="lg:col-span-1 border-none shadow-sm rounded-[2.5rem] bg-white p-8 md:p-10">
+      <Card class="lg:col-span-1 glass-card p-8 md:p-10 border-none">
         <div class="flex items-center justify-between mb-8">
-          <CardTitle class="text-xl font-black text-slate-900 tracking-tight uppercase tracking-widest text-sm">Répartition</CardTitle>
+          <CardTitle class="text-xl font-black text-slate-900 tracking-tight uppercase tracking-widest text-[10px]">Répartition</CardTitle>
           <PieChart class="w-5 h-5 text-slate-400" />
         </div>
         <div class="h-[300px] w-full relative">

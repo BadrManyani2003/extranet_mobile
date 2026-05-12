@@ -50,7 +50,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const userRoles = user?.roles || [];
   const canSeePolices = userRoles.some(r => {
     const role = r.toLowerCase();
-    return role === 'client' || role === 'admincab' || role === 'comercialcab' || role === 'adherent';
+    return role === 'client' || role === 'admin_cabinet' || role === 'commercial_cabinet' || role === 'adherent';
   });
 
   const loadAll = useCallback(async () => {

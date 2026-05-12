@@ -27,6 +27,21 @@ const execute = async (query, params = []) => {
     return result.recordsets;
 };
 
-module.exports = {
-    execute
+/**
+ * Checks if the database is reachable
+ */
+const checkConnection = async () => {
+    try {
+        await getPool();
+        return true;
+    } catch (err) {
+        console.error('[DB] Connection check failed:', err.message);
+        return false;
+    }
 };
+
+module.exports = {
+    execute,
+    checkConnection
+};
+

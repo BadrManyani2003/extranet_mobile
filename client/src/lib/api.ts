@@ -4,31 +4,42 @@ const BASE_URL = import.meta.env.VITE_API_URL
 let logoutPending = false;
 
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  if (!BASE_URL) {
+    console.error('❌ VITE_API_URL is not defined.');
+    throw new Error('Configuration API manquante.');
+  }
+
   const method = options.method || 'POST'
   const headers = new Headers(options.headers)
   
   if (!headers.has('Content-Type')) headers.set('Content-Type', 'application/json')
-  
+  headers.set('x-source', 'E') // E for Extranet (Client)
+
   if (keycloakService.getAuthenticated()) {
+    // Proactively refresh token if about to expire
+    await keycloakService.updateToken(70)
     const token = keycloakService.getToken() || ''
     headers.set('Authorization', `Bearer ${token}`)
-    headers.set('x-source', 'E')
   }
 
-  let url = `${BASE_URL}${endpoint}`
+  let url = `${BASE_URL.replace(/\/$/, '')}${endpoint}`
   let requestOptions: RequestInit = { ...options, method, headers }
 
   if (method === 'GET' && options.body) {
-    const bodyObj = JSON.parse(options.body as string)
-    const params = new URLSearchParams()
-    Object.keys(bodyObj).forEach(key => {
-      if (bodyObj[key] !== undefined && bodyObj[key] !== null) {
-        params.append(key, bodyObj[key].toString())
-      }
-    })
-    const queryString = params.toString()
-    if (queryString) url += `?${queryString}`
-    delete requestOptions.body
+    try {
+      const bodyObj = JSON.parse(options.body as string)
+      const params = new URLSearchParams()
+      Object.keys(bodyObj).forEach(key => {
+        if (bodyObj[key] !== undefined && bodyObj[key] !== null) {
+          params.append(key, bodyObj[key].toString())
+        }
+      })
+      const queryString = params.toString()
+      if (queryString) url += `?${queryString}`
+      delete requestOptions.body
+    } catch (e) {
+      console.warn('Failed to parse GET body as JSON params', e)
+    }
   }
 
   const response = await fetch(url, requestOptions)
@@ -40,24 +51,22 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
   if (response.status === 401 || response.status === 403) {
     if (!logoutPending) {
       logoutPending = true;
-      setTimeout(() => {
-        keycloakService.logout()
-      }, 7000)
+      setTimeout(() => keycloakService.logout(), 5000)
     }
-    throw new Error('Session expirée ou accès refusé. Déconnexion dans 7 secondes.')
+    throw new Error('Session expirée ou accès refusé. Déconnexion automatique...')
   }
 
   const contentType = response.headers.get('content-type')
   let result: any
   if (contentType && contentType.includes('application/json')) {
-    result = await response.json().catch(() => ({ error: true, message: 'JSON Parse Error' }))
+    result = await response.json().catch(() => ({ error: true, message: 'Erreur de lecture JSON' }))
   } else {
     const text = await response.text()
-    result = { error: true, message: text || 'Server Error' }
+    result = { error: true, message: text || `Erreur serveur (${response.status})` }
   }
 
   if (!response.ok || result?.error || result?.success === false) {
-    throw new Error(result?.message || 'Server Error')
+    throw new Error(result?.message || result?.error || 'Erreur serveur inconnue')
   }
 
   if (Array.isArray(result)) return result as any;
@@ -85,16 +94,5 @@ export const api = {
     sendMessage: (reclamationId: string | number, body: any) => request<any>('/reclamations/add-message', { method: 'POST', body: JSON.stringify({ ...body, reclamationId }) }),
     updateStatut: (reclamationId: string | number, statut: string) => request<any>('/reclamations/update-statut', { method: 'POST', body: JSON.stringify({ reclamationId, statut }) }),
     deleteMessage: (messageId: number, reclamationId: number) => request<any>('/reclamations/delete-message', { method: 'POST', body: JSON.stringify({ messageId, reclamationId }) })
-  },
-  
-  admin: {
-    getUsers: (filters = {}) => request<any[]>('/admin/users', { method: 'POST', body: JSON.stringify(filters) }),
-    saveUser: (user: any) => request<any>('/admin/users/save', { method: 'POST', body: JSON.stringify(user) }),
-    deleteUser: (userId: number) => request<any>('/admin/users/delete', { method: 'POST', body: JSON.stringify({ userId }) }),
-    syncKeycloak: (id: number) => request<any>('/admin/users/sync-keycloak', { method: 'POST', body: JSON.stringify({ id }) }),
-    getClients: (filters = {}) => request<any[]>('/admin/clients', { method: 'POST', body: JSON.stringify(filters) }),
-    createUserFromClient: (clientId: number) => request<any>('/admin/clients/create-user', { method: 'POST', body: JSON.stringify({ clientId }) }),
-    getAdherents: (filters = {}) => request<any[]>('/admin/adherents', { method: 'POST', body: JSON.stringify(filters) }),
-    createUserFromAdherent: (adherentId: number) => request<any>('/admin/adherents/create-user', { method: 'POST', body: JSON.stringify({ adherentId }) })
   }
-}
+}

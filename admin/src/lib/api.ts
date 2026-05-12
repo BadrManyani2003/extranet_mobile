@@ -4,22 +4,33 @@ const BASE_URL = import.meta.env.VITE_API_URL
 let logoutPending = false;
 
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  if (!BASE_URL) {
+    console.error('❌ VITE_API_URL is not defined in environment variables.');
+    throw new Error('Configuration API manquante.');
+  }
+
   const headers = new Headers(options.headers)
   if (!headers.has('Content-Type')) headers.set('Content-Type', 'application/json')
-  headers.set('x-source', 'A')
+  headers.set('x-source', 'A') // A for Admin
 
   if (keycloak.getAuthenticated()) {
+    // Force token refresh if it's about to expire (within 70s)
     await keycloak.updateToken(70)
     const token = keycloak.getToken()
     if (token) headers.set('Authorization', `Bearer ${token}`)
   }
 
-  let url = `${BASE_URL}${endpoint}`
+  let url = `${BASE_URL.replace(/\/$/, '')}${endpoint}`
+  
   if (options.method === 'GET' && options.body) {
-    const params = JSON.parse(options.body as string)
-    const queryString = new URLSearchParams(params).toString()
-    if (queryString) url += `?${queryString}`
-    delete options.body
+    try {
+      const params = JSON.parse(options.body as string)
+      const queryString = new URLSearchParams(params).toString()
+      if (queryString) url += `?${queryString}`
+      delete options.body
+    } catch (e) {
+      console.warn('Failed to parse GET body as JSON params', e)
+    }
   }
 
   const response = await fetch(url, { ...options, headers })
@@ -31,28 +42,27 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
   if (response.status === 401 || response.status === 403) {
     if (!logoutPending) {
       logoutPending = true;
-      setTimeout(() => {
-        keycloak.logout()
-      }, 7000)
+      setTimeout(() => keycloak.logout(), 5000)
     }
-    throw new Error('Session expirée ou accès refusé. Déconnexion dans 7 secondes.')
+    throw new Error('Session expirée ou accès refusé. Déconnexion automatique...')
   }
 
   const contentType = response.headers.get('content-type')
   let result: any
+  
   if (contentType && contentType.includes('application/json')) {
-    result = await response.json().catch(() => ({ error: true, message: 'JSON Parse Error' }))
+    result = await response.json().catch(() => ({ error: true, message: 'Erreur de lecture JSON' }))
   } else {
     const text = await response.text()
-    result = { error: true, message: text || 'Server Error' }
+    result = { error: true, message: text || `Erreur serveur (${response.status})` }
   }
 
   if (!response.ok || result?.error || result?.success === false) {
-    throw new Error(result?.message || 'Server Error')
+    throw new Error(result?.message || result?.error || 'Erreur serveur inconnue')
   }
 
+  // Handle different response formats (Direct array, or {success, data})
   if (Array.isArray(result)) return result as any;
-
   if (result?.success && 'data' in result) return result.data;
   
   return result as any;

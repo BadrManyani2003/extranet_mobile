@@ -53,7 +53,7 @@ router.beforeEach(async (to) => {
 
   const authenticated = keycloak.getAuthenticated()
   const roles = keycloak.getRoles()
-  const hasAdminRole = keycloak.hasRole('admincab') || keycloak.hasRole('comercialcab')
+  const hasAdminRole = keycloak.hasRole('admin_cabinet') || keycloak.hasRole('commercial_cabinet')
   
   if (!hasAdminRole) {
     console.warn('⛔ Access denied, redirecting to restricted');

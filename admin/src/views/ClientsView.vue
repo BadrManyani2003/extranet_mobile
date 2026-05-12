@@ -58,10 +58,10 @@ onMounted(fetchClients)
       <Table class="border-t border-slate-100">
         <TableHeader class="bg-slate-50/50">
           <TableRow>
-            <TableHead class="font-black text-slate-900 uppercase tracking-widest text-[10px] py-6">Code IBS</TableHead>
-            <TableHead class="font-black text-slate-900 uppercase tracking-widest text-[10px]">Raison Sociale</TableHead>
-            <TableHead class="font-black text-slate-900 uppercase tracking-widest text-[10px]">Utilisateur lié</TableHead>
-            <TableHead class="text-right font-black text-slate-900 uppercase tracking-widest text-[10px]">Actions</TableHead>
+            <TableHead class="table-header-text py-6">Code IBS</TableHead>
+            <TableHead class="table-header-text">Raison Sociale</TableHead>
+            <TableHead class="table-header-text">Utilisateur lié</TableHead>
+            <TableHead class="text-right table-header-text">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -84,10 +84,10 @@ onMounted(fetchClients)
             </TableCell>
             <TableCell class="text-right">
               <div v-if="!client.fkUserId" class="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                <Button variant="ghost" size="sm" class="h-9 gap-2 rounded-xl text-slate-600 font-black text-[10px] uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all" @click="handleCreateUser(client.id)">
+                <Button variant="ghost" size="sm" class="h-9 gap-2 premium-button text-slate-600 hover:bg-slate-900 hover:text-white" @click="handleCreateUser(client.id)">
                   <UserPlus class="w-4 h-4" /> Créer
                 </Button>
-                <Button variant="ghost" size="sm" class="h-9 gap-2 rounded-xl text-emerald-600 font-black text-[10px] uppercase tracking-widest hover:bg-emerald-50 transition-all" @click="openLinkDialog(client.id)">
+                <Button variant="ghost" size="sm" class="h-9 gap-2 premium-button text-emerald-600 hover:bg-emerald-50" @click="openLinkDialog(client.id)">
                   <Link class="w-4 h-4" /> Lier
                 </Button>
               </div>

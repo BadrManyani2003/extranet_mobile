@@ -4,7 +4,7 @@ const ctrl = require('../controllers/reclamation.controller');
 
 router.use(auth);
 // All authenticated users can access reclamations
-router.use(auth.checkRole(['admincab', 'comercialcab', 'client', 'adherent']));
+router.use(auth.checkRole(['admin_cabinet', 'commercial_cabinet', 'client', 'adherent']));
 
 router.post('/list',           ctrl.getReclamations);
 router.post('/detail',         ctrl.getReclamationDetails);
