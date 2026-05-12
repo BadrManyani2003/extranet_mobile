@@ -7,6 +7,7 @@ import {
   Animated,
   Linking,
   StyleSheet,
+  Platform,
 } from 'react-native';
 import { useTheme } from '@shopify/restyle';
 import { Ionicons as Icon } from '@expo/vector-icons';
@@ -37,10 +38,16 @@ const ProfileScreen: React.FC = () => {
   }, [fadeAnim, slideAnim]);
 
   const handleLogout = () => {
-    Alert.alert(t('Déconnexion'), t('Confirmer déco'), [
-      { text: t('Annuler'), style: 'cancel' },
-      { text: t('Se déconnecter'), style: 'destructive', onPress: logout },
-    ]);
+    if (Platform.OS === 'web') {
+      if (window.confirm(t('Confirmer déco'))) {
+        logout();
+      }
+    } else {
+      Alert.alert(t('Déconnexion'), t('Confirmer déco'), [
+        { text: t('Annuler'), style: 'cancel' },
+        { text: t('Se déconnecter'), style: 'destructive', onPress: logout },
+      ]);
+    }
   };
 
   const initials = getInitials(user?.nom || user?.email || 'U');

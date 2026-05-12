@@ -30,11 +30,10 @@ async function getSource(): Promise<string> {
 /** Crée les headers avec le token d'authentification */
 async function authHeaders(): Promise<Record<string, string>> {
   const token = await getToken();
-  const source = await getSource();
   return {
     ...defaultHeaders,
     'Authorization': `Bearer ${token}`,
-    'x-source': source === 'ADHERENT' ? 'M' : 'E',
+    'x-source': 'M',
   };
 }
 
@@ -79,12 +78,10 @@ async function apiRequest<T>(
     }
 
     if (!response.ok) {
-      if (response.status === 401) {
+      if (response.status === 401 || response.status === 403) {
         authEvents.emit('unauthorized');
       }
       const errorMsg = data.message || data.error || `Erreur serveur (${response.status})`;
-      // Debug log for developer
-      console.error(`[API Error] ${method} ${endpoint}:`, response.status, data);
       throw new Error(errorMsg);
     }
 
@@ -185,15 +182,15 @@ export const adherentsAPI = {
 // ============================================================
 export const reclamationsAPI = {
   getAll: async (): Promise<any[]> => {
-    return apiRequest<any[]>('/reclamations', 'GET');
+    return apiRequest<any[]>('/reclamations/list', 'POST');
   },
   getDetails: async (reclamationId: number): Promise<any[]> => {
-    return apiRequest<any[]>('/reclamations/details', 'POST', { reclamationId });
+    return apiRequest<any[]>('/reclamations/detail', 'POST', { reclamationId });
   },
   create: async (sujet: string, nature: string, message: string): Promise<any> => {
-    return apiRequest<any>('/reclamations', 'POST', { sujet, nature, message });
+    return apiRequest<any>('/reclamations/create', 'POST', { sujet, nature, message });
   },
   addMessage: async (reclamationId: number, message: string, nature: string = 'C'): Promise<void> => {
-    return apiRequest<void>('/reclamations/message', 'POST', { reclamationId, message, nature });
+    return apiRequest<void>('/reclamations/add-message', 'POST', { reclamationId, message, nature });
   },
 };

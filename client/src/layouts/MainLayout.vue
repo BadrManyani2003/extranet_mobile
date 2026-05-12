@@ -4,9 +4,10 @@ import { useRouter } from 'vue-router'
 import { FileText, AlertCircle, BarChart3, LifeBuoy } from 'lucide-vue-next'
 import Sidebar from './Sidebar.vue'
 import Header from './Header.vue'
-import { api } from '../lib/api'
+import { useUserStore } from '../store/user'
 
 const router = useRouter()
+const userStore = useUserStore()
 const isMenuOpen = ref(false)
 const hasAccess = ref(true)
 const isLoading = ref(true)
@@ -17,8 +18,11 @@ const toggleMenu = () => {
 
 onMounted(async () => {
   try {
-    const response = await api.data.getUserInfo()
-    if (String(response?.user?.extranet).trim().toUpperCase() === 'N') {
+    if (!userStore.user) {
+      await userStore.fetchUser()
+    }
+    
+    if (String(userStore.user?.extranet).trim().toUpperCase() === 'N') {
       hasAccess.value = false
       router.push({ name: 'restricted' })
     }

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { Plus, ChevronLeft } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -10,14 +9,10 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import ReclamationList from '@/components/reclamations/ReclamationList.vue'
 import ReclamationChat from '@/components/reclamations/ReclamationChat.vue'
+import PageContainer from '@/components/shared/PageContainer.vue'
 import { api } from '@/lib/api'
 import { useFetch } from '@/composables/useFetch'
 import { toast } from '@/components/ui/sonner'
-import keycloak from '@/services/keycloak'
-
-const { t } = useI18n()
-
-const isCabinet = ref(keycloak.hasRole('admincab') || keycloak.hasRole('comercialcab'))
 
 const { data: reclamations, loading: loadingList, execute: fetchReclamations } = useFetch(api.data.getReclamations)
 const { data: messages, loading: loadingChat, execute: fetchMessages } = useFetch(api.data.getMessages)
@@ -33,32 +28,17 @@ const startPolling = () => {
   stopPolling()
   pollingInterval = setInterval(() => {
     if (selectedTicket.value && !loadingChat.value) {
-      api.data.getMessages(selectedTicket.value.id).then(res => {
-        messages.value = res
-      }).catch(console.error)
+      api.data.getMessages(selectedTicket.value.id).then(res => { messages.value = res }).catch(console.error)
     }
   }, 5000)
 }
 
-const stopPolling = () => {
-  if (pollingInterval) {
-    clearInterval(pollingInterval)
-    pollingInterval = null
-  }
-}
-
-watch(selectedTicket, (newVal) => {
-  if (newVal) startPolling()
-  else stopPolling()
-})
-
+const stopPolling = () => { if (pollingInterval) { clearInterval(pollingInterval); pollingInterval = null; } }
+watch(selectedTicket, (v) => { v ? startPolling() : stopPolling() })
 onUnmounted(stopPolling)
 
 const fetchUserInfo = async () => {
-  try {
-    const res = await api.data.getUserInfo()
-    currentUser.value = res.user
-  } catch (e) { console.error(e) }
+  try { const res = await api.data.getUserInfo(); currentUser.value = res.user; } catch (e) { console.error(e) }
 }
 
 const selectTicket = async (ticket: any) => {
@@ -70,99 +50,110 @@ const handleCreateTicket = async () => {
   if (!newTicket.value.sujet || !newTicket.value.message) return
   try {
     const res = await api.data.createReclamation(newTicket.value)
-    toast.success(t('reclamations.success_msg'))
+    toast.success("Demande envoyée")
     isNewDialogOpen.value = false
     newTicket.value = { sujet: '', nature: 'R', message: '' }
     const updated = await fetchReclamations()
     const created = (updated as any[])?.find(r => r.id === res.id)
     if (created) selectTicket(created)
-  } catch (e: any) {
-    toast.error(e.message || t('reclamations.error_msg'))
-    console.error(e)
-  }
+  } catch (e: any) { toast.error(e.message) }
 }
 
 const handleSendMessage = async (text: string) => {
   if (!selectedTicket.value || !messages.value) return
-  if (selectedTicket.value.statut === 'Clôturé' || selectedTicket.value.statut === 'C') {
-    toast.error(t('reclamations.closed_error') || 'Réclamation clôturée')
-    return
-  }
-
   try {
-    await api.data.sendMessage(selectedTicket.value.id, { message: text, nature: isCabinet.value ? 'A' : 'C' })
+    await api.data.sendMessage(selectedTicket.value.id, { message: text, nature: 'C' })
     await fetchMessages(selectedTicket.value.id)
-  } catch (e: any) {
-    toast.error(e.message)
-    console.error(e)
-  }
+  } catch (e: any) { toast.error(e.message) }
 }
 
-const handleUpdateStatus = async (newStatut: string) => {
-  if (!selectedTicket.value) return
-  try {
-    await api.data.updateStatut(selectedTicket.value.id, newStatut)
-    selectedTicket.value.statut = newStatut === 'C' ? 'Clôturé' : 'En cours'
-    toast.success(t('reclamations.status_updated'))
-    fetchReclamations()
-  } catch (e: any) {
-    toast.error(e.message)
-  }
-}
-
-const handleDeleteMessage = async (msgId: number) => {
-  if (!selectedTicket.value) return
-  try {
-    await api.data.deleteMessage(msgId, selectedTicket.value.id)
-    toast.success(t('reclamations.message_deleted') || 'Message supprimé')
-    await fetchMessages(selectedTicket.value.id)
-  } catch (e: any) {
-    toast.error(e.message)
-  }
-}
-
-onMounted(() => {
-  fetchReclamations()
-  fetchUserInfo()
-})
+onMounted(() => { fetchReclamations(); fetchUserInfo(); })
 </script>
 
 <template>
-  <div class="h-[calc(100vh-12rem)] flex flex-col bg-white rounded-[2.5rem] border border-slate-200 shadow-xl overflow-hidden font-['Outfit']">
-    <template v-if="!selectedTicket">
-      <div class="p-8 border-b border-slate-100 flex items-center justify-between bg-white">
-        <div>
-          <h2 class="text-2xl font-black text-slate-900">{{ $t('reclamations.title') }}</h2>
-        </div>
-      </div>
-
-      <ReclamationList :reclamations="reclamations || []" :loading="loadingList" @select="selectTicket" />
+  <PageContainer title="Réclamations" subtitle="Suivez vos demandes et communiquez avec nos conseillers.">
+    <template #actions>
+      <Button v-if="!selectedTicket" @click="isNewDialogOpen = true" class="rounded-xl bg-slate-900 hover:bg-slate-800 shadow-xl shadow-slate-100 gap-2 px-6">
+        <Plus class="w-5 h-5" />
+        <span class="font-bold tracking-tight">Nouvelle demande</span>
+      </Button>
     </template>
 
-    <template v-else>
-      <div class="p-6 border-b border-slate-100 flex items-center gap-6 bg-white">
-        <Button variant="ghost" size="icon" @click="selectedTicket = null" class="rounded-2xl h-12 w-12 hover:bg-slate-50">
-          <ChevronLeft class="w-6 h-6 text-slate-900" />
-        </Button>
-        <div class="flex-1">
-          <div class="flex items-center gap-3">
-            <h2 class="text-xl font-black text-slate-900 line-clamp-1">{{ selectedTicket.sujet }}</h2>
-            <Badge :class="(selectedTicket.statut === 'En cours' || selectedTicket.statut === 'E') ? 'bg-orange-50 text-orange-600' : 'bg-emerald-50 text-emerald-600'" 
-              class="rounded-lg text-[10px] font-black uppercase tracking-widest px-2 py-0.5 border-none shadow-none">
-              {{ (selectedTicket.statut === 'E' || selectedTicket.statut === 'En cours') ? 'En cours' : 'Clôturé' }}
-            </Badge>
+    <div class="h-[calc(100vh-16rem)] flex flex-col bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden">
+      <template v-if="!selectedTicket">
+        <ReclamationList :reclamations="reclamations || []" :loading="loadingList" @select="selectTicket" />
+      </template>
+
+      <template v-else>
+        <div class="p-6 md:p-8 border-b border-slate-50 flex items-center gap-6 bg-white sticky top-0 z-10">
+          <Button variant="ghost" size="icon" @click="selectedTicket = null" class="rounded-xl h-10 w-10 hover:bg-slate-50">
+            <ChevronLeft class="w-6 h-6 text-slate-900" />
+          </Button>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-3">
+              <h2 class="text-lg font-black text-slate-900 line-clamp-1 tracking-tight">{{ selectedTicket.sujet }}</h2>
+              <Badge :class="(selectedTicket.statut === 'En cours' || selectedTicket.statut === 'E') ? 'bg-orange-50 text-orange-600' : 'bg-emerald-50 text-emerald-600'" 
+                class="rounded-lg text-[10px] font-black uppercase tracking-widest px-2.5 py-1 border-none shadow-none">
+                {{ (selectedTicket.statut === 'E' || selectedTicket.statut === 'En cours') ? 'En cours' : 'Clôturé' }}
+              </Badge>
+            </div>
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1 flex items-center gap-2">
+              <span>Ticket #{{ selectedTicket.id }}</span>
+              <span class="w-1 h-1 rounded-full bg-slate-200"></span>
+              <span>Ouvert le {{ new Date(selectedTicket.dateReclamation).toLocaleDateString() }}</span>
+            </p>
           </div>
-          <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">{{ $t('reclamations.ticket_num') }} #{{ selectedTicket.id }} • {{ $t('reclamations.opened_on') }} {{ new Date(selectedTicket.dateReclamation).toLocaleDateString() }}</p>
         </div>
-      </div>
 
-      <ReclamationChat 
-        :messages="messages || []" 
-        :loading="loadingChat" 
-        :selected-ticket="selectedTicket" 
-        :is-cabinet="isCabinet"
-        :current-user-id="currentUser?.id"
-      />
-    </template>
-  </div>
+        <ReclamationChat 
+          :messages="messages || []" 
+          :loading="loadingChat" 
+          :selected-ticket="selectedTicket" 
+          :current-user-id="currentUser?.id"
+          selfNature="Client"
+          @send="handleSendMessage"
+        />
+      </template>
+    </div>
+
+    <!-- Modal Nouvelle Réclamation -->
+    <Dialog v-model:open="isNewDialogOpen">
+      <DialogContent class="sm:max-w-[500px] rounded-[2.5rem] shadow-2xl p-0 overflow-hidden border-none font-['Outfit']">
+        <DialogHeader class="p-10 bg-slate-50/50 border-b border-slate-100">
+          <DialogTitle class="text-2xl font-black text-slate-900 tracking-tight">Nouvelle demande</DialogTitle>
+          <DialogDescription class="text-slate-500 font-medium">Précisez l'objet de votre demande et envoyez-nous votre message.</DialogDescription>
+        </DialogHeader>
+
+        <div class="p-10 space-y-8">
+          <div class="space-y-3">
+            <Label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Sujet</Label>
+            <Input v-model="newTicket.sujet" placeholder="Quel est l'objet de votre message ?" class="h-12 rounded-xl border-slate-200 bg-white font-bold" />
+          </div>
+
+          <div class="space-y-3">
+            <Label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Type de demande</Label>
+            <div class="grid grid-cols-3 gap-2">
+              <button v-for="n in [{id:'R',l:'Réclamation'}, {id:'D',l:'Devis'}, {id:'S',l:'Sinistre'}]" :key="n.id"
+                @click="newTicket.nature = n.id"
+                :class="newTicket.nature === n.id ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'"
+                class="h-10 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all">
+                {{ n.l }}
+              </button>
+            </div>
+          </div>
+
+          <div class="space-y-3">
+            <Label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Votre message</Label>
+            <Textarea v-model="newTicket.message" placeholder="Décrivez votre demande en détail..." class="min-h-[120px] rounded-xl border-slate-200 bg-white font-bold resize-none" />
+          </div>
+        </div>
+
+        <DialogFooter class="p-10 bg-slate-50/50 border-t border-slate-100">
+          <Button @click="handleCreateTicket" :disabled="!newTicket.sujet || !newTicket.message" class="w-full h-12 rounded-xl bg-slate-900 font-black uppercase tracking-widest shadow-xl">
+            Envoyer la demande
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  </PageContainer>
 </template>

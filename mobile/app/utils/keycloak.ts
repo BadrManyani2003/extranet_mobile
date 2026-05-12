@@ -30,7 +30,6 @@ const redirectUri = makeRedirectUri({
   preferLocalhost: true, // For web/development
 });
 
-console.log('🔗 Generated Redirect URI:', redirectUri);
 
 export const keycloakConfig = {
   clientId: CLIENT_ID,

@@ -46,23 +46,27 @@ const router = createRouter({
   ]
 })
 
-router.beforeEach((to) => {
+import { useUserStore } from '../store/user'
+
+router.beforeEach(async (to) => {
   if (to.name === 'restricted') return true
 
   const authenticated = keycloak.getAuthenticated()
   const roles = keycloak.getRoles()
   const hasAdminRole = keycloak.hasRole('admincab') || keycloak.hasRole('comercialcab')
   
-  console.log('🛡️ Router Guard Check:', {
-    target: to.path,
-    authenticated,
-    roles,
-    hasAdminRole
-  })
-  
   if (!hasAdminRole) {
     console.warn('⛔ Access denied, redirecting to restricted');
     return { name: 'restricted' }
+  }
+
+  const userStore = useUserStore()
+  try {
+    if (!userStore.user) {
+      await userStore.fetchUser()
+    }
+  } catch (error) {
+    console.error('Failed to fetch user in Admin Guard:', error)
   }
   
   return true

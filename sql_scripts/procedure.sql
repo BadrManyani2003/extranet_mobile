@@ -28,6 +28,9 @@ BEGIN
         RETURN;
     END
 
+    DECLARE @UserNature CHAR(1);
+    SELECT @UserNature = Nature FROM dbo.sysUser WHERE Id = @FK_User_Id;
+
     SELECT 
         p.Id AS id,
         p.Branche AS branche,
@@ -55,7 +58,7 @@ BEGIN
     LEFT JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id AND uxc.FK_User_Id = @FK_User_Id AND uxc.Actif = 'O'
     INNER JOIN dbo.Compagnies com ON p.FK_Compagnie_Id = com.Id
     WHERE 
-        @Source = 'A'
+        (@Source = 'A' AND @UserNature = 'A')
         OR (
             uxc.FK_User_Id IS NOT NULL 
             AND (
@@ -83,6 +86,9 @@ BEGIN
         RAISERROR('Session expirée', 16, 1);
         RETURN;
     END
+
+    DECLARE @UserNature CHAR(1);
+    SELECT @UserNature = Nature FROM dbo.sysUser WHERE Id = @FK_User_Id;
 
     SELECT 
         s.Id AS id,
@@ -123,7 +129,7 @@ BEGIN
     LEFT JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id AND uxc.FK_User_Id = @FK_User_Id AND uxc.Actif = 'O'
     WHERE p.Id = @FK_Police_Id
         AND (
-            @Source = 'A'
+            (@Source = 'A' AND @UserNature = 'A')
             OR (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
             OR (s.FK_Adherent_Id IN (SELECT Id FROM dbo.Adherents WHERE FK_User_Id = @FK_User_Id AND Actif = 'O'))
         );
@@ -146,6 +152,9 @@ BEGIN
         RAISERROR('Session expirée', 16, 1);
         RETURN;
     END
+
+    DECLARE @UserNature CHAR(1);
+    SELECT @UserNature = Nature FROM dbo.sysUser WHERE Id = @FK_User_Id;
 
     SELECT 
         s.Id AS id,
@@ -175,7 +184,7 @@ BEGIN
     WHERE p.Id = @FK_Police_Id
         AND s.Statut = 'E'
         AND (
-            @Source = 'A'
+            (@Source = 'A' AND @UserNature = 'A')
             OR (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
             OR (s.FK_Adherent_Id IN (SELECT Id FROM dbo.Adherents WHERE FK_User_Id = @FK_User_Id AND Actif = 'O'))
         );
@@ -199,6 +208,9 @@ BEGIN
         RETURN;
     END
 
+    DECLARE @UserNature CHAR(1);
+    SELECT @UserNature = Nature FROM dbo.sysUser WHERE Id = @FK_User_Id;
+
     SELECT 
         r.Id AS id,
         r.Libelle AS nom,
@@ -211,11 +223,13 @@ BEGIN
     FROM dbo.Risques r
     INNER JOIN dbo.Polices p ON r.FK_Police_Id = p.Id
     INNER JOIN dbo.Clients c ON p.Fk_Client_Id = c.Id
-    INNER JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id
-    WHERE uxc.FK_User_Id = @FK_User_Id
-        AND uxc.Actif = 'O'
-        AND p.Id = @FK_Police_Id
-        AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N'));
+    LEFT JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id AND uxc.FK_User_Id = @FK_User_Id AND uxc.Actif = 'O'
+    WHERE p.Id = @FK_Police_Id
+        AND (
+            (@Source = 'A' AND @UserNature = 'A')
+            OR (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
+            OR EXISTS (SELECT 1 FROM dbo.Adherents WHERE FK_Police_Id = p.Id AND FK_User_Id = @FK_User_Id AND Actif = 'O')
+        );
     
     RETURN;
 END
@@ -238,6 +252,9 @@ BEGIN
         RAISERROR('Session expirée', 16, 1);
         RETURN;
     END
+
+    DECLARE @UserNature CHAR(1);
+    SELECT @UserNature = Nature FROM dbo.sysUser WHERE Id = @FK_User_Id;
 
     SELECT 
         q.Id AS id,
@@ -268,7 +285,7 @@ BEGIN
     LEFT JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id AND uxc.FK_User_Id = @FK_User_Id AND uxc.Actif = 'O'
     WHERE p.Id = @FK_Police_Id
         AND (
-            @Source = 'A'
+            (@Source = 'A' AND @UserNature = 'A')
             OR (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
         );
     
@@ -292,6 +309,9 @@ BEGIN
         RETURN;
     END
 
+    DECLARE @UserNature CHAR(1);
+    SELECT @UserNature = Nature FROM dbo.sysUser WHERE Id = @FK_User_Id;
+
     IF @FK_Police_Id IS NOT NULL
     BEGIN
         SELECT 
@@ -306,12 +326,13 @@ BEGIN
         FROM dbo.Quittances q
         INNER JOIN dbo.Polices p ON q.FK_Police_Id = p.Id
         INNER JOIN dbo.Clients c ON p.Fk_Client_Id = c.Id
-        INNER JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id
-        WHERE uxc.FK_User_Id = @FK_User_Id
-            AND uxc.Actif = 'O'
-            AND p.Id = @FK_Police_Id
+        LEFT JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id AND uxc.FK_User_Id = @FK_User_Id AND uxc.Actif = 'O'
+        WHERE p.Id = @FK_Police_Id
             AND ((@Encour = 'O' AND q.Solde > 0) OR (@Encour = 'N'))
-            AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N'));
+            AND (
+                (@Source = 'A' AND @UserNature = 'A')
+                OR (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
+            );
     END
     ELSE
     BEGIN
@@ -326,11 +347,12 @@ BEGIN
         FROM dbo.Quittances q
         INNER JOIN dbo.Polices p ON q.FK_Police_Id = p.Id
         INNER JOIN dbo.Clients c ON p.Fk_Client_Id = c.Id
-        INNER JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id
-        WHERE uxc.FK_User_Id = @FK_User_Id
-            AND uxc.Actif = 'O'
-            AND ((@Encour = 'O' AND q.Solde > 0) OR (@Encour = 'N'))
-            AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N'));
+        LEFT JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id AND uxc.FK_User_Id = @FK_User_Id AND uxc.Actif = 'O'
+        WHERE ((@Encour = 'O' AND q.Solde > 0) OR (@Encour = 'N'))
+            AND (
+                (@Source = 'A' AND @UserNature = 'A')
+                OR (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
+            );
     END
 
     RETURN;
@@ -352,6 +374,9 @@ BEGIN
         RETURN;
     END
 
+    DECLARE @UserNature CHAR(1);
+    SELECT @UserNature = Nature FROM dbo.sysUser WHERE Id = @FK_User_Id;
+
     SELECT 
         a.Id AS id,
         a.NomComplet AS nom,
@@ -369,9 +394,11 @@ BEGIN
     WHERE (@Source = 'A' OR (@FK_Police_Id > 0 AND p.Id = @FK_Police_Id))
         AND a.Actif = 'O'
         AND (
-            @Source = 'A'
+            (@Source = 'A' AND @UserNature = 'A')
             OR
             (uxc.FK_User_Id IS NOT NULL AND (@Source = 'E' AND c.Particulier = 'N'))
+            OR
+            (uxc.FK_User_Id IS NOT NULL AND (@Source = 'M' AND c.Particulier = 'O'))
             OR
             (a.FK_User_Id = @FK_User_Id)
         );
@@ -395,6 +422,9 @@ BEGIN
         RETURN;
     END
 
+    DECLARE @UserNature CHAR(1);
+    SELECT @UserNature = Nature FROM dbo.sysUser WHERE Id = @FK_User_Id;
+
     SELECT 
         pc.Id AS id,
         pc.Nom AS nom,
@@ -409,6 +439,8 @@ BEGIN
     WHERE a.Id = @FK_Adherent_Id
         AND a.Actif = 'O'
         AND (
+            (@Source = 'A' AND @UserNature = 'A')
+            OR
             (a.FK_User_Id = @FK_User_Id)
             OR
             (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
@@ -433,11 +465,14 @@ BEGIN
         RETURN;
     END
 
+    DECLARE @UserNature CHAR(1);
+    SELECT @UserNature = Nature FROM dbo.sysUser WHERE Id = @FK_User_Id;
+
     SELECT 
         g.Id AS id,
         g.Libelle AS nom,
         ISNULL(g.Capital, 0) AS capital,
-        ISNULL(g.Franchise, '-') AS franchise
+        ISNULL(g.Franchise, 0) AS franchise
     FROM dbo.Garanties g
     INNER JOIN dbo.Risques r ON g.FK_Risque_Id = r.Id
     INNER JOIN dbo.Polices p ON r.FK_Police_Id = p.Id
@@ -445,6 +480,8 @@ BEGIN
     LEFT JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id AND uxc.FK_User_Id = @FK_User_Id AND uxc.Actif = 'O'
     WHERE r.Id = @FK_Risque_Id
         AND (
+            (@Source = 'A' AND @UserNature = 'A')
+            OR
             (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
             OR
             EXISTS (SELECT 1 FROM dbo.Adherents WHERE FK_Police_Id = p.Id AND FK_User_Id = @FK_User_Id AND Actif = 'O')
@@ -467,6 +504,9 @@ BEGIN
         RAISERROR('Session expirée', 16, 1);
         RETURN;
     END
+
+    DECLARE @UserNature CHAR(1);
+    SELECT @UserNature = Nature FROM dbo.sysUser WHERE Id = @FK_User_Id;
 
     SELECT 
         r.Id AS id,
@@ -495,7 +535,7 @@ BEGIN
         u.Nom AS client
     FROM dbo.ReclamationsIdt r
     INNER JOIN dbo.sysUser u ON r.FK_User_Client = u.Id
-    WHERE (@Source = 'A' OR @Source = 'C' OR r.FK_User_Client = @FK_User_Id)
+    WHERE (@Source = 'A' AND @UserNature = 'A') OR (@Source IN ('E', 'M') AND @UserNature = 'C') OR r.FK_User_Client = @FK_User_Id
     ORDER BY r.DateReclamation DESC;
     
     RETURN;
@@ -518,7 +558,7 @@ BEGIN
     END
 
     IF EXISTS (SELECT 1 FROM dbo.ReclamationsIdt WHERE Id = @FK_Reclamation_Id 
-               AND (@Source = 'A' OR @Source = 'C' OR FK_User_Client = @FK_User_Id))
+               AND (@Source = 'A' OR @Source IN ('E', 'M') OR FK_User_Client = @FK_User_Id))
     BEGIN
         DECLARE @LastMsgId INT;
         SELECT @LastMsgId = MAX(Id) FROM dbo.ReclamationsDet WHERE FK_Reclamation_Id = @FK_Reclamation_Id;
@@ -612,7 +652,7 @@ BEGIN
         VALUES (@FK_Reclamation_Id, @FK_User_Id, @Nature, @Message);
 
         UPDATE dbo.ReclamationsIdt 
-        SET Statut = CASE WHEN @Source IN ('A', 'C') THEN 'T' ELSE 'E' END, 
+        SET Statut = CASE WHEN @Source IN ('A', 'E', 'M') THEN 'T' ELSE 'E' END, 
             DateStatut = GETDATE() 
         WHERE Id = @FK_Reclamation_Id;
         
@@ -641,7 +681,7 @@ BEGIN
     END
 
     IF EXISTS (SELECT 1 FROM dbo.ReclamationsIdt WHERE Id = @FK_Reclamation_Id 
-               AND (@Source IN ('A', 'C') OR FK_User_Client = @FK_User_Id))
+               AND (@Source IN ('A', 'E', 'M') OR FK_User_Client = @FK_User_Id))
     BEGIN
         UPDATE dbo.ReclamationsIdt 
         SET Statut = @Statut, 
@@ -672,9 +712,12 @@ AS
 BEGIN
     SET NOCOUNT ON;
     
-    IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
+    DECLARE @UserNature CHAR(1);
+    SELECT @UserNature = Nature FROM dbo.sysUser WHERE Id = @FK_User_Id;
+
+    IF NOT (@Source = 'A' AND @UserNature = 'A')
     BEGIN
-        RAISERROR('Session expirée', 16, 1);
+        RAISERROR('Action non autorisée', 16, 1);
         RETURN;
     END
 
@@ -710,9 +753,12 @@ AS
 BEGIN
     SET NOCOUNT ON;
     
-    IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
+    DECLARE @UserNature CHAR(1);
+    SELECT @UserNature = Nature FROM dbo.sysUser WHERE Id = @FK_User_Id;
+
+    IF NOT (@Source = 'A' AND @UserNature = 'A')
     BEGIN
-        RAISERROR('Session expirée', 16, 1);
+        RAISERROR('Action non autorisée', 16, 1);
         RETURN;
     END
 
@@ -742,27 +788,30 @@ CREATE OR ALTER PROCEDURE dbo.ps_GetClients
 AS
 BEGIN
     SET NOCOUNT ON;
-    
-    IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
+    DECLARE @UserNature CHAR(1);
+    SELECT @UserNature = Nature FROM dbo.sysUser WHERE Id = @FK_User_Id;
+
+    IF @Source = 'A' AND @UserNature = 'A'
     BEGIN
-        RAISERROR('Session expirée', 16, 1);
-        RETURN;
+        SELECT DISTINCT
+            c.Id AS id,
+            c.RaisonSociale AS raisonSociale,
+            c.Particulier AS particulier,
+            c.Email AS email,
+            c.Adresse AS adresse,
+            cParent.RaisonSociale AS parentClient,
+            u.Nom AS userNom,
+            x.FK_User_Id AS fkUserId
+        FROM dbo.Clients c
+        LEFT JOIN dbo.Clients cParent ON c.Fk_Client_Id = cParent.Id
+        LEFT JOIN UsersXClients x ON x.FK_Client_Id = c.id
+        LEFT JOIN dbo.sysUser u ON x.FK_User_Id = u.Id
+        ORDER BY c.RaisonSociale;
     END
-    
-    SELECT DISTINCT
-        c.Id AS id,
-        c.RaisonSociale AS raisonSociale,
-        c.Particulier AS particulier,
-        c.Email AS email,
-        c.Adresse AS adresse,
-        cParent.RaisonSociale AS parentClient,
-        u.Nom AS userNom,
-        x.FK_User_Id AS fkUserId
-    FROM dbo.Clients c
-    LEFT JOIN dbo.Clients cParent ON c.Fk_Client_Id = cParent.Id
-    LEFT JOIN UsersXClients x ON x.FK_Client_Id = c.id
-    LEFT JOIN dbo.sysUser u ON x.FK_User_Id = u.Id
-    ORDER BY c.RaisonSociale;
+    ELSE
+    BEGIN
+        RAISERROR('Action non autorisée', 16, 1);
+    END
 END
 GO
 
@@ -775,9 +824,12 @@ AS
 BEGIN
     SET NOCOUNT ON;
     
-    IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
+    DECLARE @UserNature CHAR(1);
+    SELECT @UserNature = Nature FROM dbo.sysUser WHERE Id = @FK_User_Id;
+
+    IF NOT (@Source = 'A' AND @UserNature = 'A')
     BEGIN
-        RAISERROR('Session expirée', 16, 1);
+        RAISERROR('Action non autorisée', 16, 1);
         RETURN;
     END
     
@@ -829,9 +881,12 @@ AS
 BEGIN
     SET NOCOUNT ON;
     
-    IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
+    DECLARE @UserNature CHAR(1);
+    SELECT @UserNature = Nature FROM dbo.sysUser WHERE Id = @FK_User_Id;
+
+    IF NOT (@Source = 'A' AND @UserNature = 'A')
     BEGIN
-        RAISERROR('Session expirée', 16, 1);
+        RAISERROR('Action non autorisée', 16, 1);
         RETURN;
     END
     
@@ -886,19 +941,30 @@ BEGIN
         RETURN;
     END
     
-    SELECT 
-        Id AS id,
-        Id_Auth AS idAuth,
-        token,
-        Nom AS nom,
-        Telephone AS telephone,
-        Email AS email,
-        Nature AS nature,
-        Extranet AS extranet,
-        Mobile AS mobile,
-        CreatedAt AS createdAt,
-        UpdatedAt AS updatedAt
-    FROM dbo.sysUser ORDER BY Nom;
+    DECLARE @UserNature CHAR(1);
+    SELECT @UserNature = Nature FROM dbo.sysUser WHERE Id = @FK_User_Id;
+
+    IF @Source = 'A' AND @UserNature = 'A'
+    BEGIN
+        SELECT 
+            u.Id AS id,
+            u.Id_Auth AS idAuth,
+            u.token,
+            u.Nom AS nom,
+            u.Telephone AS telephone,
+            u.Email AS email,
+            u.Nature AS nature,
+            u.Extranet AS extranet,
+            u.Mobile AS mobile,
+            u.CreatedAt AS createdAt,
+            u.UpdatedAt AS updatedAt,
+            (SELECT STRING_AGG(Role, ', ') FROM dbo.Roles WHERE FK_User_Id = u.Id) AS roles
+        FROM dbo.sysUser u ORDER BY u.Nom;
+    END
+    ELSE
+    BEGIN
+        RAISERROR('Action non autorisée', 16, 1);
+    END
 END
 GO
 
@@ -909,19 +975,16 @@ CREATE OR ALTER PROCEDURE [dbo].[sp_GetStats]
 AS
 BEGIN
     SET NOCOUNT ON;
-    
-    IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
-    BEGIN
-        RAISERROR('Session expirée', 16, 1);
-        RETURN;
-    END
+    DECLARE @UserNature CHAR(1);
+    SELECT @UserNature = Nature FROM dbo.sysUser WHERE Id = @FK_User_Id;
 
     SELECT 
         (SELECT COUNT(DISTINCT p.Id) FROM dbo.Polices p 
          LEFT JOIN dbo.Clients c ON p.Fk_Client_Id = c.Id
          LEFT JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id AND uxc.FK_User_Id = @FK_User_Id AND uxc.Actif = 'O'
          LEFT JOIN dbo.Adherents a ON p.Id = a.FK_Police_Id AND a.FK_User_Id = @FK_User_Id AND a.Actif = 'O'
-         WHERE (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
+         WHERE (@Source = 'A' AND @UserNature = 'A')
+            OR (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
             OR a.Id IS NOT NULL) AS totalPolices,
 
         (SELECT COUNT(*) FROM dbo.Sinistres s
@@ -929,22 +992,31 @@ BEGIN
          JOIN dbo.Clients c ON p.Fk_Client_Id = c.Id
          LEFT JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id AND uxc.FK_User_Id = @FK_User_Id AND uxc.Actif = 'O'
          WHERE s.Statut = 'E'
-           AND ((uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
-            OR s.FK_Adherent_Id IN (SELECT Id FROM dbo.Adherents WHERE FK_User_Id = @FK_User_Id AND Actif = 'O'))) AS sinistresEnCours,
+           AND (
+            (@Source = 'A' AND @UserNature = 'A')
+            OR (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
+            OR s.FK_Adherent_Id IN (SELECT Id FROM dbo.Adherents WHERE FK_User_Id = @FK_User_Id AND Actif = 'O')
+           )) AS sinistresEnCours,
 
         (SELECT ISNULL(SUM(q.Montant), 0) FROM dbo.Quittances q
          JOIN dbo.Polices p ON q.FK_Police_Id = p.Id
          JOIN dbo.Clients c ON p.Fk_Client_Id = c.Id
          LEFT JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id AND uxc.FK_User_Id = @FK_User_Id AND uxc.Actif = 'O'
          WHERE YEAR(q.DateDu) = YEAR(GETDATE())
-           AND (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))) AS primeAnnuelle,
+           AND (
+            (@Source = 'A' AND @UserNature = 'A')
+            OR (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
+           )) AS primeAnnuelle,
 
         (SELECT ISNULL(SUM(q.Solde), 0) FROM dbo.Quittances q
          JOIN dbo.Polices p ON q.FK_Police_Id = p.Id
          JOIN dbo.Clients c ON p.Fk_Client_Id = c.Id
          LEFT JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id AND uxc.FK_User_Id = @FK_User_Id AND uxc.Actif = 'O'
          WHERE q.Solde > 0
-           AND (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))) AS totalImpayes;
+           AND (
+            (@Source = 'A' AND @UserNature = 'A')
+            OR (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
+           )) AS totalImpayes;
 
     SELECT 
         p.Branche AS label, 
@@ -953,7 +1025,8 @@ BEGIN
     LEFT JOIN dbo.Clients c ON p.Fk_Client_Id = c.Id
     LEFT JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id AND uxc.FK_User_Id = @FK_User_Id AND uxc.Actif = 'O'
     LEFT JOIN dbo.Adherents a ON p.Id = a.FK_Police_Id AND a.FK_User_Id = @FK_User_Id AND a.Actif = 'O'
-    WHERE (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
+    WHERE (@Source = 'A' AND @UserNature = 'A')
+       OR (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
        OR a.Id IS NOT NULL
     GROUP BY p.Branche;
 
@@ -966,7 +1039,10 @@ BEGIN
     INNER JOIN dbo.Polices p ON q.FK_Police_Id = p.Id
     LEFT JOIN dbo.Clients c ON p.Fk_Client_Id = c.Id
     LEFT JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id AND uxc.FK_User_Id = @FK_User_Id AND uxc.Actif = 'O'
-    WHERE (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
+    WHERE (
+        (@Source = 'A' AND @UserNature = 'A')
+        OR (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
+      )
       AND YEAR(q.DateDu) = YEAR(GETDATE())
     GROUP BY FORMAT(q.DateDu, 'MMM', 'fr-FR'), MONTH(q.DateDu)
     ORDER BY MONTH(q.DateDu);
@@ -979,7 +1055,10 @@ BEGIN
     INNER JOIN dbo.Polices p ON q.FK_Police_Id = p.Id
     LEFT JOIN dbo.Clients c ON p.Fk_Client_Id = c.Id
     LEFT JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id AND uxc.FK_User_Id = @FK_User_Id AND uxc.Actif = 'O'
-    WHERE (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
+    WHERE (
+        (@Source = 'A' AND @UserNature = 'A')
+        OR (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
+      )
       AND YEAR(q.DateDu) = YEAR(GETDATE())
     GROUP BY p.Branche;
 
@@ -996,9 +1075,23 @@ AS
 BEGIN
     SET NOCOUNT ON;
     
-    IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
+    DECLARE @UserNature CHAR(1);
+    SELECT @UserNature = Nature FROM dbo.sysUser WHERE Id = @FK_User_Id;
+
+    -- Vérification des permissions
+    IF NOT EXISTS (
+        SELECT 1 FROM dbo.Polices p
+        LEFT JOIN dbo.Clients c ON p.Fk_Client_Id = c.Id
+        LEFT JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id AND uxc.FK_User_Id = @FK_User_Id AND uxc.Actif = 'O'
+        WHERE p.Id = @FK_Police_Id
+          AND (
+              (@Source = 'A' AND @UserNature = 'A')
+              OR (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
+              OR EXISTS (SELECT 1 FROM dbo.Adherents WHERE FK_Police_Id = p.Id AND FK_User_Id = @FK_User_Id AND Actif = 'O')
+          )
+    )
     BEGIN
-        RAISERROR('Session expirée', 16, 1);
+        RAISERROR('Accès refusé à cette police', 16, 1);
         RETURN;
     END
 
@@ -1061,7 +1154,7 @@ BEGIN
         RETURN;
     END
 
-    IF EXISTS (SELECT 1 FROM dbo.ReclamationsIdt WHERE Id = @FK_Reclamation_Id AND (@Source = 'C' OR FK_User_Client = @FK_User_Id))
+    IF EXISTS (SELECT 1 FROM dbo.ReclamationsIdt WHERE Id = @FK_Reclamation_Id AND (@Source IN ('E', 'M') OR FK_User_Client = @FK_User_Id))
     BEGIN
         DELETE FROM dbo.ReclamationsDet WHERE FK_Reclamation_Id = @FK_Reclamation_Id;
         DELETE FROM dbo.ReclamationsIdt WHERE Id = @FK_Reclamation_Id;
@@ -1104,7 +1197,7 @@ CREATE OR ALTER PROCEDURE dbo.sp_GetUserByAuthId
     @IdAuth VARCHAR(255)
 AS
 BEGIN
-    SELECT Id AS id, token, Extranet AS extranet 
+    SELECT Id AS id, token, Extranet AS extranet, Mobile AS mobile 
     FROM dbo.sysUser 
     WHERE Id_Auth = @IdAuth;
 END
@@ -1153,9 +1246,12 @@ AS
 BEGIN
     SET NOCOUNT ON;
     
-    IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
+    DECLARE @UserNature CHAR(1);
+    SELECT @UserNature = Nature FROM dbo.sysUser WHERE Id = @FK_User_Id;
+
+    IF NOT (@Source = 'A' AND @UserNature = 'A')
     BEGIN
-        RAISERROR('Session expiree', 16, 1);
+        RAISERROR('Action non autorisée', 16, 1);
         RETURN;
     END
 
@@ -1180,12 +1276,72 @@ AS
 BEGIN
     SET NOCOUNT ON;
     
-    IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
+    DECLARE @UserNature CHAR(1);
+    SELECT @UserNature = Nature FROM dbo.sysUser WHERE Id = @FK_User_Id;
+
+    IF NOT (@Source = 'A' AND @UserNature = 'A')
     BEGIN
-        RAISERROR('Session expiree', 16, 1);
+        RAISERROR('Action non autorisée', 16, 1);
         RETURN;
     END
 
     UPDATE dbo.Adherents SET FK_User_Id = @FK_Target_User_Id WHERE Id = @FK_Adherent_Id;
+END
+GO
+
+CREATE OR ALTER PROCEDURE dbo.ps_SyncKeycloak
+    @FK_User_Id    INT,
+    @Token         VARCHAR(MAX),
+    @Source        VARCHAR(50),
+    @IdToSync      INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    DECLARE @UserNature CHAR(1);
+    SELECT @UserNature = Nature FROM dbo.sysUser WHERE Id = @FK_User_Id;
+
+    IF NOT (@Source = 'A' AND @UserNature = 'A')
+    BEGIN
+        RAISERROR('Action non autorisée', 16, 1);
+        RETURN;
+    END
+
+    UPDATE dbo.sysUser 
+    SET UpdatedAt = GETDATE()
+    WHERE Id = @IdToSync;
+
+    SELECT 1 as success;
+END
+GO
+
+CREATE OR ALTER PROCEDURE dbo.ps_UpdateUserRoles
+    @FK_User_Id    INT,
+    @Token         VARCHAR(MAX),
+    @Source        VARCHAR(50),
+    @Target_User_Id INT,
+    @RolesCSV      VARCHAR(MAX) -- Comma separated roles
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    DECLARE @UserNature CHAR(1);
+    SELECT @UserNature = Nature FROM dbo.sysUser WHERE Id = @FK_User_Id;
+
+    IF NOT (@Source = 'A' AND @UserNature = 'A')
+    BEGIN
+        RAISERROR('Action non autorisée', 16, 1);
+        RETURN;
+    END
+
+    -- Supprimer les anciens rôles
+    DELETE FROM dbo.Roles WHERE FK_User_Id = @Target_User_Id;
+
+    -- Insérer les nouveaux rôles (Split CSV)
+    INSERT INTO dbo.Roles (FK_User_Id, Role)
+    SELECT @Target_User_Id, value
+    FROM STRING_SPLIT(@RolesCSV, ',');
+
+    SELECT 1 as success;
 END
 GO

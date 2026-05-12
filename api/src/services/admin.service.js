@@ -1,5 +1,6 @@
 const db = require('./db.service');
 const qry = require('../sql/qryExtranet');
+const keycloakService = require('./keycloak.service');
 
 const getUsers = (userId, token, source) => db.execute(qry.getUsers, [userId, token, source]);
 
@@ -19,6 +20,19 @@ const syncKeycloak = (userId, token, source, id) => db.execute(qry.syncKeycloak,
 const linkUserToClient = (userId, token, source, targetUserId, clientId) => db.execute(qry.linkUserToClient, [userId, token, source, targetUserId, clientId]);
 const linkUserToAdherent = (userId, token, source, targetUserId, adherentId) => db.execute(qry.linkUserToAdherent, [userId, token, source, targetUserId, adherentId]);
 
+const getAvailableRoles = () => keycloakService.getAvailableRoles();
+
+const updateUserRoles = async (userId, token, source, targetUserId, authId, roles) => {
+    // 1. Keycloak sync
+    const currentRoles = await keycloakService.getUserRoles(authId);
+    if (currentRoles.length > 0) await keycloakService.removeUserRoles(authId, currentRoles);
+    if (roles.length > 0) await keycloakService.assignUserRoles(authId, roles);
+
+    // 2. DB sync
+    const rolesCSV = roles.map(r => r.name).join(',');
+    return db.execute(qry.updateUserRoles, [userId, token, source, targetUserId, rolesCSV]);
+};
+
 module.exports = {
     getUsers,
     saveUser,
@@ -29,5 +43,7 @@ module.exports = {
     createUserFromAdherent,
     syncKeycloak,
     linkUserToClient,
-    linkUserToAdherent
+    linkUserToAdherent,
+    getAvailableRoles,
+    updateUserRoles
 };

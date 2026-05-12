@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Button } from '@/components/ui/button'
 import { Building2, UserPlus, CheckCircle2, Link } from 'lucide-vue-next'
+import { Button } from '@/components/ui/button'
 import DataTableWrapper from '@/components/shared/DataTableWrapper.vue'
 import UserLinkDialog from '@/components/shared/UserLinkDialog.vue'
 import { api } from '@/lib/api'
@@ -16,22 +16,16 @@ const selectedClientId = ref<number | null>(null)
 const fetchClients = async () => {
   loading.value = true
   try { clients.value = await api.admin.getClients() } 
-  catch (e: any) { 
-    toast.error(e.message || "Erreur lors de la récupération")
-    console.error(e) 
-  } 
+  catch (e: any) { toast.error(e.message || "Erreur de chargement") } 
   finally { loading.value = false }
 }
 
 const handleCreateUser = async (clientId: number) => {
   try {
     await api.admin.createUserFromClient(clientId)
-    toast.success('Utilisateur créé avec succès !')
+    toast.success('Compte client créé')
     fetchClients()
-  } catch (e: any) { 
-    toast.error(e.message)
-    console.error(e) 
-  }
+  } catch (e: any) { toast.error(e.message) }
 }
 
 const openLinkDialog = (clientId: number) => {
@@ -43,13 +37,10 @@ const handleLinkUser = async (userId: number) => {
   if (!selectedClientId.value) return
   try {
     await api.admin.linkUserToClient(selectedClientId.value, userId)
-    toast.success('Utilisateur lié avec succès !')
+    toast.success('Utilisateur lié')
     linkDialogOpen.value = false
     fetchClients()
-  } catch (e: any) {
-    toast.error(e.message)
-    console.error(e)
-  }
+  } catch (e: any) { toast.error(e.message) }
 }
 
 onMounted(fetchClients)
@@ -57,58 +48,50 @@ onMounted(fetchClients)
 
 <template>
   <DataTableWrapper 
-    title="Liste Clients" 
-    description="Gérez vos clients et créez leurs accès extranet."
+    title="Clients" 
+    description="Gestion des accès extranet pour les clients."
     :items="clients"
     :loading="loading"
-    search-placeholder="Rechercher par nom ou code..."
+    search-placeholder="Rechercher..."
   >
     <template #default="{ items }">
-      <Table>
-        <TableHeader class="bg-slate-50/50 border-b border-slate-100">
+      <Table class="border-t border-slate-100">
+        <TableHeader class="bg-slate-50/50">
           <TableRow>
             <TableHead class="font-black text-slate-900 uppercase tracking-widest text-[10px] py-6">Code IBS</TableHead>
             <TableHead class="font-black text-slate-900 uppercase tracking-widest text-[10px]">Raison Sociale</TableHead>
-            <TableHead class="font-black text-slate-900 uppercase tracking-widest text-[10px]">Email</TableHead>
             <TableHead class="font-black text-slate-900 uppercase tracking-widest text-[10px]">Utilisateur lié</TableHead>
             <TableHead class="text-right font-black text-slate-900 uppercase tracking-widest text-[10px]">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          <TableRow v-for="client in items" :key="client.id" class="hover:bg-slate-50/80 transition-colors border-b border-slate-50">
+          <TableRow v-for="client in items" :key="client.id" class="group hover:bg-slate-50/50 transition-colors border-b border-slate-50">
             <TableCell class="font-bold text-slate-400 py-4">{{ client.id || 'N/A' }}</TableCell>
             <TableCell>
               <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-900 shadow-sm">
-                  <Building2 class="w-4 h-4" />
+                <div class="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-slate-900 group-hover:text-white transition-all shadow-sm">
+                  <Building2 class="w-5 h-5" />
                 </div>
-                <span class="font-black text-slate-900">{{ client.raisonSociale }}</span>
+                <span class="font-bold text-slate-900 tracking-tight">{{ client.raisonSociale }}</span>
               </div>
             </TableCell>
-            <TableCell class="text-sm font-bold text-slate-600">{{ client.email || '-' }}</TableCell>
             <TableCell>
-              <div v-if="client.fkUserId" class="flex items-center gap-2 text-emerald-600 font-bold text-xs bg-emerald-50 px-3 py-1.5 rounded-xl w-fit">
-                <CheckCircle2 class="w-4 h-4" />
+              <div v-if="client.fkUserId" class="flex items-center gap-2 text-emerald-600 font-bold text-[10px] uppercase tracking-widest bg-emerald-50 px-3 py-1.5 rounded-lg w-fit">
+                <CheckCircle2 class="w-3.5 h-3.5" />
                 {{ client.userNom }}
               </div>
-              <span v-else class="text-slate-300 font-black text-[10px] uppercase tracking-widest">Aucun</span>
+              <span v-else class="text-slate-300 font-black text-[10px] uppercase tracking-widest italic">Non lié</span>
             </TableCell>
             <TableCell class="text-right">
-              <div v-if="!client.fkUserId" class="flex justify-end gap-2">
-                <Button variant="ghost" size="sm" 
-                  class="h-10 gap-2 rounded-xl text-slate-600 font-black text-[10px] uppercase tracking-widest hover:bg-slate-100 hover:text-slate-900 transition-all"
-                  @click="handleCreateUser(client.id)"
-                >
+              <div v-if="!client.fkUserId" class="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Button variant="ghost" size="sm" class="h-9 gap-2 rounded-xl text-slate-600 font-black text-[10px] uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all" @click="handleCreateUser(client.id)">
                   <UserPlus class="w-4 h-4" /> Créer
                 </Button>
-                <Button variant="ghost" size="sm" 
-                  class="h-10 gap-2 rounded-xl text-emerald-600 font-black text-[10px] uppercase tracking-widest hover:bg-emerald-50 transition-all"
-                  @click="openLinkDialog(client.id)"
-                >
-                  <Link class="w-4 h-4" /> Lier User
+                <Button variant="ghost" size="sm" class="h-9 gap-2 rounded-xl text-emerald-600 font-black text-[10px] uppercase tracking-widest hover:bg-emerald-50 transition-all" @click="openLinkDialog(client.id)">
+                  <Link class="w-4 h-4" /> Lier
                 </Button>
               </div>
-              <div v-else class="text-slate-300 pr-4">
+              <div v-else class="text-emerald-500 pr-4">
                 <CheckCircle2 class="w-5 h-5 ml-auto" />
               </div>
             </TableCell>
@@ -120,8 +103,8 @@ onMounted(fetchClients)
 
   <UserLinkDialog 
     :open="linkDialogOpen"
-    title="Lier un utilisateur au client"
-    description="Sélectionnez l'utilisateur existant que vous souhaitez lier à ce client."
+    title="Lier un utilisateur"
+    description="Sélectionnez l'utilisateur à lier à ce client."
     @close="linkDialogOpen = false"
     @select="handleLinkUser"
   />

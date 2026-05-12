@@ -8,13 +8,13 @@ router.use(auth);
 router.use(auth.checkRole(['admincab', 'comercialcab', 'client', 'adherent']));
 
 // Specific restrictions
-router.get('/polices',              auth.checkRole(['admincab', 'comercialcab', 'client']), ctrl.getPolices);
-router.get('/stats',                auth.checkRole(['admincab', 'comercialcab', 'client']), ctrl.getStats);
-router.get('/stats/police',         auth.checkRole(['admincab', 'comercialcab', 'client']), ctrl.getStatsByPolice);
+router.get('/polices',              auth.checkRole(['admincab', 'comercialcab', 'client', 'adherent']), ctrl.getPolices);
+router.get('/stats',                auth.checkRole(['admincab', 'comercialcab', 'client', 'adherent']), ctrl.getStats);
+router.get('/stats/police',         auth.checkRole(['admincab', 'comercialcab', 'client', 'adherent']), ctrl.getStatsByPolice);
 router.get('/sinistres',            ctrl.getSinistres); // Allowed for all (adherent & client)
 router.get('/sinistres/en-cours',   ctrl.getSinistresEnCours);
-router.get('/risques',              auth.checkRole(['admincab', 'comercialcab', 'client']), ctrl.getRisques);
-router.get('/garanties',            auth.checkRole(['admincab', 'comercialcab', 'client']), ctrl.getGaranties);
+router.get('/risques',              auth.checkRole(['admincab', 'comercialcab', 'client', 'adherent']), ctrl.getRisques);
+router.get('/garanties',            auth.checkRole(['admincab', 'comercialcab', 'client', 'adherent']), ctrl.getGaranties);
 router.get('/quittances',           auth.checkRole(['admincab', 'comercialcab', 'client']), ctrl.getQuittances);
 router.get('/quittances/impayes',   auth.checkRole(['admincab', 'comercialcab', 'client']), ctrl.getImpayes);
 router.get('/adherents',            auth.checkRole(['admincab', 'comercialcab', 'client']), ctrl.getAdherents);

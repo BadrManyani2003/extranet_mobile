@@ -10,6 +10,8 @@ router.post('/users',                   ctrl.getUsers);
 router.post('/users/save',              ctrl.saveUser);
 router.post('/users/delete',            ctrl.deleteUser);
 router.post('/users/sync-keycloak',    ctrl.syncKeycloak);
+router.get('/roles',                    ctrl.getAvailableRoles);
+router.post('/users/roles',             ctrl.updateUserRoles);
 
 router.post('/clients',                 ctrl.getClients);
 router.post('/clients/create-user',     ctrl.createUserFromClient);

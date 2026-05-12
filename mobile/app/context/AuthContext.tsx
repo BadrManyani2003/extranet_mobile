@@ -1,7 +1,9 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as WebBrowser from 'expo-web-browser';
 import { authAPI } from '../api';
 import { authEvents } from '../utils/events';
+import { keycloakDiscovery, keycloakConfig } from '../utils/keycloak';
 
 // ============================================================
 // Types
@@ -59,23 +61,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const logout = useCallback(async () => {
-    console.log('🔄 Logout initiated...');
     try {
-      // 1. Clear local state immediately for fast UI response
       setUser(null);
       setToken(null);
       setSource(null);
 
-      // 2. Clear persisted data
       await Promise.all([
         AsyncStorage.removeItem('token'),
         AsyncStorage.removeItem('user'),
         AsyncStorage.removeItem('user_source'),
       ]);
-      
-      console.log('✅ Local session cleared successfully');
-    } catch (err) {
-      console.error('❌ Error during logout:', err);
+
+      const logoutUrl = `${keycloakDiscovery.endSessionEndpoint}?client_id=${keycloakConfig.clientId}&post_logout_redirect_uri=${encodeURIComponent(keycloakConfig.redirectUri)}`;
+      WebBrowser.openAuthSessionAsync(logoutUrl, keycloakConfig.redirectUri);
+    } catch {
+      // Ignorer les erreurs de déconnexion
     }
   }, []);
 
@@ -97,14 +97,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUser(user);
           setSource(source);
 
-          // Verify token with backend
           try {
             const freshUser = await authAPI.me();
-            // Optional: update local user with fresh data from DB
             setUser(prev => ({ ...prev, ...freshUser }));
-          } catch (err) {
-            console.log('🔄 Token verification failed on startup:', err);
-            // If it's a 401 (handled by interceptor) or other error, logout
+          } catch {
             logout();
           }
         }
@@ -119,12 +115,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // ── Handle unauthorized event from API ──────────────────────
   useEffect(() => {
+    let logoutTimer: NodeJS.Timeout;
     const handleUnauthorized = () => {
-      console.log('⚠️ Unauthorized access detected, logging out...');
-      logout();
+      if (!logoutTimer) {
+        logoutTimer = setTimeout(() => logout(), 7000);
+      }
     };
     authEvents.on('unauthorized', handleUnauthorized);
-    return () => authEvents.off('unauthorized', handleUnauthorized);
+    return () => {
+      authEvents.off('unauthorized', handleUnauthorized);
+      if (logoutTimer) clearTimeout(logoutTimer);
+    };
   }, [logout]);
 
   return (

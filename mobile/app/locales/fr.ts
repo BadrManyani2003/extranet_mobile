@@ -106,5 +106,9 @@ export default {
     "DÉCLARÉS": "DÉCLARÉS",
     "Consulter vos messages": "Consulter vos messages",
     "Suivez l'état de vos demandes.": "Suivez l'état de vos demandes.",
-    "Aucune demande": "Aucune demande"
+    "Aucune demande": "Aucune demande",
+    "restricted_title": "Accès Refusé",
+    "restricted_description": "Désolé, l'accès à cet espace est restreint. Veuillez vérifier que vous disposez des droits nécessaires pour accéder à l'application mobile ou contactez votre administrateur.",
+    "restricted_logout": "Se déconnecter",
+    "restricted_back": "Retour à l'accueil"
 };

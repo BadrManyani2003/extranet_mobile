@@ -1,29 +1,45 @@
 require('dotenv').config();
-const express = require('express');
-const cors    = require('cors');
-const morgan  = require('morgan');
-const helmet  = require('helmet');
+const express     = require('express');
+const cors        = require('cors');
+const helmet      = require('helmet');
 const compression = require('compression');
-const rateLimit = require('express-rate-limit');
+const rateLimit   = require('express-rate-limit');
 
 const app = express();
 
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100 // limit each IP to 100 requests per windowMs
+    max: 1000, // Increased limit for development
+    message: { success: false, message: 'Trop de requêtes. Veuillez réessayer plus tard.' },
+    standardHeaders: true,
+    legacyHeaders: false,
 });
 
-app.use(helmet());
-app.use(compression());
-app.use(limiter);
 app.use(cors({
-    origin: '*', 
+    origin: (origin, callback) => {
+        const allowedOrigins = [
+            'http://localhost:5173', 
+            'http://localhost:5174', 
+            'http://localhost:8081',
+            'http://localhost:3000'
+        ];
+        if (!origin || allowedOrigins.includes(origin) || origin.startsWith('http://localhost:')) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'x-source'],
     credentials: true
 }));
+
+app.use(helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
+app.use(compression());
+app.use(limiter);
 app.use(express.json());
-app.use(morgan('combined')); // Better logging for production
 
 const errorHandler = require('./middleware/errorHandler');
 

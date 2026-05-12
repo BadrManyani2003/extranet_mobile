@@ -86,19 +86,28 @@ const selectTicket = async (ticket: any) => {
 
 const handleSendMessage = async (text: string) => {
   if (!selectedTicket.value) return
-  messages.value.push({
+  
+  // Optimistic update
+  const tempMsg = {
     id: Date.now(),
-    text,
+    message: text,
     envoyeur: 'Conseiller IBS',
     nature: 'Admin',
     dateMessage: new Date().toISOString()
-  })
+  }
+  messages.value.push(tempMsg)
+  
   try { 
     await api.admin.replyToReclamation(selectedTicket.value.id, text)
     toast.success("Réponse envoyée")
     selectedTicket.value.statut = 'Traité'
+    // Refresh to get final data from server
+    const freshMessages = await api.data.getMessages(selectedTicket.value.id)
+    messages.value = freshMessages
   } catch (e: any) { 
     toast.error(e.message)
+    // Remove optimistic message on error
+    messages.value = messages.value.filter(m => m.id !== tempMsg.id)
     console.error(e) 
   }
 }
@@ -192,7 +201,15 @@ onMounted(() => {
         </div>
       </div>
 
-      <ReclamationChat :messages="messages" :loading="loading" :selected-ticket="selectedTicket" :current-user-id="currentUser?.id" @send="handleSendMessage" @delete-message="handleDeleteMessage" />
+      <ReclamationChat 
+        :messages="messages" 
+        :loading="loadingChat" 
+        :selected-ticket="selectedTicket" 
+        :current-user-id="currentUser?.id" 
+        selfNature="Admin"
+        @send="handleSendMessage" 
+        @delete-message="handleDeleteMessage" 
+      />
     </template>
   </div>
 </template>

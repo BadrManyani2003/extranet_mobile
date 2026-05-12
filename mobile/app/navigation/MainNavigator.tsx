@@ -36,6 +36,7 @@ import SinistreScreen from '../screens/SinistreScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import ReclamationScreen from '../screens/ReclamationScreen';
 import ReclamationDetailScreen from '../screens/ReclamationDetailScreen';
+import RestrictedScreen from '../screens/RestrictedScreen';
 
 export type TabParamList = {
   Accueil: undefined;
@@ -49,6 +50,7 @@ export type TabParamList = {
 export type RootStackParamList = {
   Login: undefined;
   MainTabs: undefined;
+  Restricted: undefined;
   ReclamationDetail: { reclamationId: number; sujet: string };
 };
 
@@ -302,8 +304,13 @@ const MainNavigator: React.FC = () => {
   const { t } = useTranslation();
   const theme = useTheme<Theme>();
   const { isDark } = useThemeContext();
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
   const c = theme.colors;
+
+  const userRoles = user?.roles || [];
+  const hasAccess = userRoles.some(r => 
+    ['client', 'adherent', 'admincab', 'comercialcab'].includes(r.toLowerCase())
+  ) && (user as any)?.extranet !== 'N';
 
   if (isLoading) {
     return (
@@ -339,10 +346,14 @@ const MainNavigator: React.FC = () => {
         }}
       >
         {isAuthenticated ? (
-          <>
-            <Stack.Screen name="MainTabs" component={BottomTabs} />
-            <Stack.Screen name="ReclamationDetail" component={ReclamationDetailScreen} />
-          </>
+          !hasAccess ? (
+            <Stack.Screen name="Restricted" component={RestrictedScreen} />
+          ) : (
+            <>
+              <Stack.Screen name="MainTabs" component={BottomTabs} />
+              <Stack.Screen name="ReclamationDetail" component={ReclamationDetailScreen} />
+            </>
+          )
         ) : (
           <>
             <Stack.Screen

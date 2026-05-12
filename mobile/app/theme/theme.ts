@@ -75,8 +75,10 @@ const lightTheme = createTheme({
     backgroundLight: palette.backgroundGray,
     
     transparent: 'transparent',
+    transparentGray: 'rgba(0, 0, 0, 0.5)',
     white: palette.white,
     buttonSecondaryBg: palette.backgroundGray,
+    placeholderText: palette.textTertiary,
   },
   spacing: {
     none: 0,
@@ -87,15 +89,25 @@ const lightTheme = createTheme({
     l: rsp.scale(20),
     xl: rsp.scale(28),
     xxl: rsp.scale(40),
+    xxxl: rsp.scale(60),
+    '4xl': rsp.scale(80),
   },
   borderRadii: {
+    xxs: 2,
     xs: 4,
     s: 8,
     m: 12,
     l: 16,
     xl: 20,
+    xxl: 32,
+    '3xl': 48,
+    '4xl': 64,
     round: 999,
     none: 0,
+  },
+  breakpoints: {
+    phone: 0,
+    tablet: 768,
   },
   textVariants: {
     defaults: {
@@ -104,6 +116,10 @@ const lightTheme = createTheme({
     },
     header: {
       fontSize: rsp.normalize(24),
+      fontWeight: '700',
+    },
+    subheader: {
+      fontSize: rsp.normalize(20),
       fontWeight: '700',
     },
     title: {

@@ -179,7 +179,7 @@ const iconeBranche = computed(() => {
                 <tr v-for="g in risqueSelectionne.garanties" :key="g.nom">
                   <td class="py-3 text-sm text-slate-700">{{ g.nom }}</td>
                   <td class="py-3 text-sm font-bold text-slate-900 text-right">{{ formatNumber(g.capital) }}</td>
-                  <td class="py-3 text-sm text-slate-500 text-right" > {{ g.franchise }} </td>
+                  <td class="py-3 text-sm text-slate-500 text-right">{{ (g.franchise && g.franchise !== 0) ? formatNumber(g.franchise) : '-' }}</td>
                 </tr>
               </tbody>
             </table>

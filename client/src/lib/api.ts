@@ -1,6 +1,7 @@
 import keycloakService from '../services/keycloak'
 
 const BASE_URL = import.meta.env.VITE_API_URL
+let logoutPending = false;
 
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const method = options.method || 'POST'
@@ -31,7 +32,29 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
   }
 
   const response = await fetch(url, requestOptions)
-  const result = await response.json().catch(() => ({ error: true, message: 'JSON Parse Error' }))
+
+  if (response.status === 429) {
+    throw new Error('Trop de requêtes. Veuillez patienter quelques minutes.')
+  }
+
+  if (response.status === 401 || response.status === 403) {
+    if (!logoutPending) {
+      logoutPending = true;
+      setTimeout(() => {
+        keycloakService.logout()
+      }, 7000)
+    }
+    throw new Error('Session expirée ou accès refusé. Déconnexion dans 7 secondes.')
+  }
+
+  const contentType = response.headers.get('content-type')
+  let result: any
+  if (contentType && contentType.includes('application/json')) {
+    result = await response.json().catch(() => ({ error: true, message: 'JSON Parse Error' }))
+  } else {
+    const text = await response.text()
+    result = { error: true, message: text || 'Server Error' }
+  }
 
   if (!response.ok || result?.error || result?.success === false) {
     throw new Error(result?.message || 'Server Error')

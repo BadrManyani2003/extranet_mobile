@@ -3,6 +3,7 @@ import { useRoute } from 'vue-router'
 import { LayoutDashboard, X, LogOut } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import keycloak from '@/services/keycloak'
+import { useUserStore } from '@/store/user'
 
 export interface NavItem {
   nom?: string
@@ -11,15 +12,17 @@ export interface NavItem {
   section?: string
 }
 
-defineProps<{
+const props = defineProps<{
   isSidebarOpen: boolean
   navItems: NavItem[]
 }>()
 
 const emit = defineEmits(['close', 'toggle'])
 const route = useRoute()
+const userStore = useUserStore()
 
 const handleLogout = () => {
+  userStore.clearUser()
   keycloak.logout()
 }
 </script>

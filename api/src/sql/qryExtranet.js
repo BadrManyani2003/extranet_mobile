@@ -35,6 +35,7 @@ const qry = {
     updateToken:         "exec dbo.sp_UpdateToken @0, @1",
     getUserInfoByAuthId: "exec dbo.sp_GetUserInfoByAuthId @0",
     getUserByAuthId:     "exec dbo.sp_GetUserByAuthId @0",
+    updateUserRoles:     "exec dbo.ps_UpdateUserRoles @0, @1, @2, @3, @4",
 };
 
 module.exports = qry;

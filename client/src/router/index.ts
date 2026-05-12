@@ -5,7 +5,7 @@ import ImpayesView from '../views/ImpayesView.vue'
 import TableauBordView from '../views/TableauBordView.vue'
 import ReclamationsView from '../views/ReclamationsView.vue'
 import RestrictedView from '../views/RestrictedView.vue'
-import { api } from '../lib/api'
+import { useUserStore } from '../store/user'
 import keycloak from '../services/keycloak'
 
 const router = createRouter({
@@ -49,22 +49,21 @@ const router = createRouter({
   ]
 })
 
-let userCache: any = null
-
 router.beforeEach(async (to) => {
   if (to.name === 'restricted') return true
 
   // Check role first
-  const isClient = keycloak.hasRealmRole('client')
+  const isClient = keycloak.hasRole('client')
   if (!isClient) return { name: 'restricted' }
 
+  const userStore = useUserStore()
+
   try {
-    if (!userCache) {
-      const response = await api.data.getUserInfo()
-      userCache = response.user
+    if (!userStore.user) {
+      await userStore.fetchUser()
     }
 
-    if (String(userCache?.extranet).trim().toUpperCase() === 'N') {
+    if (String(userStore.user?.extranet).trim().toUpperCase() === 'N') {
       return { name: 'restricted' }
     }
     

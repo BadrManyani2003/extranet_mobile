@@ -1,4 +1,5 @@
 import { createApp } from 'vue'
+import { createPinia } from 'pinia'
 import './style.css'
 import 'vue-sonner/style.css'
 import App from './App.vue'
@@ -8,9 +9,11 @@ import i18n from './i18n'
 import keycloakService from './services/keycloak'
 
 const app = createApp(App)
+const pinia = createPinia()
 
 // Initialize Keycloak before attaching the router to prevent race conditions in guards
 keycloakService.init(() => {
+  app.use(pinia)
   app.use(router)
   app.use(i18n)
   

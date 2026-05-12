@@ -6,11 +6,7 @@ const success = (res, data = [], message = 'Success') => {
 };
 
 const error = (res, message = 'Internal Server Error', status = 500) => {
-    console.error(`❌ API Error: ${message}`);
-    res.status(status).json({
-        success: false,
-        message
-    });
+    res.status(status).json({ success: false, message });
 };
 
 module.exports = {

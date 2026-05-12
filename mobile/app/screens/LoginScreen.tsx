@@ -110,8 +110,7 @@ const LoginScreen: React.FC<Props> = () => {
       await signin(user, accessToken, userSource);
 
 
-    } catch (err: unknown) {
-      console.error('Keycloak token exchange error:', err);
+    } catch {
       setErrorMsg("Erreur lors de la récupération du token. Réessayez.");
     } finally {
       setLoading(false);

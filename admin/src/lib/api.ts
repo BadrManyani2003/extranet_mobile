@@ -1,6 +1,7 @@
 import keycloak from '../services/keycloak'
 
 const BASE_URL = import.meta.env.VITE_API_URL
+let logoutPending = false;
 
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const headers = new Headers(options.headers)
@@ -22,7 +23,29 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
   }
 
   const response = await fetch(url, { ...options, headers })
-  const result = await response.json().catch(() => ({ error: true, message: 'JSON Parse Error' }))
+  
+  if (response.status === 429) {
+    throw new Error('Trop de requêtes. Veuillez patienter quelques minutes.')
+  }
+
+  if (response.status === 401 || response.status === 403) {
+    if (!logoutPending) {
+      logoutPending = true;
+      setTimeout(() => {
+        keycloak.logout()
+      }, 7000)
+    }
+    throw new Error('Session expirée ou accès refusé. Déconnexion dans 7 secondes.')
+  }
+
+  const contentType = response.headers.get('content-type')
+  let result: any
+  if (contentType && contentType.includes('application/json')) {
+    result = await response.json().catch(() => ({ error: true, message: 'JSON Parse Error' }))
+  } else {
+    const text = await response.text()
+    result = { error: true, message: text || 'Server Error' }
+  }
 
   if (!response.ok || result?.error || result?.success === false) {
     throw new Error(result?.message || 'Server Error')
@@ -69,6 +92,8 @@ export const api = {
     getReclamations: () => request<any[]>('/reclamations/list', { method: 'POST' }),
     replyToReclamation: (reclamationId: string | number, message: string) => request<any>('/reclamations/add-message', { method: 'POST', body: JSON.stringify({ reclamationId, message, nature: 'A' }) }),
     updateStatus: (reclamationId: string | number, statut: string) => request<any>('/reclamations/update-statut', { method: 'POST', body: JSON.stringify({ reclamationId, statut }) }),
-    deleteMessage: (messageId: number, reclamationId: number) => request<any>('/reclamations/delete-message', { method: 'POST', body: JSON.stringify({ messageId, reclamationId }) })
+    deleteMessage: (messageId: number, reclamationId: number) => request<any>('/reclamations/delete-message', { method: 'POST', body: JSON.stringify({ messageId, reclamationId }) }),
+    getRoles: () => request<any[]>('/admin/roles', { method: 'GET' }),
+    updateUserRoles: (targetUserId: number, authId: string, roles: any[]) => request<any>('/admin/users/roles', { method: 'POST', body: JSON.stringify({ targetUserId, authId, roles }) })
   }
 }

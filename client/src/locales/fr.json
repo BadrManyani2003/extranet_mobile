@@ -174,7 +174,9 @@
     "en_attente": "En attente"
   },
   "restricted": {
-    "title": "Accès restreint",
-    "description": "Veuillez utiliser l'application mobile."
+    "title": "Accès Refusé",
+    "description": "Désolé, l'accès à cet espace est restreint. Veuillez vérifier que vous disposez des droits nécessaires pour accéder à votre espace client ou contactez votre administrateur.",
+    "logout": "Se déconnecter",
+    "back": "Retour à l'accueil"
   }
 }

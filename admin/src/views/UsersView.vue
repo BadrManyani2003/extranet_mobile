@@ -2,119 +2,162 @@
 import { ref, onMounted } from 'vue'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
-import { Edit, Trash2, RefreshCcw } from 'lucide-vue-next'
+import { Edit, Trash2, RefreshCcw, ShieldCheck, Check, UserCircle } from 'lucide-vue-next'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Badge } from '@/components/ui/badge'
 import DataTableWrapper from '@/components/shared/DataTableWrapper.vue'
+import ConfirmModal from '@/components/shared/ConfirmModal.vue'
 import { api } from '@/lib/api'
-import keycloak from '@/services/keycloak'
 import { toast } from '@/components/ui/sonner'
 
+// -- States
 const users = ref<any[]>([])
+const allRoles = ref<any[]>([])
 const loading = ref(true)
-const isDialogOpen = ref(false)
-const isConfirmDeleteOpen = ref(false)
-const isConfirmSyncOpen = ref(false)
-const selectedUser = ref<any>(null)
-const userToDelete = ref<any>(null)
+const processing = ref(false)
+
+const dialogs = ref({
+  edit: false,
+  roles: false,
+  delete: false,
+  sync: false
+})
+
+const activeUser = ref<any>(null)
+const selectedRoles = ref<string[]>([])
 const formData = ref({ id: 0, nom: '', email: '', telephone: '', nature: 'P', extranet: 'N', mobile: 'N' })
 
+// -- Actions
 const fetchUsers = async () => {
   loading.value = true
   try { users.value = await api.admin.getUsers() } 
-  catch (e: any) { 
-    toast.error(e.message || "Erreur lors de la récupération")
-    console.error(e) 
-  } 
+  catch (e: any) { toast.error(e.message || "Erreur de chargement") } 
   finally { loading.value = false }
 }
 
-const openEdit = (user: any) => {
-  selectedUser.value = user
-  formData.value = { ...user }
-  isDialogOpen.value = true
+const openEdit = (user: any = null) => {
+  activeUser.value = user
+  formData.value = user ? { ...user } : { id: 0, nom: '', email: '', telephone: '', nature: 'P', extranet: 'N', mobile: 'N' }
+  dialogs.value.edit = true
 }
 
 const handleSave = async () => {
+  processing.value = true
   try {
     await api.admin.saveUser(formData.value)
-    toast.success("Enregistré avec succès")
-    isDialogOpen.value = false
+    toast.success("Utilisateur enregistré")
+    dialogs.value.edit = false
     fetchUsers()
-  } catch (e: any) { 
-    toast.error(e.message)
-    console.error(e) 
+  } catch (e: any) { toast.error(e.message) }
+  finally { processing.value = false }
+}
+
+const openRoles = async (user: any) => {
+  activeUser.value = user
+  selectedRoles.value = user.roles ? user.roles.split(', ').map((r: string) => r.trim()) : []
+  dialogs.value.roles = true
+  if (allRoles.value.length === 0) {
+    try { allRoles.value = await api.admin.getRoles() } catch (e) { console.error(e) }
   }
 }
 
-const handleDelete = async () => {
-  if (!userToDelete.value) return
+const handleSaveRoles = async () => {
+  if (!activeUser.value) return
+  processing.value = true
   try {
-    await api.admin.deleteUser(userToDelete.value.id)
-    toast.success("Utilisateur supprimé")
-    isConfirmDeleteOpen.value = false
+    const rolesToAssign = allRoles.value.filter(r => selectedRoles.value.includes(r.name))
+    await api.admin.updateUserRoles(activeUser.value.id, activeUser.value.idAuth, rolesToAssign)
+    toast.success("Rôles mis à jour")
+    dialogs.value.roles = false
     fetchUsers()
-  } catch (e: any) { 
-    toast.error(e.message)
-    console.error(e) 
-  }
+  } catch (e: any) { toast.error(e.message) }
+  finally { processing.value = false }
 }
 
 const handleSync = async () => {
-  if (!selectedUser.value) return
+  if (!activeUser.value) return
+  processing.value = true
   try {
-    await api.admin.syncKeycloak(selectedUser.value.id)
+    await api.admin.syncKeycloak(activeUser.value.id)
     toast.success("Synchronisation réussie")
-    isConfirmSyncOpen.value = false
+    dialogs.value.sync = false
     fetchUsers()
-  } catch (e: any) { 
-    toast.error(e.message)
-    console.error(e) 
-  }
+  } catch (e: any) { toast.error(e.message) }
+  finally { processing.value = false }
 }
 
-onMounted(() => {
-  fetchUsers()
-})
+const handleDelete = async () => {
+  if (!activeUser.value) return
+  processing.value = true
+  try {
+    await api.admin.deleteUser(activeUser.value.id)
+    toast.success("Utilisateur supprimé")
+    dialogs.value.delete = false
+    fetchUsers()
+  } catch (e: any) { toast.error(e.message) }
+  finally { processing.value = false }
+}
+
+onMounted(fetchUsers)
 </script>
 
 <template>
   <DataTableWrapper 
-    title="Liste Utilisateurs" 
-    description="Gérez les accès de vos collaborateurs et clients."
+    title="Utilisateurs" 
+    description="Gestion des comptes et des permissions."
     :items="users"
     :loading="loading"
   >
     <template #default="{ items }">
-      <Table>
-        <TableHeader class="bg-slate-50/50 border-b border-slate-100">
+      <Table class="border-t border-slate-100">
+        <TableHeader class="bg-slate-50/50">
           <TableRow>
-            <TableHead class="font-black text-slate-900 uppercase tracking-widest text-[10px] py-6">Nom</TableHead>
-            <TableHead class="font-black text-slate-900 uppercase tracking-widest text-[10px]">Email / Tel</TableHead>
-            <TableHead class="font-black text-slate-900 uppercase tracking-widest text-[10px]">Sync</TableHead>
+            <TableHead class="font-black text-slate-900 uppercase tracking-widest text-[10px] py-6">Identité</TableHead>
+            <TableHead class="font-black text-slate-900 uppercase tracking-widest text-[10px]">Rôles Keycloak</TableHead>
+            <TableHead class="font-black text-slate-900 uppercase tracking-widest text-[10px]">Accès</TableHead>
             <TableHead class="text-right font-black text-slate-900 uppercase tracking-widest text-[10px]">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          <TableRow v-for="user in items" :key="user.id" class="hover:bg-slate-50/80 border-b border-slate-50">
-            <TableCell class="font-bold text-slate-900 py-4">{{ user.nom }}</TableCell>
-            <TableCell>
-              <div class="flex flex-col">
-                <span class="text-sm font-bold text-slate-700">{{ user.email || '-' }}</span>
-                <span class="text-xs text-slate-400 font-medium">{{ user.telephone || '-' }}</span>
+          <TableRow v-for="user in items" :key="user.id" class="group hover:bg-slate-50/50 transition-colors border-b border-slate-50">
+            <TableCell class="py-4">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-slate-900 group-hover:text-white transition-all">
+                  <UserCircle class="w-6 h-6" />
+                </div>
+                <div class="flex flex-col">
+                  <span class="font-bold text-slate-900 tracking-tight">{{ user.nom }}</span>
+                  <span class="text-[11px] text-slate-400 font-medium">{{ user.email || user.telephone }}</span>
+                </div>
               </div>
             </TableCell>
             <TableCell>
-              <div v-if="user.idAuth" class="text-emerald-600 text-xs font-black">OUI</div>
-              <Button v-else variant="ghost" size="sm" class="h-8 gap-2 text-[10px] text-orange-600 font-black hover:bg-orange-50 rounded-xl" @click="selectedUser = user; isConfirmSyncOpen = true">
-                <RefreshCcw class="w-3.5 h-3.5" /> SYNC
+              <div class="flex flex-wrap gap-1 max-w-[280px]">
+                <Badge v-for="role in (user.roles?.split(', ') || [])" :key="role" 
+                  class="bg-white border border-slate-100 text-slate-500 text-[9px] font-black uppercase tracking-tight py-0.5 px-1.5 shadow-sm">
+                  {{ role }}
+                </Badge>
+                <span v-if="!user.roles" class="text-[10px] text-slate-300 font-bold uppercase tracking-widest italic">Standard</span>
+              </div>
+            </TableCell>
+            <TableCell>
+              <div v-if="user.idAuth" class="flex items-center gap-2">
+                <div class="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+                <span class="text-emerald-600 text-[10px] font-black uppercase tracking-widest">Actif</span>
+              </div>
+              <Button v-else variant="ghost" size="sm" class="h-8 gap-2 text-[10px] text-orange-600 font-black hover:bg-orange-50 rounded-xl" @click="activeUser = user; dialogs.sync = true">
+                <RefreshCcw class="w-3.5 h-3.5" /> Synchroniser
               </Button>
             </TableCell>
             <TableCell class="text-right">
-              <div class="flex justify-end gap-2">
-                <Button variant="ghost" size="icon" class="h-10 w-10 rounded-xl hover:bg-slate-100" @click="openEdit(user)"><Edit class="w-4 h-4 text-slate-600" /></Button>
-                <Button variant="ghost" size="icon" class="h-10 w-10 rounded-xl hover:bg-red-50 text-red-500" @click="userToDelete = user; isConfirmDeleteOpen = true"><Trash2 class="w-4 h-4" /></Button>
+              <div class="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Button v-if="user.idAuth" variant="ghost" size="sm" class="h-9 px-3 text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-900 hover:text-white rounded-xl" @click="openRoles(user)">
+                  <ShieldCheck class="w-4 h-4 mr-2" /> Rôles
+                </Button>
+                <Button variant="ghost" size="icon" class="h-9 w-9 rounded-xl hover:bg-slate-200" @click="openEdit(user)"><Edit class="w-4 h-4 text-slate-600" /></Button>
+                <Button variant="ghost" size="icon" class="h-9 w-9 rounded-xl hover:bg-red-50 text-red-500" @click="activeUser = user; dialogs.delete = true"><Trash2 class="w-4 h-4" /></Button>
               </div>
             </TableCell>
           </TableRow>
@@ -123,55 +166,85 @@ onMounted(() => {
     </template>
   </DataTableWrapper>
 
-  <Dialog v-model:open="isDialogOpen">
-    <DialogContent class="sm:max-w-[600px] rounded-[2.5rem] shadow-2xl p-0 overflow-hidden border-none font-['Outfit']">
-      <DialogHeader class="p-10 bg-slate-50/50 border-b border-slate-100">
-        <DialogTitle class="text-2xl font-black text-slate-900">{{ formData.id ? 'Modifier' : 'Nouveau' }} Utilisateur</DialogTitle>
-        <DialogDescription class="text-slate-500 font-medium">Remplissez les informations ci-dessous pour gérer l'utilisateur.</DialogDescription>
+  <!-- Modals -->
+  <ConfirmModal 
+    :open="dialogs.sync" 
+    title="Synchroniser ?" 
+    description="Lier ce compte à Keycloak pour activer les accès."
+    confirm-text="Synchroniser"
+    variant="warning"
+    :loading="processing"
+    @close="dialogs.sync = false"
+    @confirm="handleSync"
+  />
+
+  <ConfirmModal 
+    :open="dialogs.delete" 
+    title="Supprimer ?" 
+    description="Cette action est définitive et supprimera l'utilisateur de la base."
+    confirm-text="Supprimer"
+    variant="danger"
+    :loading="processing"
+    @close="dialogs.delete = false"
+    @confirm="handleDelete"
+  />
+
+  <!-- Edit Dialog -->
+  <Dialog v-model:open="dialogs.edit">
+    <DialogContent class="sm:max-w-[550px] rounded-[2rem] shadow-2xl p-0 overflow-hidden border-none font-['Outfit']">
+      <DialogHeader class="p-8 bg-slate-50/50 border-b border-slate-100">
+        <DialogTitle class="text-xl font-black text-slate-900">{{ formData.id ? 'Modifier' : 'Nouveau' }} Utilisateur</DialogTitle>
       </DialogHeader>
-      <div class="p-10 space-y-6">
-        <div class="grid grid-cols-2 gap-6">
-          <div class="space-y-2"><Label>Nom complet</Label><Input v-model="formData.nom" class="rounded-xl" /></div>
-          <div class="space-y-2"><Label>Email</Label><Input v-model="formData.email" class="rounded-xl" /></div>
+      <div class="p-8 space-y-6">
+        <div class="grid grid-cols-2 gap-4">
+          <div class="space-y-1.5"><Label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Nom complet</Label><Input v-model="formData.nom" class="h-11 rounded-lg border-slate-200" /></div>
+          <div class="space-y-1.5"><Label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Email</Label><Input v-model="formData.email" class="h-11 rounded-lg border-slate-200" /></div>
         </div>
-        <div class="grid grid-cols-2 gap-6">
-          <div class="space-y-2"><Label>Téléphone</Label><Input v-model="formData.telephone" class="rounded-xl" /></div>
-          <div class="space-y-2"><Label>Type</Label>
-            <select v-model="formData.nature" class="w-full border border-slate-200 rounded-xl h-10 px-3 text-sm font-bold bg-white">
+        <div class="grid grid-cols-2 gap-4">
+          <div class="space-y-1.5"><Label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Téléphone</Label><Input v-model="formData.telephone" class="h-11 rounded-lg border-slate-200" /></div>
+          <div class="space-y-1.5"><Label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Nature</Label>
+            <select v-model="formData.nature" class="w-full border border-slate-200 rounded-lg h-11 px-3 text-sm font-bold bg-white outline-none">
               <option value="P">Poste</option><option value="C">Client</option><option value="A">Adhérent</option>
             </select>
           </div>
         </div>
       </div>
-      <DialogFooter class="p-10 bg-slate-50/50 border-t border-slate-100"><Button @click="handleSave" class="rounded-xl bg-slate-900 px-8">Enregistrer</Button></DialogFooter>
+      <DialogFooter class="p-8 bg-slate-50/50 border-t border-slate-100">
+        <Button @click="handleSave" :disabled="processing" class="w-full h-11 rounded-lg bg-slate-900 font-bold shadow-lg">
+          <span v-if="processing" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></span>
+          Enregistrer
+        </Button>
+      </DialogFooter>
     </DialogContent>
   </Dialog>
 
-  <Dialog v-model:open="isConfirmSyncOpen">
-    <DialogContent class="sm:max-w-[400px] rounded-[2rem] p-10 font-['Outfit'] border-none">
-      <div class="text-center space-y-6">
-        <RefreshCcw class="w-12 h-12 text-orange-600 mx-auto" />
-        <DialogTitle class="text-2xl font-black">Synchroniser ?</DialogTitle>
-        <DialogDescription class="text-slate-500 font-medium">Cette action mettra à jour les informations de l'utilisateur avec Keycloak.</DialogDescription>
-        <div class="flex gap-4 pt-4">
-          <Button variant="ghost" class="flex-1" @click="isConfirmSyncOpen = false">Non</Button>
-          <Button class="flex-1 bg-orange-600 shadow-xl" @click="handleSync">Oui</Button>
+  <!-- Roles Dialog -->
+  <Dialog v-model:open="dialogs.roles">
+    <DialogContent class="sm:max-w-[480px] rounded-[2rem] shadow-2xl p-0 overflow-hidden border-none font-['Outfit']">
+      <DialogHeader class="p-8 bg-slate-900 text-white">
+        <DialogTitle class="text-xl font-black tracking-tight">Permissions Keycloak</DialogTitle>
+        <DialogDescription class="text-slate-400 text-xs">Assignez des rôles pour {{ activeUser?.nom }}.</DialogDescription>
+      </DialogHeader>
+      <div class="p-8 max-h-[350px] overflow-y-auto">
+        <div class="grid gap-2">
+          <button v-for="role in allRoles" :key="role.id"
+            @click="selectedRoles.includes(role.name) ? selectedRoles = selectedRoles.filter(r => r !== role.name) : selectedRoles.push(role.name)"
+            class="flex items-center justify-between p-4 rounded-xl border transition-all text-left"
+            :class="selectedRoles.includes(role.name) ? 'bg-slate-900 border-slate-900 text-white shadow-md' : 'bg-slate-50 border-slate-100 text-slate-600 hover:bg-slate-100'">
+            <span class="text-xs font-black uppercase tracking-widest">{{ role.name }}</span>
+            <Check v-if="selectedRoles.includes(role.name)" class="w-4 h-4" />
+          </button>
         </div>
       </div>
-    </DialogContent>
-  </Dialog>
-
-  <Dialog v-model:open="isConfirmDeleteOpen">
-    <DialogContent class="sm:max-w-[400px] rounded-[2rem] p-10 font-['Outfit'] border-none">
-      <div class="text-center space-y-6">
-        <Trash2 class="w-12 h-12 text-red-600 mx-auto" />
-        <DialogTitle class="text-2xl font-black">Supprimer ?</DialogTitle>
-        <DialogDescription class="text-slate-500 font-medium">Êtes-vous sûr de vouloir supprimer ce compte ? Cette action est irréversible.</DialogDescription>
-        <div class="flex gap-4 pt-4">
-          <Button variant="ghost" class="flex-1" @click="isConfirmDeleteOpen = false">Annuler</Button>
-          <Button variant="destructive" class="flex-1 shadow-xl" @click="handleDelete">Supprimer</Button>
+      <DialogFooter class="p-8 bg-slate-50/50 border-t border-slate-100">
+        <div class="flex gap-3 w-full">
+          <Button variant="ghost" class="flex-1 rounded-lg font-bold" @click="dialogs.roles = false">Fermer</Button>
+          <Button @click="handleSaveRoles" :disabled="processing" class="flex-1 rounded-lg bg-slate-900 font-bold shadow-lg">
+            <span v-if="processing" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></span>
+            Mettre à jour
+          </Button>
         </div>
-      </div>
+      </DialogFooter>
     </DialogContent>
   </Dialog>
 </template>

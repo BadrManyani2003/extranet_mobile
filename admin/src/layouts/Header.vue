@@ -3,9 +3,10 @@ import { Menu, X, User, Languages, LogOut } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { useI18n } from 'vue-i18n'
 import keycloak from '@/services/keycloak'
-import { computed } from 'vue'
+import { useUserStore } from '@/store/user'
 
 const { locale } = useI18n()
+const userStore = useUserStore()
 
 defineProps<{
   isSidebarOpen: boolean
@@ -17,11 +18,8 @@ const toggleLanguage = () => {
   locale.value = locale.value === 'fr' ? 'en' : 'fr'
 }
 
-const userName = computed(() => {
-  return (keycloak.tokenParsed as any)?.name || (keycloak.tokenParsed as any)?.preferred_username || 'Administrateur'
-})
-
 const handleLogout = () => {
+  userStore.clearUser()
   keycloak.logout()
 }
 </script>
@@ -49,7 +47,7 @@ const handleLogout = () => {
 
       <div class="flex items-center gap-3">
         <div class="flex items-center gap-3 bg-slate-50 px-4 py-2 rounded-xl border border-slate-100 shadow-sm">
-          <span class="hidden sm:inline text-sm font-bold text-slate-700">{{ userName }}</span>
+          <span class="hidden sm:inline text-sm font-bold text-slate-700">{{ userStore.userName }}</span>
           <div class="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center shadow-md shadow-slate-200">
             <User class="w-4 h-4" />
           </div>

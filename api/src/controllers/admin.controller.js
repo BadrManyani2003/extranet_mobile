@@ -101,6 +101,22 @@ const linkUserToAdherent = async (req, res) => {
     } catch (e) { error(res, e.message); }
 };
 
+const getAvailableRoles = async (req, res) => {
+    try {
+        const result = await adminService.getAvailableRoles();
+        success(res, result);
+    } catch (e) { error(res, e.message); }
+};
+
+const updateUserRoles = async (req, res) => {
+    try {
+        const { userId, source, token } = getContext(req);
+        const { targetUserId, authId, roles } = req.body;
+        await adminService.updateUserRoles(userId, token, source, targetUserId, authId, roles);
+        success(res, { success: true });
+    } catch (e) { error(res, e.message); }
+};
+
 module.exports = {
     getUsers,
     saveUser,
@@ -111,5 +127,7 @@ module.exports = {
     createUserFromAdherent,
     syncKeycloak,
     linkUserToClient,
-    linkUserToAdherent
+    linkUserToAdherent,
+    getAvailableRoles,
+    updateUserRoles
 };

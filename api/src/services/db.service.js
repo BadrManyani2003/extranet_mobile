@@ -4,16 +4,13 @@ const dbConfig = require('../config/database');
 let poolPromise = null;
 
 const getPool = async () => {
-    try {
-        if (!poolPromise) {
-            poolPromise = sql.connect(dbConfig.sqlConfig);
-        }
-        return await poolPromise;
-    } catch (error) {
-        console.error('❌ Database Connection Error:', error);
-        poolPromise = null;
-        throw error;
+    if (!poolPromise) {
+        poolPromise = sql.connect(dbConfig.sqlConfig).catch(err => {
+            poolPromise = null;
+            throw err;
+        });
     }
+    return poolPromise;
 };
 
 /**
@@ -23,20 +20,11 @@ const getPool = async () => {
  * @returns {Promise<any[]>} - The first recordset
  */
 const execute = async (query, params = []) => {
-    try {
-        const pool = await getPool();
-        const request = pool.request();
-        
-        params.forEach((val, idx) => {
-            request.input(`${idx}`, val);
-        });
-
-        const result = await request.query(query);
-        return result.recordsets;
-    } catch (error) {
-        console.error(`❌ Query Execution Error: ${query}`, error);
-        throw error;
-    }
+    const pool    = await getPool();
+    const request = pool.request();
+    params.forEach((val, idx) => request.input(`${idx}`, val));
+    const result = await request.query(query);
+    return result.recordsets;
 };
 
 module.exports = {

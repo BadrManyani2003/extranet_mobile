@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   Alert,
   StyleSheet,
+  Platform,
 } from 'react-native';
 import { useTheme } from '@shopify/restyle';
 import { Ionicons as Icon } from '@expo/vector-icons';
@@ -47,7 +48,10 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const reclamationsCall = useApiCall<any[]>();
   
   const userRoles = user?.roles || [];
-  const hasClientRole = userRoles.some(r => r.toLowerCase() === 'client' || r.toLowerCase() === 'admincab' || r.toLowerCase() === 'comercialcab');
+  const canSeePolices = userRoles.some(r => {
+    const role = r.toLowerCase();
+    return role === 'client' || role === 'admincab' || role === 'comercialcab' || role === 'adherent';
+  });
 
   const loadAll = useCallback(async () => {
     await Promise.allSettled([
@@ -59,10 +63,16 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   }, []);
 
   const handleLogout = () => {
-    Alert.alert(t('Déconnexion'), t('Confirmer déco'), [
-      { text: t('Annuler'), style: 'cancel' },
-      { text: t('Se déconnecter'), style: 'destructive', onPress: logout },
-    ]);
+    if (Platform.OS === 'web') {
+      if (window.confirm(t('Confirmer déco'))) {
+        logout();
+      }
+    } else {
+      Alert.alert(t('Déconnexion'), t('Confirmer déco'), [
+        { text: t('Annuler'), style: 'cancel' },
+        { text: t('Se déconnecter'), style: 'destructive', onPress: logout },
+      ]);
+    }
   };
 
   useEffect(() => { loadAll(); }, [loadAll]);
@@ -108,7 +118,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         )}
 
         <Box paddingHorizontal="l" style={{ gap: theme.spacing.m }}>
-          {hasClientRole && (
+          {canSeePolices && (
             <SummaryCard 
               title={t('Mes Contrats')} 
               subtitle={t("Consultation de vos polices")}
