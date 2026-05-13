@@ -6,6 +6,10 @@ const realm = process.env.KEYCLOAK_REALM;
 const clientId = process.env.KEYCLOAK_CLIENT_ID;
 const clientSecret = process.env.KEYCLOAK_CLIENT_SECRET;
 
+if (!authServerUrl || !realm || !clientId || !clientSecret) {
+    console.error('❌ Keycloak configuration missing in .env');
+}
+
 let cachedToken = null;
 let tokenExpiry = 0;
 

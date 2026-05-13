@@ -8,12 +8,12 @@ const isMenuOpen = ref(false)
 const toggleMenu = () => { isMenuOpen.value = !isMenuOpen.value }
 
 const navItems = [
-  { section: 'ADMINISTRATION' },
-  { nom: 'Utilisateurs', chemin: '/users', icone: Users },
-  { nom: 'Clients', chemin: '/clients', icone: Building2 },
-  { nom: 'Adhérents', chemin: '/adherents', icone: UserCircle },
-  { section: 'SUPPORT' },
-  { nom: 'Réclamations', chemin: '/reclamations', icone: LifeBuoy },
+  { section: 'navigation.sections.admin' },
+  { nom: 'navigation.users', chemin: '/users', icone: Users },
+  { nom: 'navigation.clients', chemin: '/clients', icone: Building2 },
+  { nom: 'navigation.adherents', chemin: '/adherents', icone: UserCircle },
+  { section: 'navigation.sections.support' },
+  { nom: 'navigation.reclamations', chemin: '/reclamations', icone: LifeBuoy },
 ]
 </script>
 

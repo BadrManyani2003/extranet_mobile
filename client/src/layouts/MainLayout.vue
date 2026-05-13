@@ -34,7 +34,7 @@ onMounted(async () => {
 })
 
 const navItems = [
-  { section: 'CLIENT' },
+  { section: 'navigation.client' },
   { nom: 'navigation.policies', chemin: '/contrats', icone: Shield },
   { nom: 'navigation.global_statement', chemin: '/releve-global', icone: FileText },
   { nom: 'navigation.dashboard', chemin: '/statistiques', icone: BarChart3 },

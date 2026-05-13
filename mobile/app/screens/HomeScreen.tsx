@@ -9,7 +9,7 @@ import { useAuth } from '../context/AuthContext';
 import { dataAPI } from '../api';
 import { cacheService } from '../services/cacheService';
 import { Ionicons as Icon } from '@expo/vector-icons';
-import { Theme } from '../theme/theme';
+import { Theme, shadows } from '../theme/theme';
 import { useTheme } from '@shopify/restyle';
 
 const { width } = Dimensions.get('window');
@@ -26,6 +26,7 @@ const HomeScreen: React.FC = () => {
   const roles = user?.roles?.map(r => r.toUpperCase()) || [];
   const isAdherent = roles.includes('ADHERENT');
   const isClient = roles.includes('CLIENT');
+  const isExpert = roles.includes('EXPERT');
 
   const fetchStats = async (useCache = true) => {
     try {
@@ -105,12 +106,12 @@ const HomeScreen: React.FC = () => {
         {/* Quick Stats Grid */}
         <Box marginTop="xxxl" paddingHorizontal="m" style={{ marginTop: -40 }}>
           <Box gap="m">
-            {isClient && (
+            {(isClient || isExpert) && (
               <>
                 <TouchableOpacity activeOpacity={0.9} onPress={() => navigation.navigate('Contrats')}>
                   <SummaryCard 
-                    title="Mes Contrats" 
-                    subtitle="Gestion des polices" 
+                    title={isExpert ? "Gestion Polices" : "Mes Contrats"} 
+                    subtitle={isExpert ? "Toutes les polices" : "Gestion des polices"} 
                     icon="shield-checkmark" 
                     amount={getVal(['totalPolices'])} 
                     amountLabel="Actifs" 
@@ -119,8 +120,8 @@ const HomeScreen: React.FC = () => {
                 </TouchableOpacity>
                 <TouchableOpacity activeOpacity={0.9} onPress={() => navigation.navigate('Quittances')}>
                   <SummaryCard 
-                    title="Mes Factures" 
-                    subtitle="Suivi des paiements" 
+                    title={isExpert ? "Gestion Impayés" : "Mes Factures"} 
+                    subtitle={isExpert ? "Balance globale" : "Suivi des paiements"} 
                     icon="receipt" 
                     amount={getVal(['totalImpayes'])} 
                     amountLabel="Total Impayés (DH)" 
@@ -130,11 +131,11 @@ const HomeScreen: React.FC = () => {
               </>
             )}
 
-            {isAdherent && (
+            {(isAdherent || isExpert) && (
               <TouchableOpacity activeOpacity={0.9} onPress={() => navigation.navigate('Sinistres')}>
                 <SummaryCard 
-                  title="Mes Sinistres" 
-                  subtitle="Dossiers en cours" 
+                  title={isExpert ? "Gestion Sinistres" : "Mes Sinistres"} 
+                  subtitle={isExpert ? "Dossiers à traiter" : "Dossiers en cours"} 
                   icon="alert-circle" 
                   amount={getVal(['sinistresEnCours'])} 
                   amountLabel="En cours" 
@@ -149,7 +150,7 @@ const HomeScreen: React.FC = () => {
         <Box paddingHorizontal="m" marginTop="xl">
            <Text variant="premiumLabel" marginBottom="m" marginLeft="s">Actions Rapides</Text>
            <Box flexDirection="row" flexWrap="wrap" gap="m">
-              {isClient && (
+              {(isClient || isExpert) && (
                 <>
                   <TouchableOpacity 
                     onPress={() => navigation.navigate('Contrats')}
@@ -168,7 +169,7 @@ const HomeScreen: React.FC = () => {
                 </>
               )}
               
-              {(isClient || isAdherent) && (
+              {(isClient || isAdherent || isExpert) && (
                 <TouchableOpacity 
                   onPress={() => navigation.navigate('Sinistres')}
                   style={styles.quickAction}
@@ -178,23 +179,15 @@ const HomeScreen: React.FC = () => {
                 </TouchableOpacity>
               )}
 
-              {(isClient || isAdherent) && (
+              {(isClient || isAdherent || isExpert) && (
                 <TouchableOpacity 
-                  onPress={() => navigation.navigate('PersACharge')}
+                  onPress={() => navigation.navigate('Reclamations')}
                   style={styles.quickAction}
                 >
-                   <Icon name="people-outline" size={24} color={theme.colors.primary} />
-                   <Text variant="bodySmall" marginTop="s" fontWeight="700" textAlign="center">Famille</Text>
+                   <Icon name="chatbubbles-outline" size={24} color={theme.colors.primary} />
+                   <Text variant="bodySmall" marginTop="s" fontWeight="700">Support</Text>
                 </TouchableOpacity>
               )}
-
-              <TouchableOpacity 
-                onPress={() => navigation.navigate('Reclamations')}
-                style={styles.quickAction}
-              >
-                 <Icon name="chatbubbles-outline" size={24} color={theme.colors.primary} />
-                 <Text variant="bodySmall" marginTop="s" fontWeight="700">Support</Text>
-              </TouchableOpacity>
            </Box>
         </Box>
       </ScrollView>
@@ -210,11 +203,7 @@ const styles = StyleSheet.create({
     borderRadius: 20, 
     alignItems: 'center',
     justifyContent: 'center',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
+    ...shadows.small,
     marginBottom: 8,
   }
 });

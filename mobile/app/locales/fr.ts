@@ -110,5 +110,14 @@ export default {
     "restricted_title": "Accès refusé",
     "restricted_description": "Accès restreint",
     "restricted_logout": "Quitter",
-    "restricted_back": "Retour"
+    "restricted_back": "Retour",
+    "Expert": "Expert Métier",
+    "Gestion Polices": "Gestion Polices",
+    "Toutes les polices": "Liste des contrats",
+    "Gestion Impayés": "Gestion Impayés",
+    "Balance globale": "Balance clients",
+    "Gestion Sinistres": "Gestion Sinistres",
+    "Dossiers à traiter": "Dossiers ouverts",
+    "Actions Rapides": "Actions Rapides",
+    "Espace Expert": "Espace Expert"
 };

@@ -24,13 +24,15 @@ const ProfileScreen: React.FC = () => {
     } else {
       Alert.alert(t('Déconnexion'), t('Confirmer déco'), [
         { text: t('Annuler'), style: 'cancel' },
-        { text: t('Se déconnecter'), style: 'destructive', onPress: logout },
+        { text: t('Se déconnecter'), style: 'destructive', onPress: () => logout() },
       ]);
     }
   };
 
   const roles = user?.roles?.map(r => r.toUpperCase()) || [];
   const isAdherent = roles.includes('ADHERENT');
+  const isClient = roles.includes('CLIENT');
+  const isExpert = roles.includes('EXPERT');
 
   return (
     <Box flex={1} backgroundColor="background">
@@ -61,7 +63,13 @@ const ProfileScreen: React.FC = () => {
              </Text>
           </Box>
           <Text variant="subheader" color="white">{user?.nom}</Text>
-          <Text variant="bodySmall" color="white" style={{ opacity: 0.7 }}>{user?.email}</Text>
+          <Box flexDirection="row" alignItems="center" marginTop="s" backgroundColor="white" paddingHorizontal="m" paddingVertical="xxs" borderRadius="round">
+             <Box width={8} height={8} borderRadius="round" backgroundColor={isExpert ? "success" : "accent"} marginRight="xs" />
+             <Text variant="caption" color="primary" fontWeight="900" style={{ textTransform: 'uppercase', letterSpacing: 1 }}>
+                {t((user?.role || 'Utilisateur') as any)}
+             </Text>
+          </Box>
+          <Text variant="bodySmall" color="white" style={{ opacity: 0.7 }} marginTop="s">{user?.email}</Text>
         </Box>
 
         <Box paddingHorizontal="m">
@@ -85,6 +93,24 @@ const ProfileScreen: React.FC = () => {
                       <Icon name="people-circle-outline" size={20} color={theme.colors.primary} />
                    </Box>
                    <Text variant="bodyMedium">Personnes à charge</Text>
+                </Box>
+                <Icon name="chevron-forward" size={20} color={theme.colors.textTertiary} />
+              </TouchableOpacity>
+            </Section>
+          )}
+
+          {/* Expert Specific Section */}
+          {isExpert && (
+            <Section title="Espace Expert" icon="briefcase-outline">
+              <TouchableOpacity 
+                activeOpacity={0.7} 
+                style={{ padding: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
+              >
+                <Box flexDirection="row" alignItems="center">
+                   <Box width={36} height={36} borderRadius="m" backgroundColor="successBg" alignItems="center" justifyContent="center" marginRight="m">
+                      <Icon name="analytics-outline" size={20} color={theme.colors.success} />
+                   </Box>
+                   <Text variant="bodyMedium">Rapports d'expertise</Text>
                 </Box>
                 <Icon name="chevron-forward" size={20} color={theme.colors.textTertiary} />
               </TouchableOpacity>

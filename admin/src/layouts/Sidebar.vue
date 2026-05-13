@@ -54,7 +54,7 @@ const handleLogout = () => {
       <template v-for="element in navItems" :key="element.chemin || element.section">
         <div v-if="element.section" class="px-4 py-3 mt-4 mb-1">
           <span v-if="isSidebarOpen" class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] animate-in fade-in duration-500">
-            {{ element.section }}
+            {{ element.section.includes('.') ? $t(element.section) : element.section }}
           </span>
           <div v-else class="h-px bg-slate-100 w-full"></div>
         </div>
@@ -77,7 +77,7 @@ const handleLogout = () => {
         class="w-full justify-start gap-3 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-xl px-4 py-6 font-bold transition-all group overflow-hidden">
         <LogOut class="w-5 h-5 shrink-0 transition-transform group-hover:-translate-x-1" />
         <span v-if="isSidebarOpen" class="whitespace-nowrap animate-in fade-in slide-in-from-left-2 duration-300">
-          {{ $t('commun.logout') || 'Se déconnecter' }}
+          {{ $t('commun.logout') }}
         </span>
       </Button>
     </div>

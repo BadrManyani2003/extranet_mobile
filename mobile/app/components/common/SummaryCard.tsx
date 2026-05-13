@@ -3,7 +3,7 @@ import { Platform } from 'react-native';
 import { useTheme } from '@shopify/restyle';
 import { Ionicons as Icon } from '@expo/vector-icons';
 import { Box, Text } from '../../theme/restyle';
-import { Theme } from '../../theme/theme';
+import { Theme, shadows } from '../../theme/theme';
 import { rsp } from '../../utils/responsive';
 
 interface SummaryCardProps {
@@ -39,13 +39,7 @@ const SummaryCard: React.FC<SummaryCardProps> = ({
       padding="l" 
       borderRadius="xl" 
       backgroundColor="cardBackground" 
-      borderWidth={1}
-      borderColor="borderLight"
-      style={Platform.select({ 
-        ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.05, shadowRadius: 20 }, 
-        android: { elevation: 4 },
-        web: { boxShadow: '0 10px 25px rgba(0,0,0,0.05)' }
-      })}
+      style={shadows.medium}
     >
        <Box flexDirection="row" justifyContent="space-between" alignItems="flex-start" marginBottom="l">
           <Box flex={1}>
@@ -82,8 +76,8 @@ const SummaryCard: React.FC<SummaryCardProps> = ({
               {amountLabel}
             </Text>
           </Box>
-          <Box backgroundColor="primaryBg" paddingHorizontal="s" paddingVertical="xxs" borderRadius="round">
-             <Icon name="arrow-forward" size={16} color={theme.colors.primary} />
+          <Box backgroundColor="primary" width={32} height={32} borderRadius="m" alignItems="center" justifyContent="center" style={shadows.small}>
+             <Icon name="chevron-forward" size={18} color="white" />
           </Box>
        </Box>
     </Box>

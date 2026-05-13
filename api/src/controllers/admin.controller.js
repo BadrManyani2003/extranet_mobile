@@ -73,6 +73,13 @@ const linkUserToClient = asyncHandler(async (req, res) => {
     success(res, null, 'Liaison réussie');
 });
 
+const unlinkUserFromClient = asyncHandler(async (req, res) => {
+    const { userId, source, token } = getContext(req);
+    const { targetUserId, clientId } = req.body;
+    await adminService.unlinkUserFromClient(userId, token, source, targetUserId, clientId);
+    success(res, null, 'Liaison supprimée');
+});
+
 const linkUserToAdherent = asyncHandler(async (req, res) => {
     const { userId, source, token } = getContext(req);
     const { targetUserId, adherentId } = req.body;
@@ -102,6 +109,7 @@ module.exports = {
     createUserFromAdherent,
     syncKeycloak,
     linkUserToClient,
+    unlinkUserFromClient,
     linkUserToAdherent,
     getAvailableRoles,
     updateUserRoles

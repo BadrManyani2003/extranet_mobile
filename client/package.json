@@ -1,7 +1,8 @@
 {
-  "name": "frontend-v2",
+  "name": "extranet-client-v2",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "Client-facing extranet portal for IBS",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -36,7 +37,7 @@
     "tailwindcss": "^3.4.19",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "~6.0.2",
-    "vite": "^8.0.10",
+    "vite": "^6.2.0",
     "vite-plugin-compression": "^0.5.1",
     "vue-tsc": "^3.2.7"
   }

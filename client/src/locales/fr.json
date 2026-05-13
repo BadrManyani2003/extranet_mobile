@@ -1,5 +1,6 @@
 {
   "navigation": {
+    "client": "Espace Client",
     "dashboard": "Tableau",
     "policies": "Polices",
     "global_statement": "Relevé Global",
@@ -35,7 +36,7 @@
     "prime_annuelle": "Prime",
     "impayes": "Impayés",
     "sinistres": "Sinistres",
-    "sinistres_encours": "En cours",
+    "sinistres_encours": "Sinistres en cours",
     "risques": "Garanties",
     "statut": "Statut",
     "branche": "Branche",
@@ -128,9 +129,10 @@
     "subject": "Sujet",
     "subject_placeholder": "Objet...",
     "nature": "Nature",
-    "nature_r": "Réclamation",
-    "nature_d": "Information",
     "nature_s": "Sinistre",
+    "nature_c": "Comptabilité",
+    "nature_i": "Information",
+    "nature_d": "Correction",
     "message": "Message",
     "message_placeholder": "Détails...",
     "send": "Envoyer",
@@ -144,7 +146,7 @@
     "empty_desc": "Aucune demande.",
     "messages_count": "messages",
     "status_updated": "Mis à jour !",
-    "message_deleted": "Supprimé !",
+    "message_deleted": "Voulez-vous vraiment supprimer ce message ?",
     "closed_notice": "Ticket clôturé.",
     "closed_error": "Action impossible.",
     "close_ticket": "Clôturer",
@@ -158,7 +160,14 @@
     "logout": "Déconnexion",
     "close": "Fermer",
     "actions": "Actions",
-    "print": "Imprimer"
+    "print": "Imprimer",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "confirm": "Confirmer",
+    "sync": "Synchroniser",
+    "link": "Lier",
+    "unlink": "Délier"
   },
   "statuts": {
     "actif": "Actif",
@@ -174,9 +183,7 @@
     "en_attente": "Attente"
   },
   "restricted": {
-    "title": "Accès refusé",
-    "description": "Accès restreint.",
-    "logout": "Déconnexion",
-    "back": "Retour"
+    "title": "Accès restreint à cet espace",
+    "logout": "Déconnexion"
   }
 }

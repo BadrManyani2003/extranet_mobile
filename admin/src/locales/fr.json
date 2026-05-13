@@ -1,153 +1,114 @@
 {
   "navigation": {
-    "dashboard": "Tableau",
-    "policies": "Contrats",
-    "unpaid": "Impayés",
-    "reclamation": "Réclamations"
+    "dashboard": "Tableau de bord",
+    "users": "Utilisateurs",
+    "clients": "Clients",
+    "adherents": "Adhérents",
+    "reclamations": "Réclamations",
+    "sections": {
+      "admin": "ADMINISTRATION",
+      "support": "SUPPORT & AIDE"
+    }
   },
-  "tableau_bord": {
-    "title": "Tableau",
-    "subtitle": "Vue globale.",
-    "expert_analysis": "Analyse",
-    "monthly": "Mensuel",
-    "annually": "Annuel",
-    "premium_evolution": "Primes",
-    "premium_desc": "Suivi financier.",
-    "coverage_distribution": "Garanties",
-    "coverage_desc": "Couvertures.",
-    "claims_status": "Sinistres",
-    "claims_desc": "Historique.",
-    "total_policies": "Contrats",
-    "last_update": "Mis à jour",
-    "pending_claims": "En cours",
-    "total_unpaid": "Total impayés"
+  "users": {
+    "title": "Gestion des Utilisateurs",
+    "subtitle": "Administrez les comptes et les permissions d'accès.",
+    "add_button": "Nouvel Utilisateur",
+    "search_placeholder": "Rechercher un utilisateur...",
+    "table": {
+      "name": "Nom complet",
+      "email": "Email",
+      "nature": "Nature",
+      "status": "Statut",
+      "actions": "Actions"
+    },
+    "form": {
+      "add_title": "Nouveau Utilisateur",
+      "edit_title": "Modifier Utilisateur",
+      "full_name": "Nom complet",
+      "email": "Email",
+      "phone": "Téléphone",
+      "nature": "Nature",
+      "authorizations": "Autorisations",
+      "extranet_access": "Accès Extranet Web",
+      "mobile_access": "Accès Application Mobile",
+      "save": "Enregistrer les modifications"
+    },
+    "natures": {
+      "cabinet": "Cabinet",
+      "client": "Client",
+      "expert": "Expert",
+      "poste": "Poste (Interne)"
+    },
+    "sync_desc": "Lier ce compte pour activer les accès aux services.",
+    "permissions": "Permissions d'accès",
+    "assign_roles": "Assignez des rôles pour",
+    "delete_desc": "Cette action est définitive et supprimera l'utilisateur de la base."
   },
-  "contrats": {
-    "title": "Contrats",
-    "subtitle": "Gestion.",
-    "search_placeholder": "Recherche",
-    "prime_annuelle": "Prime",
-    "impayes": "Impayés",
-    "sinistres": "Sinistres",
-    "sinistres_encours": "En cours",
-    "risques": "Garanties",
-    "statut": "Statut",
-    "branche": "Branche",
-    "echeance": "Échéance",
-    "detail_button": "Détails",
-    "support_button": "Aide",
-    "num": "Police"
+  "clients": {
+    "title": "Portefeuille Clients",
+    "subtitle": "Gestion des comptes entreprises et particuliers.",
+    "search_placeholder": "Rechercher un client...",
+    "table": {
+      "name": "Raison Sociale",
+      "type": "Type",
+      "parent": "Client Parent",
+      "linked_users": "Utilisateurs liés",
+      "actions": "Actions"
+    },
+    "type": {
+      "individual": "Particulier",
+      "company": "Entreprise"
+    }
   },
-  "risques": {
-    "title": "Garanties",
-    "subtitle": "Liste.",
-    "search": "Recherche",
-    "vehicle": "Véhicule",
-    "adherent": "Adhérent",
-    "chantier": "Chantier",
-    "engin": "Engin",
-    "registration": "Immat.",
-    "circulation_date": "Mise en circ.",
-    "guarantees": "Garanties",
-    "beneficiaries": "Bénéficiaires",
-    "capital": "Capital",
-    "deductible": "Franchise",
-    "brand": "Marque",
-    "insured_name": "Assuré",
-    "membership_num": "Adhésion",
-    "project": "Projet",
-    "id": "ID",
-    "type": "Type",
-    "designation": "Désignation",
-    "guarantee": "Garantie",
-    "name": "Nom",
-    "relationship": "Lien",
-    "birth_date": "Naissance",
-    "no_details": "Aucun détail."
-  },
-  "sinistres": {
-    "title": "Sinistres",
-    "desc_all": "Historique.",
-    "desc_ongoing": "Actifs.",
-    "search": "Recherche",
-    "declared_on": "Déclaré",
-    "object": "Objet",
-    "status_title": "Statut",
-    "identified_risk": "Risque",
-    "financial_title": "Bilan",
-    "damages": "Dommages",
-    "costs": "Frais",
-    "reimbursed": "Réglé",
-    "expert_notes": "Notes",
-    "no_obs": "Aucune note.",
-    "marque": "Marque",
-    "matricule": "Matricule",
-    "franchise": "Franchise",
-    "indemnite": "Indemnité",
-    "nom": "Nom",
-    "empty": "Aucun."
-  },
-  "quittances": {
-    "title_prime": "Quittances",
-    "desc_prime": "Historique.",
-    "title_impayes": "Impayés",
-    "desc_impayes": "Solde.",
-    "search": "Recherche",
-    "num": "Quittance",
-    "from": "Début",
-    "to": "Fin",
-    "total": "Total",
-    "unpaid": "Impayé",
-    "paid_badge": "Réglée",
-    "unpaid_badge": "Impayée",
-    "partial_badge": "Partiel",
-    "empty_unpaid_title": "À jour",
-    "empty_unpaid_desc": "Aucun impayé.",
-    "empty_all": "Aucun."
-  },
-  "vue_impayes": {
-    "title": "Impayés",
-    "subtitle": "Règlements.",
-    "search": "Recherche",
-    "total_unpaid": "Total",
-    "items": "Quittances",
-    "pay_button": "Régler",
-    "notify_button": "Relancer",
-    "empty": "À jour."
-  },
-  "reclamations": {
-    "title": "Support",
-    "subtitle": "Aide.",
-    "placeholder": "Message...",
-    "online": "En ligne"
+  "adherents": {
+    "title": "Gestion des Adhérents",
+    "subtitle": "Administration des accès mobiles pour les assurés.",
+    "search_placeholder": "Rechercher un adhérent...",
+    "table": {
+      "id": "Matricule",
+      "name": "Nom Complet",
+      "linked_user": "Utilisateur lié",
+      "actions": "Actions"
+    },
+    "delete_confirm": "Voulez-vous vraiment supprimer cet accès ?"
   },
   "commun": {
     "search": "Recherche",
     "no_results": "Aucun résultat.",
-    "minutes_ago": "{n} min",
-    "mad": "",
     "logout": "Déconnexion",
     "close": "Fermer",
     "actions": "Actions",
-    "print": "Imprimer"
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "confirm": "Confirmer",
+    "sync": "Synchroniser",
+    "link": "Lier",
+    "link": "Lier",
+    "unlink": "Délier"
+  },
+  "reclamations": {
+    "all_natures": "Toutes les natures",
+    "nature_s": "Sinistres",
+    "nature_c": "Comptabilité",
+    "nature_i": "Demandes d'info",
+    "nature_d": "Correction de donnée",
+    "placeholder": "Rechercher...",
+    "ticket_num": "Ticket",
+    "opened_on": "Ouvert le",
+    "close_ticket": "Clôturer",
+    "closed_error": "Action impossible.",
+    "message_deleted": "Voulez-vous vraiment supprimer ce message ?"
   },
   "statuts": {
-    "actif": "Actif",
-    "résilié": "Résilié",
-    "en_cours": "En cours",
-    "clôturé": "Clôturé",
-    "payée": "Réglée",
-    "impayée": "Impayée",
-    "partiel": "Partiel",
-    "validé": "Validé",
-    "annulé": "Annulé",
-    "refusé": "Refusé",
-    "en_attente": "Attente"
+    "active": "Actif",
+    "inactive": "Inactif",
+    "pending": "En attente",
+    "synced": "Synchronisé"
   },
   "restricted": {
-    "title": "Accès refusé",
-    "description": "Accès restreint.",
-    "logout": "Déconnexion",
-    "back": "Retour"
+    "title": "Accès restreint à cet espace",
+    "logout": "Déconnexion"
   }
 }

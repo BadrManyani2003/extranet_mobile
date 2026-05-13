@@ -1,7 +1,8 @@
 {
-  "name": "admin-extranet-mobile-ibs",
+  "name": "extranet-admin-v2",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "Admin dashboard for IBS Extranet",
   "type": "module",
   "scripts": {
     "dev": "vite",

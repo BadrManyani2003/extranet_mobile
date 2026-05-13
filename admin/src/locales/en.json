@@ -1,153 +1,113 @@
 {
   "navigation": {
     "dashboard": "Dashboard",
-    "policies": "Contracts",
-    "unpaid": "Unpaid",
-    "reclamation": "Claims"
+    "users": "Users",
+    "clients": "Clients",
+    "adherents": "Members",
+    "reclamations": "Support Requests",
+    "sections": {
+      "admin": "ADMINISTRATION",
+      "support": "TICKETS & HELP"
+    }
   },
-  "tableau_bord": {
-    "title": "Dashboard",
-    "subtitle": "Global view.",
-    "expert_analysis": "Analysis",
-    "monthly": "Monthly",
-    "annually": "Annually",
-    "premium_evolution": "Premiums",
-    "premium_desc": "Financial track.",
-    "coverage_distribution": "Coverage",
-    "coverage_desc": "Garanties.",
-    "claims_status": "Claims",
-    "claims_desc": "History.",
-    "total_policies": "Policies",
-    "last_update": "Updated",
-    "pending_claims": "Ongoing",
-    "total_unpaid": "Total unpaid"
+  "users": {
+    "title": "User Management",
+    "subtitle": "Manage accounts and access permissions.",
+    "add_button": "New User",
+    "search_placeholder": "Search for a user...",
+    "table": {
+      "name": "Full Name",
+      "email": "Email",
+      "nature": "Nature",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "form": {
+      "add_title": "New User",
+      "edit_title": "Edit User",
+      "full_name": "Full Name",
+      "email": "Email",
+      "phone": "Phone",
+      "nature": "Nature",
+      "authorizations": "Authorizations",
+      "extranet_access": "Web Extranet Access",
+      "mobile_access": "Mobile App Access",
+      "save": "Save changes"
+    },
+    "natures": {
+      "cabinet": "Cabinet",
+      "client": "Client",
+      "expert": "Expert",
+      "poste": "Internal"
+    },
+    "sync_desc": "Link this account to enable service access.",
+    "permissions": "Access Permissions",
+    "assign_roles": "Assign roles for",
+    "delete_desc": "This action is permanent and will remove the user from the database."
   },
-  "contrats": {
-    "title": "Contracts",
-    "subtitle": "Management.",
-    "search_placeholder": "Search",
-    "prime_annuelle": "Premium",
-    "impayes": "Unpaid",
-    "sinistres": "Claims",
-    "sinistres_encours": "Ongoing",
-    "risques": "Coverage",
-    "statut": "Status",
-    "branche": "Branch",
-    "echeance": "Due date",
-    "detail_button": "Details",
-    "support_button": "Help",
-    "num": "Policy"
+  "clients": {
+    "title": "Client Portfolio",
+    "subtitle": "Manage corporate and individual accounts.",
+    "search_placeholder": "Search for a client...",
+    "table": {
+      "name": "Company Name",
+      "type": "Type",
+      "parent": "Parent Client",
+      "linked_users": "Linked Users",
+      "actions": "Actions"
+    },
+    "type": {
+      "individual": "Individual",
+      "company": "Corporate"
+    }
   },
-  "risques": {
-    "title": "Coverage",
-    "subtitle": "List.",
-    "search": "Search",
-    "vehicle": "Vehicle",
-    "adherent": "Member",
-    "chantier": "Site",
-    "engin": "Machine",
-    "registration": "Plate",
-    "circulation_date": "Circ. date",
-    "guarantees": "Garanties",
-    "beneficiaries": "Dependents",
-    "capital": "Capital",
-    "deductible": "Excess",
-    "brand": "Brand",
-    "insured_name": "Insured",
-    "membership_num": "Member ID",
-    "project": "Project",
-    "id": "ID",
-    "type": "Type",
-    "designation": "Name",
-    "guarantee": "Guarantee",
-    "name": "Name",
-    "relationship": "Relation",
-    "birth_date": "Birth",
-    "no_details": "No details."
-  },
-  "sinistres": {
-    "title": "Claims",
-    "desc_all": "History.",
-    "desc_ongoing": "Active.",
-    "search": "Search",
-    "declared_on": "Reported",
-    "object": "Object",
-    "status_title": "Status",
-    "identified_risk": "Risk",
-    "financial_title": "Finance",
-    "damages": "Damages",
-    "costs": "Costs",
-    "reimbursed": "Settled",
-    "expert_notes": "Notes",
-    "no_obs": "No notes.",
-    "marque": "Brand",
-    "matricule": "ID",
-    "franchise": "Excess",
-    "indemnite": "Indemnity",
-    "nom": "Name",
-    "empty": "None."
-  },
-  "quittances": {
-    "title_prime": "Receipts",
-    "desc_prime": "History.",
-    "title_impayes": "Unpaid",
-    "desc_impayes": "Balance.",
-    "search": "Search",
-    "num": "Receipt",
-    "from": "Start",
-    "to": "End",
-    "total": "Total",
-    "unpaid": "Unpaid",
-    "paid_badge": "Paid",
-    "unpaid_badge": "Unpaid",
-    "partial_badge": "Partial",
-    "empty_unpaid_title": "Up to date",
-    "empty_unpaid_desc": "No unpaid.",
-    "empty_all": "None."
-  },
-  "vue_impayes": {
-    "title": "Unpaid",
-    "subtitle": "Payments.",
-    "search": "Search",
-    "total_unpaid": "Total",
-    "items": "Receipts",
-    "pay_button": "Pay",
-    "notify_button": "Remind",
-    "empty": "Up to date."
-  },
-  "reclamations": {
-    "title": "Support",
-    "subtitle": "Help.",
-    "placeholder": "Message...",
-    "online": "Online"
+  "adherents": {
+    "title": "Member Management",
+    "subtitle": "Administer mobile access for insured members.",
+    "search_placeholder": "Search for a member...",
+    "table": {
+      "id": "ID Number",
+      "name": "Full Name",
+      "linked_user": "Linked User",
+      "actions": "Actions"
+    },
+    "delete_confirm": "Are you sure you want to delete this access?"
   },
   "commun": {
     "search": "Search",
     "no_results": "No results.",
-    "minutes_ago": "{n} min",
-    "mad": "",
     "logout": "Logout",
     "close": "Close",
     "actions": "Actions",
-    "print": "Print"
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "sync": "Sync",
+    "link": "Link",
+    "unlink": "Unlink"
+  },
+  "reclamations": {
+    "all_natures": "All Natures",
+    "nature_s": "Claims",
+    "nature_c": "Accounting",
+    "nature_i": "Info Requests",
+    "nature_d": "Data Correction",
+    "placeholder": "Search...",
+    "ticket_num": "Ticket",
+    "opened_on": "Opened on",
+    "close_ticket": "Close",
+    "closed_error": "Action not allowed.",
+    "message_deleted": "Do you really want to delete this message?"
   },
   "statuts": {
-    "actif": "Active",
-    "résilié": "Canceled",
-    "en_cours": "Ongoing",
-    "clôturé": "Closed",
-    "payée": "Paid",
-    "impayée": "Unpaid",
-    "partiel": "Partial",
-    "validé": "Validated",
-    "annulé": "Canceled",
-    "refusé": "Denied",
-    "en_attente": "Pending"
+    "active": "Active",
+    "inactive": "Inactive",
+    "pending": "Pending",
+    "synced": "Synced"
   },
   "restricted": {
-    "title": "Access denied",
-    "description": "Restricted access.",
-    "logout": "Logout",
-    "back": "Back"
+    "title": "Restricted Access",
+    "logout": "Logout"
   }
 }

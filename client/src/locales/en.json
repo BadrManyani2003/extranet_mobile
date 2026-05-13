@@ -1,9 +1,10 @@
 {
   "navigation": {
+    "client": "Client Portal",
     "dashboard": "Dashboard",
     "policies": "Policies",
-    "global_statement": "Global Statement",
-    "reclamation": "Claims"
+    "global_statement": "Account Summary",
+    "reclamation": "Support & Help"
   },
   "tableau_bord": {
     "title": "Dashboard",
@@ -35,7 +36,7 @@
     "prime_annuelle": "Premium",
     "impayes": "Unpaid",
     "sinistres": "Claims",
-    "sinistres_encours": "Ongoing",
+    "sinistres_encours": "Ongoing Claims",
     "risques": "Garanties",
     "statut": "Status",
     "branche": "Branch",
@@ -122,15 +123,16 @@
     "empty": "No receipts found."
   },
   "reclamations": {
-    "title": "Claims",
+    "title": "Support Tickets",
     "subtitle": "Tracking & Support.",
     "new_request": "Create",
     "subject": "Subject",
     "subject_placeholder": "Object...",
     "nature": "Nature",
-    "nature_r": "Claim",
-    "nature_d": "Info",
     "nature_s": "Claim",
+    "nature_c": "Accounting",
+    "nature_i": "Information",
+    "nature_d": "Correction",
     "message": "Message",
     "message_placeholder": "Details...",
     "send": "Send",
@@ -144,7 +146,7 @@
     "empty_desc": "No requests.",
     "messages_count": "messages",
     "status_updated": "Updated!",
-    "message_deleted": "Deleted!",
+    "message_deleted": "Do you really want to delete this message?",
     "closed_notice": "Ticket closed.",
     "closed_error": "Impossible.",
     "close_ticket": "Close",
@@ -158,7 +160,14 @@
     "logout": "Logout",
     "close": "Close",
     "actions": "Actions",
-    "print": "Print"
+    "print": "Print",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "sync": "Sync",
+    "link": "Link",
+    "unlink": "Unlink"
   },
   "statuts": {
     "actif": "Active",
@@ -174,9 +183,7 @@
     "en_attente": "Pending"
   },
   "restricted": {
-    "title": "Access denied",
-    "description": "Restricted access.",
-    "logout": "Logout",
-    "back": "Back"
+    "title": "Restricted Access",
+    "logout": "Logout"
   }
 }

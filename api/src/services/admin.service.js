@@ -18,6 +18,7 @@ const getAdherents = (userId, source, token, policeId) => db.execute(qry.getAdhe
 const createUserFromAdherent = (userId, token, source, adherentId) => db.execute(qry.createUserFromAdherent, [userId, token, source, adherentId]);
 const syncKeycloak = (userId, token, source, id) => db.execute(qry.syncKeycloak, [userId, token, source, id]);
 const linkUserToClient = (userId, token, source, targetUserId, clientId) => db.execute(qry.linkUserToClient, [userId, token, source, targetUserId, clientId]);
+const unlinkUserFromClient = (userId, token, source, targetUserId, clientId) => db.execute(qry.unlinkUserFromClient, [userId, token, source, targetUserId, clientId]);
 const linkUserToAdherent = (userId, token, source, targetUserId, adherentId) => db.execute(qry.linkUserToAdherent, [userId, token, source, targetUserId, adherentId]);
 
 const getAvailableRoles = () => keycloakService.getAvailableRoles();
@@ -43,6 +44,7 @@ module.exports = {
     createUserFromAdherent,
     syncKeycloak,
     linkUserToClient,
+    unlinkUserFromClient,
     linkUserToAdherent,
     getAvailableRoles,
     updateUserRoles

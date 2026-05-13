@@ -17,6 +17,7 @@ export interface User {
   email: string;
   nom: string;
   prenom: string;
+  telephone?: string;
   role?: string;
   roles?: string[];
 }
@@ -24,10 +25,10 @@ export interface User {
 interface AuthContextType {
   user: User | null;
   token: string | null;
-  source: 'ADHERENT' | 'CLIENT' | null;
+  source: 'ADHERENT' | 'CLIENT' | 'EXPERT' | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  signin: (userData: User, userToken: string, userSource: 'ADHERENT' | 'CLIENT') => Promise<void>;
+  signin: (userData: User, userToken: string, userSource: 'ADHERENT' | 'CLIENT' | 'EXPERT') => Promise<void>;
   logout: (shouldRedirect?: boolean) => Promise<void>;
   login: () => void;
 }
@@ -46,7 +47,7 @@ export const useAuth = (): AuthContextType => {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
-  const [source, setSource] = useState<'ADHERENT' | 'CLIENT' | null>(null);
+  const [source, setSource] = useState<'ADHERENT' | 'CLIENT' | 'EXPERT' | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
 
@@ -60,7 +61,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signin = useCallback(async (
     userData: User,
     userToken: string,
-    userSource: 'ADHERENT' | 'CLIENT'
+    userSource: 'ADHERENT' | 'CLIENT' | 'EXPERT'
   ) => {
     // Stockage du token : SecureStore sur mobile, AsyncStorage sur Web
     if (Platform.OS === 'web') {
@@ -123,7 +124,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         if (savedToken && savedUser) {
           const user = JSON.parse(savedUser);
-          const source = savedSource as 'ADHERENT' | 'CLIENT';
+          const source = savedSource as 'ADHERENT' | 'CLIENT' | 'EXPERT';
 
           setToken(savedToken);
           setUser(user);
@@ -172,13 +173,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
           const isAdherent = roles.some(r => r.toUpperCase() === 'ADHERENT');
           const isClient = roles.some(r => r.toUpperCase() === 'CLIENT');
+          const isExpert = roles.some(r => r.toUpperCase() === 'EXPERT');
 
-          if (!isAdherent && !isClient) {
+          if (!isAdherent && !isClient && !isExpert) {
             alert("Accès non autorisé.");
             return;
           }
 
-          const userSource = isAdherent ? 'ADHERENT' : 'CLIENT';
+          let userSource: 'ADHERENT' | 'CLIENT' | 'EXPERT' = 'ADHERENT';
+          if (isExpert) userSource = 'EXPERT';
+          else if (isClient) userSource = 'CLIENT';
           const userData = {
             id: decoded.sub,
             email: decoded.email || '',
@@ -198,14 +202,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       exchangeCode();
     }
   }, [response, request, signin]);
-
-  // ── Redirection automatique si non authentifié ──────────────
-  // Note: On désactive l'auto-prompt sur Web pour éviter le blocage des popups par le navigateur.
-  useEffect(() => {
-    if (Platform.OS !== 'web' && !isLoading && !token && request && !isAuthenticating && !response) {
-      promptAsync();
-    }
-  }, [isLoading, token, request, isAuthenticating, response, promptAsync]);
 
   // ── Gérer l'événement non autorisé depuis l'API ───────────────
   useEffect(() => {

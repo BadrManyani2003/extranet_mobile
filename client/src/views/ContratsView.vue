@@ -32,18 +32,18 @@ onMounted(fetchContrats)
 </script>
 
 <template>
-  <PageContainer title="Mes Contrats" subtitle="Consultez l'ensemble de vos polices d'assurance.">
+  <PageContainer :title="$t('contrats.title')" :subtitle="$t('contrats.subtitle')">
     <template #actions>
       <div class="relative w-full max-w-xs hidden md:block">
         <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-        <Input v-model="search" placeholder="Rechercher un contrat..." class="pl-10 h-11 rounded-xl bg-white border-none shadow-sm font-bold text-sm" />
+        <Input v-model="search" :placeholder="$t('contrats.search_placeholder')" class="pl-10 h-11 rounded-xl bg-white border-none shadow-sm font-bold text-sm" />
       </div>
     </template>
 
     <div class="space-y-4">
       <div class="md:hidden relative w-full mb-4">
         <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-        <Input v-model="search" placeholder="Rechercher..." class="pl-10 h-11 rounded-xl bg-white border-none shadow-sm font-bold text-sm" />
+        <Input v-model="search" :placeholder="$t('commun.search')" class="pl-10 h-11 rounded-xl bg-white border-none shadow-sm font-bold text-sm" />
       </div>
 
       <LoadingSkeleton v-if="chargementEnCours" :count="4" height="h-24" class="rounded-2xl" />
@@ -58,7 +58,7 @@ onMounted(fetchContrats)
         />
       </Accordion>
 
-      <EmptyState v-else description="Aucun contrat trouvé" class="bg-white rounded-[2rem] border-none shadow-sm" />
+      <EmptyState v-else :description="$t('commun.no_results')" class="bg-white rounded-[2rem] border-none shadow-sm" />
     </div>
   </PageContainer>
 </template>

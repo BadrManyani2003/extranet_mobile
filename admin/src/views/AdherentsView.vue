@@ -48,20 +48,20 @@ onMounted(fetchAdherents)
 
 <template>
   <DataTableWrapper 
-    title="Adhérents" 
-    description="Gestion des accès mobiles pour les adhérents."
+    :title="$t('adherents.title')" 
+    :description="$t('adherents.subtitle')"
     :items="adherents"
     :loading="loading"
-    search-placeholder="Rechercher..."
+    :search-placeholder="$t('adherents.search_placeholder')"
   >
     <template #default="{ items }">
       <Table class="border-t border-slate-100">
         <TableHeader class="bg-slate-50/50">
           <TableRow>
-            <TableHead class="table-header-text py-6">Matricule</TableHead>
-            <TableHead class="table-header-text">Nom Complet</TableHead>
-            <TableHead class="table-header-text">Utilisateur lié</TableHead>
-            <TableHead class="text-right table-header-text">Actions</TableHead>
+            <TableHead class="table-header-text py-6">{{ $t('adherents.table.id') }}</TableHead>
+            <TableHead class="table-header-text">{{ $t('adherents.table.name') }}</TableHead>
+            <TableHead class="table-header-text">{{ $t('adherents.table.linked_user') }}</TableHead>
+            <TableHead class="text-right table-header-text">{{ $t('adherents.table.actions') }}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -69,7 +69,7 @@ onMounted(fetchAdherents)
             <TableCell class="font-bold text-slate-400 py-4">{{ adherent.matricule || 'N/A' }}</TableCell>
             <TableCell>
               <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-slate-900 group-hover:text-white transition-all">
+                <div class="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-slate-900 group-hover:text-white transition-all shadow-sm">
                   <User class="w-5 h-5" />
                 </div>
                 <span class="font-bold text-slate-900 tracking-tight">{{ adherent.nom }}</span>
@@ -80,15 +80,15 @@ onMounted(fetchAdherents)
                 <CheckCircle2 class="w-3.5 h-3.5" />
                 {{ adherent.userNom }}
               </div>
-              <span v-else class="text-slate-300 font-black text-[10px] uppercase tracking-widest italic">Non lié</span>
+              <span v-else class="text-slate-300 font-black text-[10px] uppercase tracking-widest italic">{{ $t('commun.no_results') }}</span>
             </TableCell>
             <TableCell class="text-right">
               <div v-if="!adherent.fkUserId" class="flex justify-end gap-1">
                 <Button variant="ghost" size="sm" class="h-9 gap-2 premium-button text-slate-600 hover:bg-slate-900 hover:text-white" @click="handleCreateUser(adherent.id)">
-                  <UserPlus class="w-4 h-4" /> Créer accès
+                  <UserPlus class="w-4 h-4" /> {{ $t('users.add_button') }}
                 </Button>
                 <Button variant="ghost" size="sm" class="h-9 gap-2 premium-button text-emerald-600 hover:bg-emerald-50" @click="openLinkDialog(adherent.id)">
-                  <Link class="w-4 h-4" /> Lier
+                  <Link class="w-4 h-4" /> {{ $t('commun.link') }}
                 </Button>
               </div>
               <div v-else class="text-emerald-500 pr-4">

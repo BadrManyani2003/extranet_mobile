@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { FileDown } from 'lucide-vue-next'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
@@ -26,9 +27,9 @@ const fetchAllQuittances = async () => {
 const exportToExcel = () => {
   if (!quittances.value.length) return
 
-  // 1. Préparation des en-têtes stylisés
+  const { t } = useI18n()
   const headers = [
-    'Num Quittance', 'Num Police', 'Branche', 'Date Début', 'Date Fin', 'Montant Total', 'Solde'
+    t('quittances.num'), t('contrats.num'), t('contrats.branche'), t('quittances.from'), t('quittances.to'), t('quittances.total'), t('quittances.unpaid')
   ]
 
   const headerStyle = {
@@ -102,7 +103,7 @@ onMounted(() => {
         :disabled="!quittances.length"
       >
         <FileDown class="w-5 h-5 text-slate-900" />
-        Exporter Excel
+        {{ $t('commun.print', 'Exporter') }}
       </Button>
     </template>
 
@@ -111,13 +112,13 @@ onMounted(() => {
         <Table>
           <TableHeader class="bg-slate-50/50">
             <TableRow>
-              <TableHead class="font-black text-slate-900 uppercase tracking-widest text-[10px] py-4 px-6">Quittance</TableHead>
-              <TableHead class="font-black text-slate-900 uppercase tracking-widest text-[10px] py-4">Police</TableHead>
-              <TableHead class="font-black text-slate-900 uppercase tracking-widest text-[10px] py-4">Branche</TableHead>
-              <TableHead class="font-black text-slate-900 uppercase tracking-widest text-[10px] py-4">Du</TableHead>
-              <TableHead class="font-black text-slate-900 uppercase tracking-widest text-[10px] py-4">Au</TableHead>
-              <TableHead class="text-right font-black text-slate-900 uppercase tracking-widest text-[10px] py-4">Prime Total</TableHead>
-              <TableHead class="text-right font-black text-slate-900 uppercase tracking-widest text-[10px] py-4 px-6">Solde</TableHead>
+              <TableHead class="font-black text-slate-900 uppercase tracking-widest text-[10px] py-4 px-6">{{ $t('quittances.num') }}</TableHead>
+              <TableHead class="font-black text-slate-900 uppercase tracking-widest text-[10px] py-4">{{ $t('contrats.num') }}</TableHead>
+              <TableHead class="font-black text-slate-900 uppercase tracking-widest text-[10px] py-4">{{ $t('contrats.branche') }}</TableHead>
+              <TableHead class="font-black text-slate-900 uppercase tracking-widest text-[10px] py-4">{{ $t('quittances.from') }}</TableHead>
+              <TableHead class="font-black text-slate-900 uppercase tracking-widest text-[10px] py-4">{{ $t('quittances.to') }}</TableHead>
+              <TableHead class="text-right font-black text-slate-900 uppercase tracking-widest text-[10px] py-4">{{ $t('quittances.total') }}</TableHead>
+              <TableHead class="text-right font-black text-slate-900 uppercase tracking-widest text-[10px] py-4 px-6">{{ $t('quittances.unpaid') }}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

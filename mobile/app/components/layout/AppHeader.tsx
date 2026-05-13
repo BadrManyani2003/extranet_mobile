@@ -9,7 +9,7 @@ import { useTheme } from '@shopify/restyle';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons as Icon } from '@expo/vector-icons';
 import { Box, Text } from '../../theme/restyle';
-import { Theme } from '../../theme/theme';
+import { Theme, shadows } from '../../theme/theme';
 import { rsp } from '../../utils/responsive';
 import { useThemeContext } from '../../context/ThemeContext';
 
@@ -66,16 +66,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({
       style={{
         paddingTop: insets.top,
         zIndex: 10,
-        ...Platform.select({
-          web: { boxShadow: (hideShadow || isTransparent) ? 'none' : `0 1px 4px ${isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.1)'}` },
-          ios: { 
-            shadowColor: '#000', 
-            shadowOffset: { width: 0, height: 1 }, 
-            shadowOpacity: (hideShadow || isTransparent) ? 0 : 0.05, 
-            shadowRadius: 2 
-          },
-          android: { elevation: (hideShadow || isTransparent) ? 0 : 2 }
-        })
+        ...( (hideShadow || isTransparent) ? {} : shadows.small )
       }}
     >
       <StatusBar 
@@ -118,8 +109,8 @@ const AppHeader: React.FC<AppHeaderProps> = ({
               onPress={onRightIconPress} 
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
-              <Box position="relative" backgroundColor="primaryBg" width={34} height={34} borderRadius="round" alignItems="center" justifyContent="center">
-                <Icon name={rightIconName as any} size={22} color={theme.colors[iconColor]} />
+              <Box position="relative" backgroundColor="primaryBg" width={38} height={38} borderRadius="m" alignItems="center" justifyContent="center">
+                <Icon name={rightIconName as any} size={20} color={theme.colors[iconColor]} />
                 {showNotificationBadge && notificationCount > 0 && (
                   <Box 
                     position="absolute"

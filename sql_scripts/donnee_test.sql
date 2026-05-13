@@ -25,17 +25,17 @@ GO
 SET IDENTITY_INSERT dbo.sysUser ON;
 -- Admins
 INSERT INTO dbo.sysUser (Id, Id_Auth, Nom, Telephone, Email, Nature, Extranet, Mobile, CreatedAt) 
-VALUES (1, '70a1c6e1-824a-4c43-bf8d-d87c9166226c', 'Admin Cabinet', '0600000001', 'admin@ibs.ma', 'A', 'O', 'O', '20260102');
+VALUES (1, 'b192749b-683c-408c-bfbc-876c045c5b4c', 'Admin Cabinet', '0600000001', 'admin@ibs.ma', 'A', 'O', 'O', '20260102');
 INSERT INTO dbo.sysUser (Id, Id_Auth, Nom, Telephone, Email, Nature, Extranet, Mobile, CreatedAt) 
-VALUES (2, 'd7f07349-272f-4700-b8bc-15e0b712ba48', 'Service Client IBS', '0600000002', 'contact@ibs.ma', 'A', 'O', 'O', '20260102');
+VALUES (2, 'cac3ef6f-f910-42c5-874e-3c249deb984d', 'Service Client IBS', '0600000002', 'contact@ibs.ma', 'A', 'O', 'O', '20260102');
 
 -- Clients / Adhérents
 INSERT INTO dbo.sysUser (Id, Id_Auth, Nom, Telephone, Email, Nature, Extranet, Mobile, CreatedAt) 
-VALUES (3, 'c61b5227-2061-462e-a0e4-8e4c51705aa3', 'Sami Alami', '0611111111', 'sami@test.ma', 'C', 'O', 'O', '20260105');
+VALUES (3, 'f823c1e8-46db-43c6-a8a7-f86b506c3fbc', 'Sami Alami', '0611111111', 'sami@test.ma', 'C', 'O', 'O', '20260105');
 INSERT INTO dbo.sysUser (Id, Id_Auth, Nom, Telephone, Email, Nature, Extranet, Mobile, CreatedAt) 
-VALUES (4, '45b0921b-7fdb-45fb-98b9-8f85906300f2', 'Leyla Benjelloun', '0622222222', 'leyla@test.ma', 'C', 'O', 'O', '20260110');
+VALUES (4, '', 'Leyla Benjelloun', '0622222222', 'leyla@test.ma', 'C', 'O', 'O', '20260110');
 INSERT INTO dbo.sysUser (Id, Id_Auth, Nom, Telephone, Email, Nature, Extranet, Mobile, CreatedAt) 
-VALUES (5, '7cd40bdd-6536-416b-a329-88fc90ecd8e6', 'Yassine Mansouri', '0633333333', 'yassine@test.ma', 'C', 'O', 'O', '20260115');
+VALUES (5, '6054d0c2-0f70-4b79-8635-13b8f69e4aa8', 'Yassine Mansouri', '0633333333', 'yassine@test.ma', 'C', 'O', 'O', '20260115');
 SET IDENTITY_INSERT dbo.sysUser OFF;
 
 -- 2. RÔLES

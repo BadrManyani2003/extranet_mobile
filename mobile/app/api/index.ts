@@ -33,7 +33,7 @@ export const reclamationsAPI = {
 
 export const dataAPI = {
   getStats: () => apiRequest<any>('/data/stats', 'GET'),
-  getStatsByPolice: (policeId: number) => apiRequest<any>('/data/stats-by-police', 'GET', { policeId }),
+  getStatsByPolice: (policeId: number) => apiRequest<any>('/data/stats/police', 'GET', { policeId }),
   getRisques: (policeId: number) => apiRequest<any[]>('/data/risques', 'GET', { policeId }),
   getGaranties: (risqueId: number) => apiRequest<any[]>('/data/garanties', 'GET', { risqueId }),
   getDocuments: (policeId: number) => apiRequest<any[]>('/data/documents', 'GET', { policeId }),

@@ -36,6 +36,31 @@ const palette = {
   border:       '#E2E8F0',
   borderLight:  '#F1F5F9',
   
+  shadowColor:  '#000000',
+};
+
+export const shadows = {
+  small: {
+    shadowColor: palette.shadowColor,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  medium: {
+    shadowColor: palette.shadowColor,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    elevation: 5,
+  },
+  premium: {
+    shadowColor: palette.primary,
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.12,
+    shadowRadius: 24,
+    elevation: 8,
+  }
 };
 
 const lightTheme = createTheme({
@@ -69,6 +94,7 @@ const lightTheme = createTheme({
     info: palette.accent,
     infoBg: palette.accentBg,
     
+    accent: palette.accent,
     white: palette.white,
     transparent: 'transparent',
   },
@@ -102,28 +128,29 @@ const lightTheme = createTheme({
     defaults: {
       fontSize: rsp.normalize(15),
       color: 'text',
-      // fontFamily: 'System', // Placeholder for Outfit if needed
     },
     header: {
-      fontSize: rsp.normalize(26),
+      fontSize: rsp.normalize(32),
       fontWeight: '900',
       color: 'primary',
-      letterSpacing: -0.5,
+      letterSpacing: -1,
     },
     subheader: {
       fontSize: rsp.normalize(20),
       fontWeight: '800',
       color: 'primary',
+      letterSpacing: -0.5,
     },
     title: {
       fontSize: rsp.normalize(18),
       fontWeight: '700',
+      color: 'text',
     },
     premiumLabel: {
-      fontSize: rsp.normalize(10),
+      fontSize: rsp.normalize(11),
       fontWeight: '900',
       textTransform: 'uppercase',
-      letterSpacing: 2,
+      letterSpacing: 2.5,
       color: 'textTertiary',
     },
     button: {
@@ -135,25 +162,30 @@ const lightTheme = createTheme({
     },
     body: {
       fontSize: rsp.normalize(15),
-      lineHeight: 22,
+      lineHeight: 24,
+      color: 'textSecondary',
     },
     bodyMedium: {
       fontSize: rsp.normalize(15),
-      fontWeight: '500',
+      fontWeight: '600',
+      color: 'text',
     },
     bodySmall: {
       fontSize: rsp.normalize(13),
       color: 'textSecondary',
+      fontWeight: '500',
     },
     caption: {
       fontSize: rsp.normalize(12),
       color: 'textTertiary',
+      fontWeight: '600',
     },
     labelBold: {
       fontSize: rsp.normalize(12),
-      fontWeight: '800',
+      fontWeight: '900',
       textTransform: 'uppercase',
-      letterSpacing: 1,
+      letterSpacing: 1.2,
+      color: 'primary',
     },
   },
 });

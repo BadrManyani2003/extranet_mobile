@@ -25,6 +25,9 @@ export const AdminService = {
   linkUserToClient: (clientId: number, targetUserId: number) => 
     request<any>('/admin/clients/link-user', { method: 'POST', body: JSON.stringify({ clientId, targetUserId }) }),
 
+  unlinkUserFromClient: (clientId: number, targetUserId: number) => 
+    request<any>('/admin/clients/unlink-user', { method: 'POST', body: JSON.stringify({ clientId, targetUserId }) }),
+
   getAdherents: (filters = {}) => 
     request<any[]>('/admin/adherents', { method: 'POST', body: JSON.stringify(filters) }),
 

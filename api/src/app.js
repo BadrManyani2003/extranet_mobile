@@ -1,4 +1,3 @@
-require('dotenv').config();
 const express     = require('express');
 const cors        = require('cors');
 const helmet      = require('helmet');
@@ -6,11 +5,6 @@ const compression = require('compression');
 const rateLimit   = require('express-rate-limit');
 
 const app = express();
-
-
-
-
-
 
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, 
@@ -52,6 +46,5 @@ app.get('/health', (_, res) => res.json({ status: 'OK', timestamp: new Date() })
 app.use((req, res) => res.status(404).json({ success: false, message: `Route ${req.method} ${req.path} introuvable.` }));
 
 app.use(errorHandler);
-
 
 module.exports = app;

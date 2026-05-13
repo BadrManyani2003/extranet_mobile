@@ -801,19 +801,20 @@ BEGIN
 
     IF @Source = 'A' AND @UserNature = 'A'
     BEGIN
-        SELECT DISTINCT
+        SELECT 
             c.Id AS id,
             c.RaisonSociale AS raisonSociale,
             c.Particulier AS particulier,
             c.Email AS email,
             c.Adresse AS adresse,
             cParent.RaisonSociale AS parentClient,
-            u.Nom AS userNom,
-            x.FK_User_Id AS fkUserId
+            STRING_AGG(u.Nom, ', ') AS userNom,
+            STRING_AGG(CAST(x.FK_User_Id AS VARCHAR), ', ') AS fkUserId
         FROM dbo.Clients c
         LEFT JOIN dbo.Clients cParent ON c.Fk_Client_Id = cParent.Id
         LEFT JOIN UsersXClients x ON x.FK_Client_Id = c.id
         LEFT JOIN dbo.sysUser u ON x.FK_User_Id = u.Id
+        GROUP BY c.Id, c.RaisonSociale, c.Particulier, c.Email, c.Adresse, cParent.RaisonSociale
         ORDER BY c.RaisonSociale;
     END
     ELSE
@@ -1263,14 +1264,38 @@ BEGIN
         RETURN;
     END
 
-    IF EXISTS (SELECT 1 FROM dbo.UsersXClients WHERE FK_Client_Id = @FK_Client_Id)
+    IF EXISTS (SELECT 1 FROM dbo.UsersXClients WHERE FK_Client_Id = @FK_Client_Id AND FK_User_Id = @FK_Target_User_Id)
     BEGIN
-        RAISERROR('Ce client est deja lie a un utilisateur', 16, 1);
+        RAISERROR('Cet utilisateur est déjà lié à ce client', 16, 1);
         RETURN;
     END
 
     INSERT INTO dbo.UsersXClients (FK_User_Id, FK_Client_Id, Actif)
     VALUES (@FK_Target_User_Id, @FK_Client_Id, 'O');
+END
+GO
+
+CREATE OR ALTER PROCEDURE dbo.ps_UnlinkUserFromClient
+    @FK_User_Id     INT,
+    @Token          VARCHAR(MAX),
+    @Source         VARCHAR(50),
+    @FK_Target_User_Id INT,
+    @FK_Client_Id   INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    DECLARE @UserNature CHAR(1);
+    SELECT @UserNature = Nature FROM dbo.sysUser WHERE Id = @FK_User_Id;
+
+    IF NOT (@Source = 'A' AND @UserNature = 'A')
+    BEGIN
+        RAISERROR('Action non autorisée', 16, 1);
+        RETURN;
+    END
+
+    DELETE FROM dbo.UsersXClients 
+    WHERE FK_User_Id = @FK_Target_User_Id AND FK_Client_Id = @FK_Client_Id;
 END
 GO
 

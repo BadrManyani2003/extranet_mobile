@@ -157,7 +157,7 @@ onMounted(() => {
       <div class="p-8 border-b border-slate-100 bg-white space-y-6">
         <div class="flex items-center justify-between">
           <div>
-            <h2 class="text-2xl font-black text-slate-900">Liste Réclamations</h2>
+            <h2 class="text-2xl font-black text-slate-900">{{ $t('navigation.reclamations') }}</h2>
           </div>
         </div>
 
@@ -166,7 +166,7 @@ onMounted(() => {
             <input 
               v-model="searchQuery"
               type="text" 
-              placeholder="Rechercher par sujet ou client..." 
+              :placeholder="$t('reclamations.placeholder', 'Rechercher...')" 
               class="w-full h-12 bg-slate-50 border border-slate-200 rounded-2xl px-6 text-sm font-bold outline-none focus:ring-4 focus:ring-slate-900/5 focus:border-slate-900 transition-all"
             />
           </div>
@@ -175,11 +175,11 @@ onMounted(() => {
               v-model="natureFilter"
               class="w-full h-12 bg-slate-50 border border-slate-200 rounded-2xl px-6 text-sm font-bold outline-none focus:ring-4 focus:ring-slate-900/5 focus:border-slate-900 transition-all"
             >
-              <option value="all">Toutes les natures</option>
-              <option value="S">Sinistres</option>
-              <option value="C">Comptabilité</option>
-              <option value="I">Demandes d'info</option>
-              <option value="D">Correction de donnée</option>
+              <option value="all">{{ $t('reclamations.all_natures') }}</option>
+              <option value="S">{{ $t('reclamations.nature_s') }}</option>
+              <option value="C">{{ $t('reclamations.nature_c') }}</option>
+              <option value="I">{{ $t('reclamations.nature_i') }}</option>
+              <option value="D">{{ $t('reclamations.nature_d') }}</option>
             </select>
           </div>
         </div>
@@ -202,12 +202,12 @@ onMounted(() => {
             </Badge>
           </div>
           <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">
-            Client: {{ selectedTicket.client }} • Ticket #{{ selectedTicket.id }} • Ouvert le {{ new Date(selectedTicket.dateReclamation).toLocaleDateString() }}
+            Client: {{ selectedTicket.client }} • {{ $t('reclamations.ticket_num') }} #{{ selectedTicket.id }} • {{ $t('reclamations.opened_on') }} {{ new Date(selectedTicket.dateReclamation).toLocaleDateString() }}
           </p>
         </div>
         <div class="flex gap-2">
-          <Button v-if="selectedTicket.statut !== 'En cours' && selectedTicket.statut !== 'E'" size="sm" variant="outline" @click="handleStatusUpdate('E')" class="rounded-xl border-orange-200 text-orange-600 hover:bg-orange-50 font-bold text-[10px] uppercase tracking-wider">En cours</Button>
-          <Button v-if="selectedTicket.statut !== 'Clôturé' && selectedTicket.statut !== 'C'" size="sm" variant="outline" @click="handleStatusUpdate('C')" class="rounded-xl border-slate-200 text-slate-600 hover:bg-slate-50 font-bold text-[10px] uppercase tracking-wider">Clôturer</Button>
+          <Button v-if="selectedTicket.statut !== 'En cours' && selectedTicket.statut !== 'E'" size="sm" variant="outline" @click="handleStatusUpdate('E')" class="rounded-xl border-orange-200 text-orange-600 hover:bg-orange-50 font-bold text-[10px] uppercase tracking-wider">{{ $t('statuts.en_cours', 'En cours') }}</Button>
+          <Button v-if="selectedTicket.statut !== 'Clôturé' && selectedTicket.statut !== 'C'" size="sm" variant="outline" @click="handleStatusUpdate('C')" class="rounded-xl border-slate-200 text-slate-600 hover:bg-slate-50 font-bold text-[10px] uppercase tracking-wider">{{ $t('reclamations.close_ticket', 'Clôturer') }}</Button>
         </div>
       </div>
 
@@ -229,18 +229,18 @@ onMounted(() => {
           <div class="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
             <Trash2 class="w-8 h-8" />
           </div>
-          <DialogTitle class="text-xl font-black text-slate-900 tracking-tight">Supprimer le message ?</DialogTitle>
+          <DialogTitle class="text-xl font-black text-slate-900 tracking-tight">{{ $t('commun.delete') }} ?</DialogTitle>
           <DialogDescription class="text-slate-500 font-medium mt-2">
-            Voulez-vous vraiment supprimer ce message ? Cette action est irréversible.
+            {{ $t('reclamations.message_deleted', 'Voulez-vous vraiment supprimer ce message ?') }}
           </DialogDescription>
         </DialogHeader>
 
         <DialogFooter class="p-8 bg-slate-50/50 flex gap-3 sm:justify-center">
           <Button variant="ghost" @click="isDeleteDialogOpen = false" class="flex-1 h-12 rounded-xl font-bold text-slate-500 hover:bg-white">
-            Annuler
+            {{ $t('commun.cancel') }}
           </Button>
           <Button @click="confirmDelete" class="flex-1 h-12 rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold shadow-lg shadow-red-100">
-            Supprimer
+            {{ $t('commun.delete') }}
           </Button>
         </DialogFooter>
       </DialogContent>

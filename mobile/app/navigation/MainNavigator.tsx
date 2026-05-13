@@ -27,6 +27,7 @@ import { Box, Text } from '../theme/restyle';
 
 // Screens
 import HomeScreen from '../screens/HomeScreen';
+import LoginScreen from '../screens/LoginScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import ContratScreen from '../screens/ContratScreen';
 import QuittanceScreen from '../screens/QuittanceScreen';
@@ -56,6 +57,7 @@ export type RootStackParamList = {
   ReclamationDetail: { reclamation: any };
   ReclamationCreate: undefined;
   PersACharge: undefined;
+  Login: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -291,6 +293,7 @@ const BottomTabs: React.FC = () => {
   const roles = user?.roles?.map(r => r.toUpperCase()) || [];
   const isAdherent = roles.includes('ADHERENT');
   const isClient = roles.includes('CLIENT');
+  const isExpert = roles.includes('EXPERT');
   
   return (
     <View style={{ flex: 1, backgroundColor: c.background }}>
@@ -299,7 +302,7 @@ const BottomTabs: React.FC = () => {
         screenOptions={{ headerShown: false }}
       >
         {/* Onglets à gauche de l'Accueil */}
-        {isClient && (
+        {(isClient || isExpert) && (
           <>
             <Tab.Screen name="Contrats" component={ContratScreen} />
             <Tab.Screen name="Quittances" component={QuittanceScreen} />
@@ -310,11 +313,11 @@ const BottomTabs: React.FC = () => {
         <Tab.Screen name="Accueil" component={HomeScreen} />
 
         {/* Onglets à droite de l'Accueil */}
-        {isAdherent && (
+        {(isAdherent || isExpert) && (
           <Tab.Screen name="Sinistres" component={SinistreScreen} />
         )}
 
-        {(isAdherent || isClient) && (
+        {(isAdherent || isClient || isExpert) && (
           <Tab.Screen name="Reclamations" component={ReclamationScreen} />
         )}
 
@@ -333,36 +336,27 @@ const MainNavigator: React.FC = () => {
   const { isAuthenticated, isLoading } = auth;
   const c = theme.colors;
 
-  if (isLoading || !isAuthenticated) {
+  if (isLoading) {
     return (
       <Box flex={1} backgroundColor="background" justifyContent="center" alignItems="center" padding="xl">
         <ActivityIndicator size="large" color={theme.colors.primary} />
         <Text variant="title" color="text" marginTop="l" textAlign="center">
-          {!isAuthenticated ? 'Authentification sécurisée' : t('Chargement')}
+          {t('Chargement')}
         </Text>
         <Text variant="bodySmall" color="textSecondary" marginTop="s" textAlign="center" marginBottom="xl">
-          {!isAuthenticated 
-            ? 'Veuillez vous connecter pour accéder à votre espace.' 
-            : 'Préparation de votre espace...'}
+          Préparation de votre espace...
         </Text>
-        
-        {Platform.OS === 'web' && !isAuthenticated && (
-          <Pressable 
-            onPress={() => auth.login()}
-            style={({ pressed }) => [
-              {
-                backgroundColor: theme.colors.primary,
-                paddingHorizontal: 32,
-                paddingVertical: 12,
-                borderRadius: 8,
-                opacity: pressed ? 0.8 : 1,
-              }
-            ]}
-          >
-            <Text style={{ color: 'white', fontWeight: 'bold' }}>Se connecter avec Keycloak</Text>
-          </Pressable>
-        )}
       </Box>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <NavigationContainer theme={isDark ? DarkTheme : DefaultTheme}>
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="Login" component={LoginScreen} />
+        </Stack.Navigator>
+      </NavigationContainer>
     );
   }
 
@@ -389,6 +383,7 @@ const MainNavigator: React.FC = () => {
         }}
       >
         <Stack.Screen name="MainTabs" component={BottomTabs} />
+        <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="ContratDetail" component={ContratDetailScreen} />
         <Stack.Screen name="SinistreDetail" component={SinistreDetailScreen} />
         <Stack.Screen name="QuittanceDetail" component={QuittanceDetailScreen} />

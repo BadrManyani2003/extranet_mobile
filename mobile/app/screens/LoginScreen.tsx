@@ -54,8 +54,8 @@ const LoginScreen: React.FC<Props> = () => {
       Animated.spring(formSlide,  { toValue: 0, bounciness: 4, speed: 10, delay: 100, useNativeDriver: Platform.OS !== 'web' }),
     ]).start();
 
-    // 🚀 Redirection automatique vers Keycloak dès que la requête est prête
-    if (request && !loading && !errorMsg && !response) {
+    // 🚀 Redirection automatique vers Keycloak dès que la requête est prête (Mobile uniquement)
+    if (Platform.OS !== 'web' && request && !loading && !errorMsg && !response) {
       promptAsync();
     }
   }, [request, loading, errorMsg, response]);
@@ -98,16 +98,19 @@ const LoginScreen: React.FC<Props> = () => {
 
       const isAdherent = hasRole('ADHERENT');
       const isClient = hasRole('CLIENT');
+      const isExpert = hasRole('EXPERT');
 
-      // 🛑 Restriction stricte : Seuls les Adhérents et Clients peuvent se connecter
-      if (!isAdherent && !isClient) {
-        setErrorMsg("Accès non autorisé. Cette application est exclusivement réservée aux Adhérents et Clients.");
+      // 🛑 Restriction : Seuls les Adhérents, Clients et Experts peuvent se connecter
+      if (!isAdherent && !isClient && !isExpert) {
+        setErrorMsg("Accès non autorisé. Cette application est réservée aux Adhérents, Clients et Experts.");
         setLoading(false);
         return;
       }
 
       // Détermination de la source pour les futures requêtes API
-      const userSource: 'ADHERENT' | 'CLIENT' = isAdherent ? 'ADHERENT' : 'CLIENT';
+      let userSource: 'ADHERENT' | 'CLIENT' | 'EXPERT' = 'ADHERENT';
+      if (isExpert) userSource = 'EXPERT';
+      else if (isClient) userSource = 'CLIENT';
 
       const user = {
         id:     decoded.sub       || '',
