@@ -32,7 +32,7 @@ onMounted(fetchContrats)
 </script>
 
 <template>
-  <PageContainer title="Mes Contrats" subtitle="Consultez et gérez l'ensemble de vos polices d'assurance.">
+  <PageContainer title="Mes Contrats" subtitle="Consultez l'ensemble de vos polices d'assurance.">
     <template #actions>
       <div class="relative w-full max-w-xs hidden md:block">
         <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />

@@ -2,7 +2,7 @@
   "navigation": {
     "dashboard": "Tableau",
     "policies": "Polices",
-    "unpaid": "Impayés",
+    "global_statement": "Relevé Global",
     "reclamation": "Réclamations"
   },
   "tableau_bord": {
@@ -30,7 +30,7 @@
   },
   "contrats": {
     "title": "Polices",
-    "subtitle": "Gestion.",
+    "subtitle": "Consultation.",
     "search_placeholder": "Recherche",
     "prime_annuelle": "Prime",
     "impayes": "Impayés",
@@ -42,7 +42,11 @@
     "echeance": "Échéance",
     "detail_button": "Détails",
     "support_button": "Aide",
-    "num": "Police"
+    "num": "Police",
+    "documents": "Documents",
+    "desc_docs": "Pièces jointes.",
+    "search_docs": "Rechercher un document...",
+    "empty_docs": "Aucun document trouvé."
   },
   "risques": {
     "title": "Garanties",
@@ -111,19 +115,15 @@
     "empty_unpaid_desc": "Aucun impayé.",
     "empty_all": "Aucun."
   },
-  "vue_impayes": {
-    "title": "Impayés",
-    "subtitle": "Attente.",
-    "search": "Recherche",
-    "total_unpaid": "Total",
-    "items": "Liste",
-    "pay_button": "Régler",
-    "notify_button": "Relancer",
-    "empty": "À jour."
+  "vue_releve_global": {
+    "title": "Relevé Global",
+    "subtitle": "Historique complet de toutes vos quittances.",
+    "search": "Rechercher une quittance...",
+    "empty": "Aucune quittance trouvée."
   },
   "reclamations": {
     "title": "Réclamations",
-    "subtitle": "Support.",
+    "subtitle": "Suivi & Support.",
     "new_request": "Créer",
     "subject": "Sujet",
     "subject_placeholder": "Objet...",

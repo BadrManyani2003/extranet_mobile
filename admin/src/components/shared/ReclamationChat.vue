@@ -102,23 +102,35 @@ const formatDate = (date: string) => {
 
               <!-- Message Bubble -->
               <div class="flex flex-col relative group" :class="isSelf(msg) ? 'items-end' : 'items-start'">
-                <div class="px-5 py-3.5 text-sm font-bold leading-relaxed shadow-sm transition-all duration-300"
-                  :class="[
-                    isSelf(msg) 
-                      ? 'bg-slate-900 text-white selection:bg-white/20' 
-                      : 'bg-white text-slate-700 border border-slate-100',
-                    isSelf(msg)
-                      ? (isSameGroup(msg, messages[index-1]) ? 'rounded-2xl rounded-tr-md' : 'rounded-2xl rounded-tr-none')
-                      : (isSameGroup(msg, messages[index-1]) ? 'rounded-2xl rounded-tl-md' : 'rounded-2xl rounded-tl-none')
-                  ]"
-                >
-                  {{ msg.message || msg.text }}
+                <div class="flex items-center gap-2" :class="isSelf(msg) ? 'flex-row-reverse' : 'flex-row'">
+                  <div class="px-5 py-3.5 text-sm font-bold leading-relaxed shadow-sm transition-all duration-300"
+                    :class="[
+                      isSelf(msg) 
+                        ? 'bg-slate-900 text-white selection:bg-white/20' 
+                        : 'bg-white text-slate-700 border border-slate-100',
+                      isSelf(msg)
+                        ? (isSameGroup(msg, messages[index-1]) ? 'rounded-2xl rounded-tr-md' : 'rounded-2xl rounded-tr-none')
+                        : (isSameGroup(msg, messages[index-1]) ? 'rounded-2xl rounded-tl-md' : 'rounded-2xl rounded-tl-none')
+                    ]"
+                  >
+                    {{ msg.message || msg.text }}
+                  </div>
+
+                  <!-- Bouton Supprimer (uniquement si autorisé par le backend via canDelete) -->
+                  <Button v-if="msg.canDelete" 
+                    variant="ghost" 
+                    size="icon" 
+                    @click="emit('delete-message', msg.id)" 
+                    class="h-8 w-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity text-slate-300 hover:text-red-500 hover:bg-red-50"
+                  >
+                    <Trash2 class="w-4 h-4" />
+                  </Button>
                 </div>
 
                 <!-- Footer info -->
                 <div v-if="!isSameGroup(msg, messages[index+1])" 
                   class="flex items-center gap-1.5 text-[9px] font-black text-slate-300 mt-2 uppercase tracking-widest px-1">
-                  <span v-if="isSelf(msg)" class="text-slate-400">VOUS (CONSEILLER)</span>
+                  <span v-if="isSelf(msg)" class="text-slate-400">VOUS</span>
                   <span v-else class="text-slate-900">{{ msg.envoyeur || 'Client' }}</span>
                   <span class="w-1 h-1 rounded-full bg-slate-200"></span>
                   <Clock class="w-2.5 h-2.5" />

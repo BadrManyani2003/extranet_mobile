@@ -1,7 +1,3 @@
--- ============================================================
---  IBS EXTRANET MOBILE - PROCÉDURES STOCKÉES
--- ============================================================
-
 USE [IBS_Extranet_Mobile]
 GO
 
@@ -9,10 +5,6 @@ SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-
--- ──────────────────────────────────────────────────────────────────────────────
--- 1. GESTION DES POLICES (CONTRATS)
--- ──────────────────────────────────────────────────────────────────────────────
 
 CREATE OR ALTER PROCEDURE dbo.sp_GetPolices
     @FK_User_Id INT,
@@ -120,19 +112,20 @@ BEGIN
         CASE 
             WHEN p.Branche = 'Santé' THEN a.NumAdhesion
             ELSE r.Identifiant
-        END AS identifiant
+        END AS identifiant,
+        p.Branche AS branche
     FROM dbo.Sinistres s
     INNER JOIN dbo.Polices p ON s.FK_Police_Id = p.Id
     INNER JOIN dbo.Clients c ON p.Fk_Client_Id = c.Id
     LEFT JOIN dbo.Risques r ON s.FK_Risque_Id = r.Id
     LEFT JOIN dbo.Adherents a ON s.FK_Adherent_Id = a.Id
     LEFT JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id AND uxc.FK_User_Id = @FK_User_Id AND uxc.Actif = 'O'
-    WHERE p.Id = @FK_Police_Id
+    WHERE (p.Id = @FK_Police_Id
         AND (
             (@Source = 'A' AND @UserNature = 'A')
             OR (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
-            OR (s.FK_Adherent_Id IN (SELECT Id FROM dbo.Adherents WHERE FK_User_Id = @FK_User_Id AND Actif = 'O'))
-        );
+        ))
+        OR (s.FK_Adherent_Id IN (SELECT Id FROM dbo.Adherents WHERE FK_User_Id = @FK_User_Id AND Actif = 'O'));
     
     RETURN;
 END
@@ -174,18 +167,22 @@ BEGIN
         CASE 
             WHEN p.Branche = 'Santé' THEN a.NumAdhesion
             ELSE r.Identifiant
-        END AS identifiant
+        END AS identifiant,
+        p.Branche AS branche
     FROM dbo.Sinistres s
     INNER JOIN dbo.Polices p ON s.FK_Police_Id = p.Id
     INNER JOIN dbo.Clients c ON p.Fk_Client_Id = c.Id
     LEFT JOIN dbo.Risques r ON s.FK_Risque_Id = r.Id
     LEFT JOIN dbo.Adherents a ON s.FK_Adherent_Id = a.Id
     LEFT JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id AND uxc.FK_User_Id = @FK_User_Id AND uxc.Actif = 'O'
-    WHERE p.Id = @FK_Police_Id
-        AND s.Statut = 'E'
+    WHERE s.Statut = 'E'
         AND (
-            (@Source = 'A' AND @UserNature = 'A')
-            OR (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
+            (p.Id = @FK_Police_Id
+                AND (
+                    (@Source = 'A' AND @UserNature = 'A')
+                    OR (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
+                )
+            )
             OR (s.FK_Adherent_Id IN (SELECT Id FROM dbo.Adherents WHERE FK_User_Id = @FK_User_Id AND Actif = 'O'))
         );
     
@@ -235,9 +232,6 @@ BEGIN
 END
 GO
 
--- ──────────────────────────────────────────────────────────────────────────────
--- 3. GESTION DES QUITTANCES (FINANCIER)
--- ──────────────────────────────────────────────────────────────────────────────
 CREATE OR ALTER PROCEDURE dbo.sp_GetQuittances
     @FK_User_Id INT,
     @Source CHAR(1),
@@ -339,6 +333,8 @@ BEGIN
         SELECT 
             q.Id AS id,
             q.NumQuittance AS numero,
+            p.Police AS numPolice,
+            p.Branche AS branche,
             q.DateDu AS dateDebut,
             q.DateAu AS dateFin,
             ISNULL(q.Montant, 0) AS montantTotal,
@@ -386,12 +382,14 @@ BEGIN
         a.DateNaissance AS dateNaissance,
         a.Actif AS actif,
         a.Telephone AS telephone,
-        a.FK_User_Id AS fkUserId
+        a.FK_User_Id AS fkUserId,
+        u.Nom AS userNom
     FROM dbo.Adherents a
     INNER JOIN dbo.Polices p ON a.FK_Police_Id = p.Id
     INNER JOIN dbo.Clients c ON p.Fk_Client_Id = c.Id
     LEFT JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id AND uxc.FK_User_Id = @FK_User_Id AND uxc.Actif = 'O'
-    WHERE (@Source = 'A' OR (@FK_Police_Id > 0 AND p.Id = @FK_Police_Id))
+    LEFT JOIN dbo.sysUser u ON a.FK_User_Id = u.Id
+    WHERE (@Source = 'A' OR @FK_Police_Id IS NULL OR p.Id = @FK_Police_Id)
         AND a.Actif = 'O'
         AND (
             (@Source = 'A' AND @UserNature = 'A')
@@ -535,7 +533,7 @@ BEGIN
         u.Nom AS client
     FROM dbo.ReclamationsIdt r
     INNER JOIN dbo.sysUser u ON r.FK_User_Client = u.Id
-    WHERE (@Source = 'A' AND @UserNature = 'A') OR (@Source IN ('E', 'M') AND @UserNature = 'C') OR r.FK_User_Client = @FK_User_Id
+    WHERE (@UserNature = 'A') OR (r.FK_User_Client = @FK_User_Id)
     ORDER BY r.DateReclamation DESC;
     
     RETURN;
@@ -557,8 +555,11 @@ BEGIN
         RETURN;
     END
 
+    DECLARE @UserNature CHAR(1);
+    SELECT @UserNature = Nature FROM dbo.sysUser WHERE Id = @FK_User_Id;
+
     IF EXISTS (SELECT 1 FROM dbo.ReclamationsIdt WHERE Id = @FK_Reclamation_Id 
-               AND (@Source = 'A' OR @Source IN ('E', 'M') OR FK_User_Client = @FK_User_Id))
+               AND (@UserNature = 'A' OR FK_User_Client = @FK_User_Id))
     BEGIN
         DECLARE @LastMsgId INT;
         SELECT @LastMsgId = MAX(Id) FROM dbo.ReclamationsDet WHERE FK_Reclamation_Id = @FK_Reclamation_Id;
@@ -606,6 +607,8 @@ BEGIN
     END
 
     DECLARE @NewId INT;
+    DECLARE @UserNature CHAR(1);
+    SELECT @UserNature = Nature FROM dbo.sysUser WHERE Id = @FK_User_Id;
 
     INSERT INTO dbo.ReclamationsIdt (FK_User_Client, Sujet, Nature, Statut, DateStatut)
     VALUES (@FK_User_Id, @Sujet, @Nature, 'E', GETDATE());
@@ -613,7 +616,7 @@ BEGIN
     SET @NewId = SCOPE_IDENTITY();
 
     INSERT INTO dbo.ReclamationsDet (FK_Reclamation_Id, FK_User_Id, Nature, Message)
-    VALUES (@NewId, @FK_User_Id, @Nature, @Message);
+    VALUES (@NewId, @FK_User_Id, @UserNature, @Message);
 
     SELECT @NewId AS id;
     
@@ -644,12 +647,15 @@ BEGIN
         RETURN;
     END
 
+    DECLARE @UserNature CHAR(1);
+    SELECT @UserNature = Nature FROM dbo.sysUser WHERE Id = @FK_User_Id;
+
     IF EXISTS (SELECT 1 FROM dbo.ReclamationsIdt 
                WHERE Id = @FK_Reclamation_Id 
-               AND (@Source IN ('A', 'C') OR FK_User_Client = @FK_User_Id))
+               AND (@UserNature = 'A' OR FK_User_Client = @FK_User_Id))
     BEGIN
         INSERT INTO dbo.ReclamationsDet (FK_Reclamation_Id, FK_User_Id, Nature, Message)
-        VALUES (@FK_Reclamation_Id, @FK_User_Id, @Nature, @Message);
+        VALUES (@FK_Reclamation_Id, @FK_User_Id, @UserNature, @Message);
 
         UPDATE dbo.ReclamationsIdt 
         SET Statut = CASE WHEN @Source IN ('A', 'E', 'M') THEN 'T' ELSE 'E' END, 
@@ -680,8 +686,10 @@ BEGIN
         RETURN;
     END
 
-    IF EXISTS (SELECT 1 FROM dbo.ReclamationsIdt WHERE Id = @FK_Reclamation_Id 
-               AND (@Source IN ('A', 'E', 'M') OR FK_User_Client = @FK_User_Id))
+    DECLARE @UserNature CHAR(1);
+    SELECT @UserNature = Nature FROM dbo.sysUser WHERE Id = @FK_User_Id;
+
+    IF @UserNature = 'A' AND EXISTS (SELECT 1 FROM dbo.ReclamationsIdt WHERE Id = @FK_Reclamation_Id)
     BEGIN
         UPDATE dbo.ReclamationsIdt 
         SET Statut = @Statut, 
@@ -1078,7 +1086,6 @@ BEGIN
     DECLARE @UserNature CHAR(1);
     SELECT @UserNature = Nature FROM dbo.sysUser WHERE Id = @FK_User_Id;
 
-    -- Vérification des permissions
     IF NOT EXISTS (
         SELECT 1 FROM dbo.Polices p
         LEFT JOIN dbo.Clients c ON p.Fk_Client_Id = c.Id
@@ -1235,7 +1242,8 @@ BEGIN
     DELETE FROM dbo.ReclamationsDet WHERE Id = @MessageId;
     RETURN;
 END
-GO 
+GO
+
 CREATE OR ALTER PROCEDURE dbo.ps_LinkUserToClient
     @FK_User_Id     INT,
     @Token          VARCHAR(MAX),
@@ -1315,12 +1323,50 @@ BEGIN
 END
 GO
 
+CREATE OR ALTER PROCEDURE dbo.sp_GetDocumentsByPolice
+    @FK_User_Id INT,
+    @Source CHAR(1),
+    @Token VARCHAR(MAX),
+    @FK_Police_Id INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
+    BEGIN
+        RAISERROR('Session expirée', 16, 1);
+        RETURN;
+    END
+
+    DECLARE @UserNature CHAR(1);
+    SELECT @UserNature = Nature FROM dbo.sysUser WHERE Id = @FK_User_Id;
+
+    SELECT 
+        d.Id AS id,
+        d.fk_police_id AS fkPoliceId,
+        d.fk_document_id AS fkDocumentId,
+        d.libelle AS libelle
+    FROM dbo.PolDocument d
+    INNER JOIN dbo.Polices p ON d.fk_police_id = p.Id
+    INNER JOIN dbo.Clients c ON p.Fk_Client_Id = c.Id
+    LEFT JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id AND uxc.FK_User_Id = @FK_User_Id AND uxc.Actif = 'O'
+    WHERE p.Id = @FK_Police_Id
+        AND (
+            (@Source = 'A' AND @UserNature = 'A')
+            OR (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
+            OR EXISTS (SELECT 1 FROM dbo.Adherents WHERE FK_Police_Id = p.Id AND FK_User_Id = @FK_User_Id AND Actif = 'O')
+        );
+    
+    RETURN;
+END
+GO
+
 CREATE OR ALTER PROCEDURE dbo.ps_UpdateUserRoles
     @FK_User_Id    INT,
     @Token         VARCHAR(MAX),
     @Source        VARCHAR(50),
     @Target_User_Id INT,
-    @RolesCSV      VARCHAR(MAX) -- Comma separated roles
+    @RolesCSV      VARCHAR(MAX)
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -1334,10 +1380,8 @@ BEGIN
         RETURN;
     END
 
-    -- Supprimer les anciens rôles
     DELETE FROM dbo.Roles WHERE FK_User_Id = @Target_User_Id;
 
-    -- Insérer les nouveaux rôles (Split CSV)
     INSERT INTO dbo.Roles (FK_User_Id, Role)
     SELECT @Target_User_Id, value
     FROM STRING_SPLIT(@RolesCSV, ',');

@@ -7,6 +7,8 @@ import ReclamationList from '@/components/shared/ReclamationList.vue'
 import ReclamationChat from '@/components/shared/ReclamationChat.vue'
 import { api } from '@/lib/api'
 import { toast } from '@/components/ui/sonner'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Trash2 } from 'lucide-vue-next'
 
 const reclamations = ref<any[]>([])
 const selectedTicket = ref<any>(null)
@@ -16,6 +18,8 @@ const loadingChat = ref(false)
 const searchQuery = ref('')
 const natureFilter = ref('all')
 const currentUser = ref<any>(null)
+const isDeleteDialogOpen = ref(false)
+const messageToDeleteId = ref<number | null>(null)
 
 let pollingInterval: any = null
 
@@ -47,7 +51,7 @@ onUnmounted(stopPolling)
 const fetchUserInfo = async () => {
   try {
     const res = await api.admin.getMe()
-    currentUser.value = res.user
+    currentUser.value = res
   } catch (e) { console.error(e) }
 }
 
@@ -123,13 +127,19 @@ const handleStatusUpdate = async (statut: string) => {
   }
 }
 
-const handleDeleteMessage = async (messageId: number) => {
-  if (!selectedTicket.value) return
-  if (!confirm("Supprimer ce message ?")) return
+const handleDeleteMessage = (messageId: number) => {
+  messageToDeleteId.value = messageId
+  isDeleteDialogOpen.value = true
+}
+
+const confirmDelete = async () => {
+  if (!selectedTicket.value || !messageToDeleteId.value) return
   try {
-    await api.admin.deleteMessage(messageId, selectedTicket.value.id)
-    messages.value = messages.value.filter(m => m.id !== messageId)
+    await api.admin.deleteMessage(messageToDeleteId.value, selectedTicket.value.id)
+    messages.value = messages.value.filter(m => m.id !== messageToDeleteId.value)
     toast.success("Message supprimé")
+    isDeleteDialogOpen.value = false
+    messageToDeleteId.value = null
   } catch (e: any) {
     toast.error(e.message)
   }
@@ -166,9 +176,10 @@ onMounted(() => {
               class="w-full h-12 bg-slate-50 border border-slate-200 rounded-2xl px-6 text-sm font-bold outline-none focus:ring-4 focus:ring-slate-900/5 focus:border-slate-900 transition-all"
             >
               <option value="all">Toutes les natures</option>
-              <option value="Réclamation">Réclamations</option>
-              <option value="Demande d'info">Demandes d'info</option>
-              <option value="Sinistre">Sinistres</option>
+              <option value="S">Sinistres</option>
+              <option value="C">Comptabilité</option>
+              <option value="I">Demandes d'info</option>
+              <option value="D">Correction de donnée</option>
             </select>
           </div>
         </div>
@@ -195,9 +206,8 @@ onMounted(() => {
           </p>
         </div>
         <div class="flex gap-2">
-          <Button v-if="selectedTicket.statut !== 'En cours'" size="sm" variant="outline" @click="handleStatusUpdate('E')" class="rounded-xl border-orange-200 text-orange-600 hover:bg-orange-50 font-bold text-[10px] uppercase tracking-wider">En cours</Button>
-          <Button v-if="selectedTicket.statut !== 'Traité'" size="sm" variant="outline" @click="handleStatusUpdate('T')" class="rounded-xl border-emerald-200 text-emerald-600 hover:bg-emerald-50 font-bold text-[10px] uppercase tracking-wider">Traité</Button>
-          <Button v-if="selectedTicket.statut !== 'Clôturé'" size="sm" variant="outline" @click="handleStatusUpdate('C')" class="rounded-xl border-slate-200 text-slate-600 hover:bg-slate-50 font-bold text-[10px] uppercase tracking-wider">Clôturer</Button>
+          <Button v-if="selectedTicket.statut !== 'En cours' && selectedTicket.statut !== 'E'" size="sm" variant="outline" @click="handleStatusUpdate('E')" class="rounded-xl border-orange-200 text-orange-600 hover:bg-orange-50 font-bold text-[10px] uppercase tracking-wider">En cours</Button>
+          <Button v-if="selectedTicket.statut !== 'Clôturé' && selectedTicket.statut !== 'C'" size="sm" variant="outline" @click="handleStatusUpdate('C')" class="rounded-xl border-slate-200 text-slate-600 hover:bg-slate-50 font-bold text-[10px] uppercase tracking-wider">Clôturer</Button>
         </div>
       </div>
 
@@ -211,5 +221,29 @@ onMounted(() => {
         @delete-message="handleDeleteMessage" 
       />
     </template>
+
+    <!-- Modal Confirmation Suppression -->
+    <Dialog v-model:open="isDeleteDialogOpen">
+      <DialogContent class="sm:max-w-[400px] rounded-[2rem] shadow-2xl p-0 overflow-hidden border-none font-['Outfit']">
+        <DialogHeader class="p-8 bg-white text-center">
+          <div class="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Trash2 class="w-8 h-8" />
+          </div>
+          <DialogTitle class="text-xl font-black text-slate-900 tracking-tight">Supprimer le message ?</DialogTitle>
+          <DialogDescription class="text-slate-500 font-medium mt-2">
+            Voulez-vous vraiment supprimer ce message ? Cette action est irréversible.
+          </DialogDescription>
+        </DialogHeader>
+
+        <DialogFooter class="p-8 bg-slate-50/50 flex gap-3 sm:justify-center">
+          <Button variant="ghost" @click="isDeleteDialogOpen = false" class="flex-1 h-12 rounded-xl font-bold text-slate-500 hover:bg-white">
+            Annuler
+          </Button>
+          <Button @click="confirmDelete" class="flex-1 h-12 rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold shadow-lg shadow-red-100">
+            Supprimer
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   </div>
 </template>

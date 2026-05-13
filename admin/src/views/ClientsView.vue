@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Building2, UserPlus, CheckCircle2, Link } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import DataTableWrapper from '@/components/shared/DataTableWrapper.vue'
 import UserLinkDialog from '@/components/shared/UserLinkDialog.vue'
 import { api } from '@/lib/api'
@@ -58,22 +59,30 @@ onMounted(fetchClients)
       <Table class="border-t border-slate-100">
         <TableHeader class="bg-slate-50/50">
           <TableRow>
-            <TableHead class="table-header-text py-6">Code IBS</TableHead>
-            <TableHead class="table-header-text">Raison Sociale</TableHead>
+            <TableHead class="table-header-text py-6">Raison Sociale</TableHead>
+            <TableHead class="table-header-text">Particulier</TableHead>
+            <TableHead class="table-header-text">Client Parent</TableHead>
             <TableHead class="table-header-text">Utilisateur lié</TableHead>
             <TableHead class="text-right table-header-text">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           <TableRow v-for="client in items" :key="client.id" class="group hover:bg-slate-50/50 transition-colors border-b border-slate-50">
-            <TableCell class="font-bold text-slate-400 py-4">{{ client.id || 'N/A' }}</TableCell>
-            <TableCell>
+            <TableCell class="py-4">
               <div class="flex items-center gap-3">
                 <div class="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-slate-900 group-hover:text-white transition-all shadow-sm">
                   <Building2 class="w-5 h-5" />
                 </div>
                 <span class="font-bold text-slate-900 tracking-tight">{{ client.raisonSociale }}</span>
               </div>
+            </TableCell>
+            <TableCell>
+              <Badge :variant="client.particulier === 'O' ? 'default' : 'secondary'" class="rounded-lg text-[10px] font-black uppercase tracking-widest px-2 py-1">
+                {{ client.particulier === 'O' ? 'Oui' : 'Non' }}
+              </Badge>
+            </TableCell>
+            <TableCell>
+              <span class="text-sm font-medium text-slate-500">{{ client.parentClient || '-' }}</span>
             </TableCell>
             <TableCell>
               <div v-if="client.fkUserId" class="flex items-center gap-2 text-emerald-600 font-bold text-[10px] uppercase tracking-widest bg-emerald-50 px-3 py-1.5 rounded-lg w-fit">
@@ -83,7 +92,7 @@ onMounted(fetchClients)
               <span v-else class="text-slate-300 font-black text-[10px] uppercase tracking-widest italic">Non lié</span>
             </TableCell>
             <TableCell class="text-right">
-              <div v-if="!client.fkUserId" class="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div v-if="!client.fkUserId" class="flex justify-end gap-1">
                 <Button variant="ghost" size="sm" class="h-9 gap-2 premium-button text-slate-600 hover:bg-slate-900 hover:text-white" @click="handleCreateUser(client.id)">
                   <UserPlus class="w-4 h-4" /> Créer
                 </Button>

@@ -2,23 +2,29 @@ import { createTheme } from '@shopify/restyle';
 import { rsp } from '../utils/responsive';
 
 /**
- * Palette de Couleurs - Clean & Simple Light Mode
+ * Palette de Couleurs - Premium Inspiration from Client Frontend
  */
 const palette = {
-  primary:      '#0077B6', 
-  primaryLight: '#00B4D8',
-  primaryBg:    '#F0F9FF',
+  // Brand colors
+  primary:      '#0F172A', // Slate 900 (Client style)
+  primaryLight: '#334155', // Slate 700
+  primaryBg:    '#F1F5F9', // Slate 100
   
+  // UI Colors
+  background:   '#F8FAFC', // Slate 50
+  cardBg:       '#FFFFFF',
+  white:        '#FFFFFF',
+  
+  // Text
   text:         '#0F172A',
   textSecondary:'#475569',
   textTertiary: '#94A3B8',
   
-  white:        '#FFFFFF',
-  background:   '#F8FAFC',
-  cardBg:       '#FFFFFF',
-  border:       '#E2E8F0',
-  borderLight:  '#F1F5F9',
+  // Accents
+  accent:       '#3B82F6', // Blue 500
+  accentBg:     '#EFF6FF',
   
+  // Semantic
   success:      '#10B981',
   warning:      '#F59E0B',
   error:        '#EF4444',
@@ -27,13 +33,9 @@ const palette = {
   warningBg:    '#FFFBEB',
   errorBg:      '#FEF2F2',
   
-  info:         '#3B82F6',
-  infoBg:       '#EFF6FF',
+  border:       '#E2E8F0',
+  borderLight:  '#F1F5F9',
   
-  purple:       '#8B5CF6',
-  purpleBg:     '#F5F3FF',
-  
-  backgroundGray:'#F1F5F9',
 };
 
 const lightTheme = createTheme({
@@ -64,21 +66,11 @@ const lightTheme = createTheme({
     errorBg: palette.errorBg,
     errorLight: palette.errorBg,
     
-    info: palette.info,
-    infoBg: palette.infoBg,
-    infoLight: palette.infoBg,
+    info: palette.accent,
+    infoBg: palette.accentBg,
     
-    purple: palette.purple,
-    purpleBg: palette.purpleBg,
-    
-    backgroundGray: palette.backgroundGray,
-    backgroundLight: palette.backgroundGray,
-    
-    transparent: 'transparent',
-    transparentGray: 'rgba(0, 0, 0, 0.5)',
     white: palette.white,
-    buttonSecondaryBg: palette.backgroundGray,
-    placeholderText: palette.textTertiary,
+    transparent: 'transparent',
   },
   spacing: {
     none: 0,
@@ -90,20 +82,17 @@ const lightTheme = createTheme({
     xl: rsp.scale(28),
     xxl: rsp.scale(40),
     xxxl: rsp.scale(60),
-    '4xl': rsp.scale(80),
   },
   borderRadii: {
-    xxs: 2,
+    none: 0,
     xs: 4,
     s: 8,
     m: 12,
     l: 16,
-    xl: 20,
+    xl: 24,
     xxl: 32,
-    '3xl': 48,
-    '4xl': 64,
+    '3xl': 40,
     round: 999,
-    none: 0,
   },
   breakpoints: {
     phone: 0,
@@ -113,29 +102,40 @@ const lightTheme = createTheme({
     defaults: {
       fontSize: rsp.normalize(15),
       color: 'text',
+      // fontFamily: 'System', // Placeholder for Outfit if needed
     },
     header: {
-      fontSize: rsp.normalize(24),
-      fontWeight: '700',
+      fontSize: rsp.normalize(26),
+      fontWeight: '900',
+      color: 'primary',
+      letterSpacing: -0.5,
     },
     subheader: {
       fontSize: rsp.normalize(20),
-      fontWeight: '700',
+      fontWeight: '800',
+      color: 'primary',
     },
     title: {
       fontSize: rsp.normalize(18),
       fontWeight: '700',
     },
-    cardTitle: {
-      fontSize: rsp.normalize(16),
-      fontWeight: '700',
+    premiumLabel: {
+      fontSize: rsp.normalize(10),
+      fontWeight: '900',
+      textTransform: 'uppercase',
+      letterSpacing: 2,
+      color: 'textTertiary',
     },
     button: {
-      fontSize: rsp.normalize(15),
-      fontWeight: '600',
+      fontSize: rsp.normalize(14),
+      fontWeight: '900',
+      textTransform: 'uppercase',
+      letterSpacing: 1.5,
+      color: 'white',
     },
     body: {
       fontSize: rsp.normalize(15),
+      lineHeight: 22,
     },
     bodyMedium: {
       fontSize: rsp.normalize(15),
@@ -149,13 +149,11 @@ const lightTheme = createTheme({
       fontSize: rsp.normalize(12),
       color: 'textTertiary',
     },
-    label: {
-      fontSize: rsp.normalize(12),
-      fontWeight: '500',
-    },
     labelBold: {
       fontSize: rsp.normalize(12),
-      fontWeight: '700',
+      fontWeight: '800',
+      textTransform: 'uppercase',
+      letterSpacing: 1,
     },
   },
 });

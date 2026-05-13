@@ -8,13 +8,16 @@ import { rsp } from '../../utils/responsive';
 interface StatusBadgeProps {
   label: string;
   variant?: 'success' | 'warning' | 'error' | 'info' | 'neutral' | 'purple';
+  size?: 'small' | 'medium';
 }
 
 const StatusBadge: React.FC<StatusBadgeProps> = ({ 
   label, 
-  variant = 'neutral' 
+  variant = 'neutral',
+  size = 'medium'
 }) => {
   const theme = useTheme<Theme>();
+  const isSmall = size === 'small';
 
   const getColors = () => {
     switch (variant) {
@@ -32,7 +35,7 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({
   return (
     <Box 
       backgroundColor={bg as keyof Theme['colors']} 
-      paddingHorizontal="s" 
+      paddingHorizontal={isSmall ? "xs" : "s"} 
       paddingVertical="xxs" 
       borderRadius="round" 
       flexDirection="row" 
@@ -41,15 +44,16 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({
     >
       <Icon 
         name={icon as any} 
-        size={11} 
+        size={isSmall ? 9 : 11} 
         color={theme.colors[text as keyof Theme['colors']]} 
-        style={{ marginRight: 5 }} 
+        style={{ marginRight: isSmall ? 3 : 5 }} 
       />
       <Text 
         variant="labelBold" 
         color={text as keyof Theme['colors']} 
-        fontSize={11} 
-        fontWeight="700"
+        fontSize={isSmall ? 8 : 10} 
+        fontWeight="900"
+        style={{ textTransform: 'uppercase', letterSpacing: 1.2 }}
       >
         {label}
       </Text>

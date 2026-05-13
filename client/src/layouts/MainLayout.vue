@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { FileText, AlertCircle, BarChart3, LifeBuoy } from 'lucide-vue-next'
+import { FileText, AlertCircle, BarChart3, LifeBuoy, Shield } from 'lucide-vue-next'
 import Sidebar from './Sidebar.vue'
 import Header from './Header.vue'
 import { useUserStore } from '../store/user'
@@ -35,8 +35,8 @@ onMounted(async () => {
 
 const navItems = [
   { section: 'CLIENT' },
-  { nom: 'navigation.policies', chemin: '/contrats', icone: FileText },
-  { nom: 'navigation.unpaid', chemin: '/impayes', icone: AlertCircle },
+  { nom: 'navigation.policies', chemin: '/contrats', icone: Shield },
+  { nom: 'navigation.global_statement', chemin: '/releve-global', icone: FileText },
   { nom: 'navigation.dashboard', chemin: '/statistiques', icone: BarChart3 },
   { nom: 'navigation.reclamation', chemin: '/reclamations', icone: LifeBuoy },
 ]

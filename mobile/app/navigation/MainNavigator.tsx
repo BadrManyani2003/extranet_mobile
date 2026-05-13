@@ -9,13 +9,10 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import {
   View,
   Platform,
-  Dimensions,
   ActivityIndicator,
   StyleSheet,
   Animated,
   Pressable,
-  Text,
-  PixelRatio,
 } from 'react-native';
 import { Ionicons as Icon } from '@expo/vector-icons';
 import { useTheme } from '@shopify/restyle';
@@ -26,17 +23,21 @@ import { useThemeContext } from '../context/ThemeContext';
 import { Theme } from '../theme/theme';
 import { rsp } from '../utils/responsive';
 import { useTranslation } from '../utils/i18n';
+import { Box, Text } from '../theme/restyle';
 
 // Screens
-import LoginScreen from '../screens/LoginScreen';
 import HomeScreen from '../screens/HomeScreen';
+import ProfileScreen from '../screens/ProfileScreen';
 import ContratScreen from '../screens/ContratScreen';
 import QuittanceScreen from '../screens/QuittanceScreen';
 import SinistreScreen from '../screens/SinistreScreen';
-import ProfileScreen from '../screens/ProfileScreen';
 import ReclamationScreen from '../screens/ReclamationScreen';
-import ReclamationDetailScreen from '../screens/ReclamationDetailScreen';
-import RestrictedScreen from '../screens/RestrictedScreen';
+import ContratDetailScreen from '../screens/details/ContratDetailScreen';
+import SinistreDetailScreen from '../screens/details/SinistreDetailScreen';
+import QuittanceDetailScreen from '../screens/details/QuittanceDetailScreen';
+import ReclamationDetailScreen from '../screens/details/ReclamationDetailScreen';
+import ReclamationCreateScreen from '../screens/details/ReclamationCreateScreen';
+import PersAChargeScreen from '../screens/details/PersAChargeScreen';
 
 export type TabParamList = {
   Accueil: undefined;
@@ -48,10 +49,13 @@ export type TabParamList = {
 };
 
 export type RootStackParamList = {
-  Login: undefined;
   MainTabs: undefined;
-  Restricted: undefined;
-  ReclamationDetail: { reclamationId: number; sujet: string };
+  ContratDetail: { police: any };
+  SinistreDetail: { sinistre: any };
+  QuittanceDetail: { quittance: any };
+  ReclamationDetail: { reclamation: any };
+  ReclamationCreate: undefined;
+  PersACharge: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -84,10 +88,10 @@ function getLabelSize(): number {
 // ─── Configuration des Onglets ──────────────────────────────────────────────────
 const getTabConfig = (colors: Theme['colors'], t: any) => ({
   Accueil: { label: t('Accueil'), active: 'home', inactive: 'home-outline', accentColor: colors.primary, accentBg: colors.primaryBg },
-  Contrats: { label: t('Contrats'), active: 'shield-checkmark', inactive: 'shield-checkmark-outline', accentColor: colors.primary, accentBg: colors.primaryBg },
+  Contrats: { label: t('Contrats'), active: 'document-text', inactive: 'document-text-outline', accentColor: colors.primary, accentBg: colors.primaryBg },
   Quittances: { label: t('Quittances'), active: 'receipt', inactive: 'receipt-outline', accentColor: colors.primary, accentBg: colors.primaryBg },
-  Sinistres: { label: t('Sinistres'), active: 'warning', inactive: 'warning-outline', accentColor: colors.primary, accentBg: colors.primaryBg },
-  Reclamations: { label: t("Besoin d'aide ?"), icon: 'chatbubbles', active: 'chatbubbles', inactive: 'chatbubbles-outline', accentColor: colors.primary, accentBg: colors.primaryBg },
+  Sinistres: { label: t('Sinistres'), active: 'warning', inactive: 'warning-outline', accentColor: colors.error, accentBg: colors.errorBg },
+  Reclamations: { label: t('Réclamations'), active: 'chatbubbles', inactive: 'chatbubbles-outline', accentColor: colors.primary, accentBg: colors.primaryBg },
   Profil: { label: t('Profil'), active: 'person-circle', inactive: 'person-circle-outline', accentColor: colors.primary, accentBg: colors.primaryBg },
 });
 
@@ -101,7 +105,7 @@ interface TabButtonProps {
 
 const TabButton: React.FC<TabButtonProps> = ({ routeName, focused, onPress, colors }) => {
   const { t } = useTranslation();
-  const config = getTabConfig(colors, t)[routeName];
+  const config = getTabConfig(colors, t)[routeName as keyof ReturnType<typeof getTabConfig>];
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const bgAnim = useRef(new Animated.Value(focused ? 1 : 0)).current;
   const labelAnim = useRef(new Animated.Value(focused ? 1 : 0)).current;
@@ -218,24 +222,32 @@ const CustomTabBar: React.FC<CustomTabBarProps> = ({ state, descriptors, navigat
       style={[
         styles.tabBar,
         {
-          height: tabBarHeight,
-          paddingBottom,
-          paddingTop,
+          height: isSmall ? 65 : 75,
+          marginBottom: insets.bottom > 0 ? insets.bottom : 15,
+          marginHorizontal: 20,
+          borderRadius: 30,
+          paddingBottom: 0,
+          paddingTop: 0,
           backgroundColor: bgColor,
-          borderTopColor: borderColor,
-          // Tablette : padding horizontal pour centrer les onglets
-          paddingHorizontal: isTablet ? rsp.width * 0.1 : 0,
+          borderTopColor: 'transparent',
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-around',
         },
         Platform.select({
           ios: {
-            shadowColor: isDark ? '#000' : '#0F172A',
-            shadowOffset: { width: 0, height: -3 },
-            shadowOpacity: isDark ? 0.4 : 0.08,
-            shadowRadius: 12,
+            shadowColor: '#0F172A',
+            shadowOffset: { width: 0, height: 10 },
+            shadowOpacity: 0.15,
+            shadowRadius: 20,
           },
-          android: { elevation: 24 },
+          android: { elevation: 12 },
           web: {
-            boxShadow: `0 -3px 16px rgba(15,23,42,${isDark ? 0.35 : 0.07})`,
+            boxShadow: `0 10px 30px rgba(15,23,42,0.15)`,
           } as any,
         }),
       ]}
@@ -274,28 +286,38 @@ const BottomTabs: React.FC = () => {
   const theme = useTheme<Theme>();
   const { user } = useAuth();
   const c = theme.colors;
-  
-  const userRoles = user?.roles || [];
-  const isClient = userRoles.some(r => {
-    const role = r.toLowerCase();
-    return role === 'client' || role === 'admin_cabinet' || role === 'commercial_cabinet';
-  });
 
+  // Vérification cumulative des rôles
+  const roles = user?.roles?.map(r => r.toUpperCase()) || [];
+  const isAdherent = roles.includes('ADHERENT');
+  const isClient = roles.includes('CLIENT');
+  
   return (
     <View style={{ flex: 1, backgroundColor: c.background }}>
       <Tab.Navigator
         tabBar={(props) => <CustomTabBar {...props} />}
         screenOptions={{ headerShown: false }}
       >
-        <Tab.Screen name="Accueil" component={HomeScreen} />
+        {/* Onglets à gauche de l'Accueil */}
         {isClient && (
           <>
             <Tab.Screen name="Contrats" component={ContratScreen} />
             <Tab.Screen name="Quittances" component={QuittanceScreen} />
           </>
         )}
-        <Tab.Screen name="Sinistres" component={SinistreScreen} />
-        <Tab.Screen name="Reclamations" component={ReclamationScreen} />
+
+        {/* Accueil au milieu */}
+        <Tab.Screen name="Accueil" component={HomeScreen} />
+
+        {/* Onglets à droite de l'Accueil */}
+        {isAdherent && (
+          <Tab.Screen name="Sinistres" component={SinistreScreen} />
+        )}
+
+        {(isAdherent || isClient) && (
+          <Tab.Screen name="Reclamations" component={ReclamationScreen} />
+        )}
+
         <Tab.Screen name="Profil" component={ProfileScreen} />
       </Tab.Navigator>
     </View>
@@ -307,22 +329,40 @@ const MainNavigator: React.FC = () => {
   const { t } = useTranslation();
   const theme = useTheme<Theme>();
   const { isDark } = useThemeContext();
-  const { isAuthenticated, isLoading, user } = useAuth();
+  const auth = useAuth();
+  const { isAuthenticated, isLoading } = auth;
   const c = theme.colors;
 
-  const userRoles = user?.roles || [];
-  const hasAccess = userRoles.some(r => 
-    ['client', 'adherent', 'admin_cabinet', 'commercial_cabinet'].includes(r.toLowerCase())
-  ) && (user as any)?.extranet !== 'N';
-
-  if (isLoading) {
+  if (isLoading || !isAuthenticated) {
     return (
-      <View style={[styles.loadingContainer, { backgroundColor: c.background }]}>
-        <ActivityIndicator size="large" color={c.primary} />
-        <Text style={[styles.loadingText, { color: c.textTertiary }]}>
-          {t('Chargement')}…
+      <Box flex={1} backgroundColor="background" justifyContent="center" alignItems="center" padding="xl">
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+        <Text variant="title" color="text" marginTop="l" textAlign="center">
+          {!isAuthenticated ? 'Authentification sécurisée' : t('Chargement')}
         </Text>
-      </View>
+        <Text variant="bodySmall" color="textSecondary" marginTop="s" textAlign="center" marginBottom="xl">
+          {!isAuthenticated 
+            ? 'Veuillez vous connecter pour accéder à votre espace.' 
+            : 'Préparation de votre espace...'}
+        </Text>
+        
+        {Platform.OS === 'web' && !isAuthenticated && (
+          <Pressable 
+            onPress={() => auth.login()}
+            style={({ pressed }) => [
+              {
+                backgroundColor: theme.colors.primary,
+                paddingHorizontal: 32,
+                paddingVertical: 12,
+                borderRadius: 8,
+                opacity: pressed ? 0.8 : 1,
+              }
+            ]}
+          >
+            <Text style={{ color: 'white', fontWeight: 'bold' }}>Se connecter avec Keycloak</Text>
+          </Pressable>
+        )}
+      </Box>
     );
   }
 
@@ -343,29 +383,18 @@ const MainNavigator: React.FC = () => {
       <Stack.Navigator
         screenOptions={{
           headerShown: false,
-          animation: 'fade',
-          animationDuration: 220,
+          animation: 'slide_from_right',
+          animationDuration: 250,
           contentStyle: { backgroundColor: c.background },
         }}
       >
-        {isAuthenticated ? (
-          !hasAccess ? (
-            <Stack.Screen name="Restricted" component={RestrictedScreen} />
-          ) : (
-            <>
-              <Stack.Screen name="MainTabs" component={BottomTabs} />
-              <Stack.Screen name="ReclamationDetail" component={ReclamationDetailScreen} />
-            </>
-          )
-        ) : (
-          <>
-            <Stack.Screen
-              name="Login"
-              component={LoginScreen}
-              options={{ animation: 'none' }}
-            />
-          </>
-        )}
+        <Stack.Screen name="MainTabs" component={BottomTabs} />
+        <Stack.Screen name="ContratDetail" component={ContratDetailScreen} />
+        <Stack.Screen name="SinistreDetail" component={SinistreDetailScreen} />
+        <Stack.Screen name="QuittanceDetail" component={QuittanceDetailScreen} />
+        <Stack.Screen name="ReclamationDetail" component={ReclamationDetailScreen} />
+        <Stack.Screen name="ReclamationCreate" component={ReclamationCreateScreen} />
+        <Stack.Screen name="PersACharge" component={PersAChargeScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
@@ -373,49 +402,35 @@ const MainNavigator: React.FC = () => {
 
 // ─── Styles ────────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  // Conteneur de la barre d'onglets
   tabBar: {
     flexDirection: 'row',
-    borderTopWidth: 0.5,
     ...Platform.select({
-      web: { position: 'fixed' as any, bottom: 0, left: 0, right: 0, zIndex: 9999 },
+      web: { position: 'fixed' as any, bottom: 20, left: 20, right: 20, zIndex: 9999 },
       default: {},
     }),
   },
-
-  // Bouton d'onglet individuel
   tabButton: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    // Cible tactile minimale de 44px selon les spécifications HIG / Material
     minHeight: 44,
     minWidth: 44,
   },
-
-  // Pilule de l'icône (mise en évidence en forme de pilule quand focalisé)
   iconPill: {
     alignItems: 'center',
     justifyContent: 'center',
   },
-
-  // Libellé sous l'icône
   tabLabel: {
     letterSpacing: 0.2,
     textAlign: 'center',
-    // Limitation de la largeur pour que les longs libellés ne débordent pas sur les petits écrans
     maxWidth: isSmall ? 52 : isTablet ? 80 : 64,
   },
-
-  // Petit point sous le libellé actif
   activeDot: {
     width: 4,
     height: 4,
     borderRadius: 2,
     marginTop: 2,
   },
-
-  // Écran de chargement
   loadingContainer: {
     flex: 1,
     alignItems: 'center',

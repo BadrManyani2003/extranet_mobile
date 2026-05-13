@@ -83,7 +83,7 @@ onMounted(fetchAdherents)
               <span v-else class="text-slate-300 font-black text-[10px] uppercase tracking-widest italic">Non lié</span>
             </TableCell>
             <TableCell class="text-right">
-              <div v-if="!adherent.fkUserId" class="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div v-if="!adherent.fkUserId" class="flex justify-end gap-1">
                 <Button variant="ghost" size="sm" class="h-9 gap-2 premium-button text-slate-600 hover:bg-slate-900 hover:text-white" @click="handleCreateUser(adherent.id)">
                   <UserPlus class="w-4 h-4" /> Créer accès
                 </Button>

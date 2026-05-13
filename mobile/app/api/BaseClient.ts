@@ -7,12 +7,12 @@ const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5000/api';
  * Helper générique pour les requêtes API sur Mobile
  */
 export async function apiRequest<T>(
-  endpoint: string, 
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'GET', 
+  endpoint: string,
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'GET',
   body: any = null
 ): Promise<T> {
   const token = await AsyncStorage.getItem('token');
-  
+
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
@@ -38,7 +38,7 @@ export async function apiRequest<T>(
 
   try {
     const response = await fetch(url.toString(), options);
-    
+
     if (response.status === 204) return {} as T;
 
     const contentType = response.headers.get('content-type');
@@ -55,7 +55,7 @@ export async function apiRequest<T>(
       if (response.status === 401 || response.status === 403) {
         authEvents.emit('unauthorized');
       }
-      
+
       // Prise en charge de notre nouveau format de réponse API
       const errorMsg = data?.message || data?.error || `Erreur serveur (${response.status})`;
       throw new Error(errorMsg);
@@ -63,7 +63,7 @@ export async function apiRequest<T>(
 
     // Prise en charge de notre nouveau format de réponse API { success: true, data: ... }
     if (data && typeof data === 'object' && 'success' in data && 'data' in data) {
-        return data.data as T;
+      return data.data as T;
     }
 
     return data as T;

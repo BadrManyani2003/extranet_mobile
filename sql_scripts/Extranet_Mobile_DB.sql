@@ -10,6 +10,7 @@ GO
 
 IF OBJECT_ID('dbo.ReclamationsDet', 'U') IS NOT NULL DROP TABLE dbo.ReclamationsDet;
 IF OBJECT_ID('dbo.ReclamationsIdt', 'U') IS NOT NULL DROP TABLE dbo.ReclamationsIdt;
+IF OBJECT_ID('dbo.PolDocument', 'U') IS NOT NULL DROP TABLE dbo.PolDocument;
 IF OBJECT_ID('dbo.Garanties', 'U') IS NOT NULL DROP TABLE dbo.Garanties;
 IF OBJECT_ID('dbo.Sinistres', 'U') IS NOT NULL DROP TABLE dbo.Sinistres;
 IF OBJECT_ID('dbo.Quittances', 'U') IS NOT NULL DROP TABLE dbo.Quittances;
@@ -251,6 +252,17 @@ CREATE TABLE dbo.Quittances
 );
 GO
 
+CREATE TABLE dbo.PolDocument
+(
+    Id INT NOT NULL IDENTITY(1,1),
+    fk_police_id INT NOT NULL,
+    fk_document_id INT NOT NULL,
+    libelle VARCHAR(255) NULL,
+    CONSTRAINT PK_PolDocument PRIMARY KEY CLUSTERED (Id),
+    CONSTRAINT FK_PolDocument_Police FOREIGN KEY (fk_police_id) REFERENCES dbo.Polices(Id) ON DELETE CASCADE
+);
+GO
+
 CREATE TABLE dbo.ReclamationsIdt
 (
     Id INT NOT NULL IDENTITY(1,1),
@@ -305,4 +317,5 @@ CREATE NONCLUSTERED INDEX IX_Quittances_DateEcheance ON dbo.Quittances(DateEchea
 CREATE NONCLUSTERED INDEX IX_ReclamationsIdt_User ON dbo.ReclamationsIdt(FK_User_Client);
 CREATE NONCLUSTERED INDEX IX_ReclamationsIdt_Statut ON dbo.ReclamationsIdt(Statut);
 CREATE NONCLUSTERED INDEX IX_ReclamationsDet_Reclamation ON dbo.ReclamationsDet(FK_Reclamation_Id);
+CREATE NONCLUSTERED INDEX IX_PolDocument_Police ON dbo.PolDocument(fk_police_id);
 GO

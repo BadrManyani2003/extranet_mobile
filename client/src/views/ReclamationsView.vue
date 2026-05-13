@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch } from 'vue'
-import { Plus, ChevronLeft } from 'lucide-vue-next'
+import { Plus, ChevronLeft, Trash2 } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -19,6 +19,8 @@ const { data: messages, loading: loadingChat, execute: fetchMessages } = useFetc
 
 const selectedTicket = ref<any>(null)
 const isNewDialogOpen = ref(false)
+const isDeleteDialogOpen = ref(false)
+const messageToDeleteId = ref<number | null>(null)
 const newTicket = ref({ sujet: '', nature: 'R', message: '' })
 const currentUser = ref<any>(null)
 
@@ -38,7 +40,11 @@ watch(selectedTicket, (v) => { v ? startPolling() : stopPolling() })
 onUnmounted(stopPolling)
 
 const fetchUserInfo = async () => {
-  try { const res = await api.data.getUserInfo(); currentUser.value = res.user; } catch (e) { console.error(e) }
+  try { 
+    const res = await api.data.getUserInfo(); 
+    console.log('👤 Current User Data:', res);
+    currentUser.value = res; 
+  } catch (e) { console.error('❌ Error fetching user info:', e) }
 }
 
 const selectTicket = async (ticket: any) => {
@@ -67,39 +73,57 @@ const handleSendMessage = async (text: string) => {
   } catch (e: any) { toast.error(e.message) }
 }
 
+const handleDeleteMessage = (messageId: number) => {
+  messageToDeleteId.value = messageId
+  isDeleteDialogOpen.value = true
+}
+
+const confirmDelete = async () => {
+  if (!selectedTicket.value || !messageToDeleteId.value) return
+  try {
+    await api.data.deleteMessage(messageToDeleteId.value, selectedTicket.value.id)
+    toast.success("Message supprimé")
+    isDeleteDialogOpen.value = false
+    messageToDeleteId.value = null
+    await fetchMessages(selectedTicket.value.id)
+  } catch (e: any) {
+    toast.error(e.message)
+  }
+}
+
 onMounted(() => { fetchReclamations(); fetchUserInfo(); })
 </script>
 
 <template>
   <PageContainer title="Réclamations" subtitle="Suivez vos demandes et communiquez avec nos conseillers.">
     <template #actions>
-      <Button v-if="!selectedTicket" @click="isNewDialogOpen = true" class="premium-button bg-slate-900 hover:bg-slate-800 shadow-xl shadow-slate-100 gap-2 px-6 h-12">
-        <Plus class="w-5 h-5" />
-        Nouvelle demande
+      <Button @click="isNewDialogOpen = true" class="premium-button bg-slate-900 hover:bg-slate-800 shadow-xl shadow-slate-100 gap-2 px-4 sm:px-6 h-10 sm:h-12 rounded-xl sm:rounded-2xl transition-all active:scale-95">
+        <Plus class="w-4 h-4 sm:w-5 h-5" />
+        <span class="hidden xs:inline">Nouvelle demande</span>
       </Button>
     </template>
 
-    <div class="h-[calc(100vh-16rem)] flex flex-col glass-card border-slate-100">
+    <div class="flex-1 min-h-[500px] h-[calc(100vh-14rem)] sm:h-[calc(100vh-16rem)] flex flex-col glass-card border-slate-100 overflow-hidden">
       <template v-if="!selectedTicket">
         <ReclamationList :reclamations="reclamations || []" :loading="loadingList" @select="selectTicket" />
       </template>
 
       <template v-else>
-        <div class="p-6 md:p-8 border-b border-slate-50 flex items-center gap-6 bg-white sticky top-0 z-10">
-          <Button variant="ghost" size="icon" @click="selectedTicket = null" class="rounded-xl h-10 w-10 hover:bg-slate-50">
-            <ChevronLeft class="w-6 h-6 text-slate-900" />
+        <div class="p-4 sm:p-6 md:p-8 border-b border-slate-50 flex items-center gap-4 sm:gap-6 bg-white sticky top-0 z-10">
+          <Button variant="ghost" size="icon" @click="selectedTicket = null" class="rounded-xl h-9 w-9 sm:h-10 sm:w-10 hover:bg-slate-50 shrink-0">
+            <ChevronLeft class="w-5 h-5 sm:w-6 h-6 text-slate-900" />
           </Button>
           <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-3">
-              <h2 class="text-lg font-black text-slate-900 line-clamp-1 tracking-tight">{{ selectedTicket.sujet }}</h2>
+            <div class="flex flex-wrap items-center gap-2">
+              <h2 class="text-base sm:text-lg font-black text-slate-900 truncate tracking-tight">{{ selectedTicket.sujet }}</h2>
               <Badge :class="(selectedTicket.statut === 'En cours' || selectedTicket.statut === 'E') ? 'bg-orange-50 text-orange-600' : 'bg-emerald-50 text-emerald-600'" 
-                class="status-badge px-2.5 py-1">
+                class="status-badge px-2 py-0.5 text-[9px] sm:text-[10px]">
                 {{ (selectedTicket.statut === 'E' || selectedTicket.statut === 'En cours') ? 'En cours' : 'Clôturé' }}
               </Badge>
             </div>
-            <p class="table-header-text mt-1 flex items-center gap-2">
+            <p class="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5 flex flex-wrap items-center gap-x-2">
               <span>Ticket #{{ selectedTicket.id }}</span>
-              <span class="w-1 h-1 rounded-full bg-slate-200"></span>
+              <span class="hidden xs:inline w-1 h-1 rounded-full bg-slate-200"></span>
               <span>Ouvert le {{ new Date(selectedTicket.dateReclamation).toLocaleDateString() }}</span>
             </p>
           </div>
@@ -112,6 +136,7 @@ onMounted(() => { fetchReclamations(); fetchUserInfo(); })
           :current-user-id="currentUser?.id"
           selfNature="Client"
           @send="handleSendMessage"
+          @delete-message="handleDeleteMessage"
         />
       </template>
     </div>
@@ -132,11 +157,16 @@ onMounted(() => { fetchReclamations(); fetchUserInfo(); })
 
           <div class="space-y-3">
             <Label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Type de demande</Label>
-            <div class="grid grid-cols-3 gap-2">
-              <button v-for="n in [{id:'R',l:'Réclamation'}, {id:'D',l:'Devis'}, {id:'S',l:'Sinistre'}]" :key="n.id"
+            <div class="grid grid-cols-2 gap-2">
+              <button v-for="n in [
+                {id:'S',l:'Sinistre'}, 
+                {id:'C',l:'Comptabilité'}, 
+                {id:'I',l:'Demande d\'info'}, 
+                {id:'D',l:'Correction donnée'}
+              ]" :key="n.id"
                 @click="newTicket.nature = n.id"
                 :class="newTicket.nature === n.id ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'"
-                class="h-10 rounded-xl table-header-text transition-all">
+                class="h-10 rounded-xl text-[10px] font-bold uppercase tracking-tight transition-all">
                 {{ n.l }}
               </button>
             </div>
@@ -151,6 +181,29 @@ onMounted(() => { fetchReclamations(); fetchUserInfo(); })
         <DialogFooter class="p-10 bg-slate-50/50 border-t border-slate-100">
           <Button @click="handleCreateTicket" :disabled="!newTicket.sujet || !newTicket.message" class="w-full h-12 premium-button bg-slate-900 shadow-xl">
             Envoyer la demande
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+    <!-- Modal Confirmation Suppression -->
+    <Dialog v-model:open="isDeleteDialogOpen">
+      <DialogContent class="sm:max-w-[400px] rounded-[2rem] shadow-2xl p-0 overflow-hidden border-none font-['Outfit']">
+        <DialogHeader class="p-8 bg-white text-center">
+          <div class="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Trash2 class="w-8 h-8" />
+          </div>
+          <DialogTitle class="text-xl font-black text-slate-900 tracking-tight">Supprimer le message ?</DialogTitle>
+          <DialogDescription class="text-slate-500 font-medium mt-2">
+            Cette action est irréversible. Voulez-vous vraiment supprimer ce message ?
+          </DialogDescription>
+        </DialogHeader>
+
+        <DialogFooter class="p-8 bg-slate-50/50 flex gap-3 sm:justify-center">
+          <Button variant="ghost" @click="isDeleteDialogOpen = false" class="flex-1 h-12 rounded-xl font-bold text-slate-500 hover:bg-white">
+            Annuler
+          </Button>
+          <Button @click="confirmDelete" class="flex-1 h-12 rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold shadow-lg shadow-red-100">
+            Supprimer
           </Button>
         </DialogFooter>
       </DialogContent>

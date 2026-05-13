@@ -22,6 +22,7 @@ const getPersACharge = (userId, source, token, adherentId) => db.execute(qry.get
 const getStats = (userId, source, token) => db.execute(qry.getStats, [userId, source, token]);
 
 const getStatsByPolice = (userId, source, token, policeId) => db.execute(qry.getStatsByPolice, [userId, token, source, policeId]);
+const getDocumentsByPolice = (userId, source, token, policeId) => db.execute(qry.getDocumentsByPolice, [userId, source, token, policeId]);
 
 module.exports = {
     getPolices,
@@ -34,5 +35,6 @@ module.exports = {
     getAdherents,
     getPersACharge,
     getStats,
-    getStatsByPolice
+    getStatsByPolice,
+    getDocumentsByPolice
 };

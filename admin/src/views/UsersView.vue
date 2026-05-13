@@ -152,7 +152,7 @@ onMounted(fetchUsers)
               </Button>
             </TableCell>
             <TableCell class="text-right">
-              <div class="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div class="flex justify-end gap-1">
                 <Button v-if="user.idAuth" variant="ghost" size="sm" class="h-9 px-3 premium-button text-slate-600 hover:bg-slate-900 hover:text-white" @click="openRoles(user)">
                   <ShieldCheck class="w-4 h-4 mr-2" /> Rôles
                 </Button>

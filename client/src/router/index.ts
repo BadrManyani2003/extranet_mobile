@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import MainLayout from '../layouts/MainLayout.vue'
 import ContratsView from '../views/ContratsView.vue'
-import ImpayesView from '../views/ImpayesView.vue'
 import TableauBordView from '../views/TableauBordView.vue'
 import ReclamationsView from '../views/ReclamationsView.vue'
 import RestrictedView from '../views/RestrictedView.vue'
@@ -30,9 +29,9 @@ const router = createRouter({
           component: ContratsView
         },
         {
-          path: 'impayes',
-          name: 'impayes',
-          component: ImpayesView
+          path: 'releve-global',
+          name: 'releve-global',
+          component: () => import('../views/ReleveGlobalView.vue')
         },
         {
           path: 'statistiques',

@@ -30,3 +30,11 @@ export const reclamationsAPI = {
   create: (sujet: string, nature: string, message: string) => apiRequest<any>('/reclamations/create', 'POST', { sujet, nature, message }),
   addMessage: (reclamationId: number, message: string, nature: string = 'C') => apiRequest<void>('/reclamations/add-message', 'POST', { reclamationId, message, nature }),
 };
+
+export const dataAPI = {
+  getStats: () => apiRequest<any>('/data/stats', 'GET'),
+  getStatsByPolice: (policeId: number) => apiRequest<any>('/data/stats-by-police', 'GET', { policeId }),
+  getRisques: (policeId: number) => apiRequest<any[]>('/data/risques', 'GET', { policeId }),
+  getGaranties: (risqueId: number) => apiRequest<any[]>('/data/garanties', 'GET', { risqueId }),
+  getDocuments: (policeId: number) => apiRequest<any[]>('/data/documents', 'GET', { policeId }),
+};

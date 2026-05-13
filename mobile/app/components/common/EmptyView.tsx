@@ -17,7 +17,7 @@ export const EmptyView: React.FC<EmptyViewProps> = ({
   return (
     <Box flex={1} alignItems="center" justifyContent="center" padding="xxl">
       <Box 
-        backgroundColor="backgroundGray" 
+        backgroundColor="primaryBg" 
         padding="xl" 
         borderRadius="round" 
         marginBottom="m"

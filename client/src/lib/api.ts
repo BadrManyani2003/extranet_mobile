@@ -12,5 +12,3 @@ export const api = {
     ...ReclamationService
   }
 }
-  }
-}

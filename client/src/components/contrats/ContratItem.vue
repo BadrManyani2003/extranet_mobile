@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { FileText, Tag, Users, Shield, LifeBuoy, Wallet, AlertCircle, CheckCircle2, CreditCard, FileCheck, CalendarDays, Clock, Receipt } from 'lucide-vue-next'
+import { FileText, Tag, Users, Shield, LifeBuoy, Wallet, AlertCircle, CheckCircle2, CreditCard, FileCheck, CalendarDays, Clock, Receipt, Building2 } from 'lucide-vue-next'
 import { AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion'
 import { Card } from '@/components/ui/card'
 import StatusBadge from '@/components/shared/StatusBadge.vue'
 import ListeRisques from './ListeRisques.vue'
 import ListeSinistres from './ListeSinistres.vue'
 import ListeQuittances from './ListeQuittances.vue'
+import ListeDocuments from './ListeDocuments.vue'
 import { useI18n } from 'vue-i18n'
 import { formatCurrency, formatDate, formatNumber } from '@/lib/utils'
 import { api } from '@/lib/api'
@@ -25,6 +26,7 @@ const ongletActif = ref('')
 const risques = ref<any[]>([])
 const sinistres = ref<any[]>([])
 const quittances = ref<any[]>([])
+const documents = ref<any[]>([])
 const stats = ref<any>({})
 const chargementDetails = ref(false)
 
@@ -36,16 +38,18 @@ const chargerDonnees = async () => {
       ? api.data.getAdherents(props.police.id) 
       : api.data.getRisques(props.police.id)
 
-    const [resRisques, resSinistres, resQuittances, resStats] = await Promise.all([
+    const [resRisques, resSinistres, resQuittances, resStats, resDocs] = await Promise.all([
       fetchRisques,
       api.data.getSinistres(props.police.id),
       api.data.getQuittances(props.police.id),
-      api.data.getStatsByPolice(props.police.id)
+      api.data.getStatsByPolice(props.police.id),
+      api.data.getDocuments(props.police.id)
     ])
     risques.value = resRisques || []
     sinistres.value = resSinistres || []
     quittances.value = resQuittances || []
     stats.value = resStats || {}
+    documents.value = resDocs || []
   } catch (error) {
     console.error('Erreur lors du chargement des détails de la police:', error)
   } finally {
@@ -70,7 +74,7 @@ const obtenirElementsGrille = (p: any) => [
   { id: 'sinistres-encours', title: t('contrats.sinistres_encours'), type: 'action', value: formatNumber(sinistres.value.filter((s: any) => s.statut === 'En cours' || s.statut === 'E').length), icon: Clock, defaultColor: 'bg-slate-100 text-slate-800' },
   { id: 'prime', title: t('contrats.prime_annuelle'), type: 'action', value: formatCurrency(stats.value.primeAnnuelle || 0), icon: Wallet, defaultColor: 'bg-slate-200 text-slate-900' },
   { id: 'impayes', title: t('contrats.impayes'), type: 'action', value: formatCurrency(stats.value.impayes || 0), icon: Receipt, defaultColor: (stats.value.impayes || 0) > 0 ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-400', isRedAlert: (stats.value.impayes || 0) > 0 },
-  { id: 'statut', title: t('contrats.statut'), type: 'badge', value: p.statut, icon: p.statut === 'Actif' ? CheckCircle2 : AlertCircle, colorClass: 'bg-slate-100 text-slate-500' }
+  { id: 'documents', title: t('contrats.documents'), type: 'action', value: formatNumber(documents.value.length), icon: FileText, defaultColor: 'bg-slate-100 text-slate-800' }
 ]
 
 const gererMiseAJourRecherche = (onglet: string, requete: string) => {
@@ -96,7 +100,7 @@ const gererMiseAJourRecherche = (onglet: string, requete: string) => {
             </div>
             <div class="flex flex-wrap items-center gap-x-3 gap-y-1.5 mt-2 text-xs sm:text-sm text-slate-500 font-medium">
               <span class="flex items-center gap-1.5 px-2 py-0.5 bg-slate-100 rounded-md whitespace-nowrap"><Tag class="w-3.5 h-3.5" /> {{ police.branche }}</span>
-              <span class="flex items-center gap-1.5 px-2 py-0.5 bg-slate-100 rounded-md whitespace-nowrap"><Users class="w-3.5 h-3.5" /> {{ police.client }}</span>
+              <span class="flex items-center gap-1.5 px-2 py-0.5 bg-slate-100 rounded-md whitespace-nowrap"><Building2 class="w-3.5 h-3.5" /> {{ police.compagnie }}</span>
             </div>
           </div>
         </div>
@@ -180,6 +184,12 @@ const gererMiseAJourRecherche = (onglet: string, requete: string) => {
                 iconColor="text-slate-900"
                 :searchQuery="detailedSearchQueries[`${police.id}-prime`] || ''"
                 @update:searchQuery="gererMiseAJourRecherche('prime', $event)"
+              />
+              <ListeDocuments 
+                v-else-if="ongletActif === 'documents'" 
+                :documents="documents"
+                :searchQuery="detailedSearchQueries[`${police.id}-documents`] || ''"
+                @update:searchQuery="gererMiseAJourRecherche('documents', $event)"
               />
             </Card>
           </div>

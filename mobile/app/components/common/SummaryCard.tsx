@@ -36,59 +36,54 @@ const SummaryCard: React.FC<SummaryCardProps> = ({
 
   return (
     <Box 
-      padding="m" 
-      borderRadius="m" 
+      padding="l" 
+      borderRadius="xl" 
       backgroundColor="cardBackground" 
       borderWidth={1}
-      borderColor="border"
+      borderColor="borderLight"
       style={Platform.select({ 
-        ios: { 
-          shadowColor: '#000', 
-          shadowOffset: { width: 0, height: 1 }, 
-          shadowOpacity: 0.1, 
-          shadowRadius: 3 
-        }, 
-        android: { elevation: 2 },
-        web: { boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }
+        ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.05, shadowRadius: 20 }, 
+        android: { elevation: 4 },
+        web: { boxShadow: '0 10px 25px rgba(0,0,0,0.05)' }
       })}
     >
-       <Box flexDirection="row" alignItems="center" marginBottom="m">
+       <Box flexDirection="row" justifyContent="space-between" alignItems="flex-start" marginBottom="l">
+          <Box flex={1}>
+            <Text variant="premiumLabel" color="textTertiary" marginBottom="xxs">{title}</Text>
+            <Text variant="subheader" fontSize={rsp.normalize(20)} numberOfLines={1}>{subtitle}</Text>
+          </Box>
           <Box 
-            width={44} 
-            height={44} 
-            borderRadius="round" 
+            width={48} 
+            height={48} 
+            borderRadius="l" 
             backgroundColor={active.bg as keyof Theme['colors']} 
             alignItems="center" 
             justifyContent="center"
-            marginRight="m"
           >
             <Icon 
               name={icon as any} 
-              size={22} 
+              size={24} 
               color={theme.colors[active.main as keyof Theme['colors']]} 
             />
-          </Box>
-          <Box flex={1}>
-            <Text variant="title" color="text" fontSize={rsp.normalize(18)} fontWeight="700">{title}</Text>
-            <Text variant="bodySmall" color="textSecondary">{subtitle}</Text>
           </Box>
        </Box>
        
        <Box 
          flexDirection="row" 
          justifyContent="space-between" 
-         alignItems="flex-end" 
-         paddingTop="s" 
-         borderTopWidth={1} 
-         borderTopColor="border"
+         alignItems="center"
+         marginTop="s"
        >
           <Box>
-            <Text variant="caption" color="textSecondary" fontWeight="600" fontSize={rsp.normalize(13)}>
-              {amountLabel}
-            </Text>
-            <Text variant="header" color={active.main as keyof Theme['colors']} fontSize={rsp.normalize(24)} fontWeight="700">
+            <Text variant="header" color="primary" fontSize={rsp.normalize(28)}>
               {amount}
             </Text>
+            <Text variant="caption" color="textTertiary" fontWeight="600">
+              {amountLabel}
+            </Text>
+          </Box>
+          <Box backgroundColor="primaryBg" paddingHorizontal="s" paddingVertical="xxs" borderRadius="round">
+             <Icon name="arrow-forward" size={16} color={theme.colors.primary} />
           </Box>
        </Box>
     </Box>

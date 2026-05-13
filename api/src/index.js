@@ -4,22 +4,14 @@ const db   = require('./services/db.service');
 const PORT = process.env.PORT || 5000;
 
 const startServer = async () => {
-    require('fs').appendFileSync('C:/PRJ/extranet_mobile/api/startup.log', 'SERVER STARTING\n');
-    console.log('--- SYSTEM STARTUP ---');
-
-    
-    // Vérification de la base de données
+    // Check database connection
     const dbOk = await db.checkConnection();
-    if (dbOk) {
-        console.log('✅ Database: CONNECTED');
-    } else {
-        console.warn('⚠️  Database: CONNECTION FAILED (Verify SQL Server)');
-    }
-
+    
     app.listen(PORT, () => {
-        console.log(`🚀 Server ready on port ${PORT}`);
-        console.log('-----------------------');
+        console.log(`\n🚀 Extranet API running on port ${PORT}`);
+        console.log(`🔗 Database: ${dbOk ? 'CONNECTED' : 'CONNECTION FAILED'}`);
+        console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}\n`);
     });
 };
 
-startServer();
+startServer();

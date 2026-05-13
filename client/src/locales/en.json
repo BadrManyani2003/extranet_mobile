@@ -2,7 +2,7 @@
   "navigation": {
     "dashboard": "Dashboard",
     "policies": "Policies",
-    "unpaid": "Unpaid",
+    "global_statement": "Global Statement",
     "reclamation": "Claims"
   },
   "tableau_bord": {
@@ -30,7 +30,7 @@
   },
   "contrats": {
     "title": "Policies",
-    "subtitle": "Management.",
+    "subtitle": "Consultation.",
     "search_placeholder": "Search",
     "prime_annuelle": "Premium",
     "impayes": "Unpaid",
@@ -42,7 +42,11 @@
     "echeance": "Due date",
     "detail_button": "Details",
     "support_button": "Help",
-    "num": "Policy"
+    "num": "Policy",
+    "documents": "Documents",
+    "desc_docs": "Attachments.",
+    "search_docs": "Search for a document...",
+    "empty_docs": "No documents found."
   },
   "risques": {
     "title": "Coverage",
@@ -111,19 +115,15 @@
     "empty_unpaid_desc": "No unpaid.",
     "empty_all": "None."
   },
-  "vue_impayes": {
-    "title": "Unpaid",
-    "subtitle": "Pending.",
-    "search": "Search",
-    "total_unpaid": "Total",
-    "items": "List",
-    "pay_button": "Pay",
-    "notify_button": "Remind",
-    "empty": "Up to date."
+  "vue_releve_global": {
+    "title": "Global Statement",
+    "subtitle": "Complete history of all your receipts.",
+    "search": "Search for a receipt...",
+    "empty": "No receipts found."
   },
   "reclamations": {
     "title": "Claims",
-    "subtitle": "Support.",
+    "subtitle": "Tracking & Support.",
     "new_request": "Create",
     "subject": "Subject",
     "subject_placeholder": "Object...",

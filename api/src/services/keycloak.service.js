@@ -6,11 +6,21 @@ const realm = process.env.KEYCLOAK_REALM;
 const clientId = process.env.KEYCLOAK_CLIENT_ID;
 const clientSecret = process.env.KEYCLOAK_CLIENT_SECRET;
 
+let cachedToken = null;
+let tokenExpiry = 0;
+
 /**
  * Obtient un token d'accès administrateur via le flux client_credentials.
- * Le client doit avoir les rôles "manage-users" et "view-realm" (dans client roles -> realm-management)
+ * Avec mise en cache pour éviter des appels réseaux inutiles.
  */
 const getAdminToken = async () => {
+    const now = Math.floor(Date.now() / 1000);
+    
+    // Si on a un token valide (avec une marge de 10s), on le retourne
+    if (cachedToken && tokenExpiry > (now + 10)) {
+        return cachedToken;
+    }
+
     const url = `${authServerUrl}/realms/${realm}/protocol/openid-connect/token`;
     const data = qs.stringify({
         grant_type: 'client_credentials',
@@ -22,7 +32,11 @@ const getAdminToken = async () => {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
     });
 
-    return response.data.access_token;
+    cachedToken = response.data.access_token;
+    // On calcule l'expiration (par défaut Keycloak donne expires_in en secondes)
+    tokenExpiry = now + (response.data.expires_in || 60); 
+
+    return cachedToken;
 };
 
 /**
@@ -33,7 +47,6 @@ const getAvailableRoles = async () => {
         const token = await getAdminToken();
         const url = `${authServerUrl}/admin/realms/${realm}/roles`;
         
-        console.log(`[Keycloak] Fetching roles from: ${url}`);
         const response = await axios.get(url, {
             headers: { Authorization: `Bearer ${token}` }
         });
@@ -42,10 +55,8 @@ const getAvailableRoles = async () => {
         const technicalRoles = ['offline_access', 'uma_authorization', `default-roles-${realm}`];
         const filteredRoles = response.data.filter(role => !technicalRoles.includes(role.name));
         
-        console.log(`[Keycloak] Found ${filteredRoles.length} roles (after filtering)`);
         return filteredRoles;
     } catch (err) {
-        console.error('[Keycloak] Error fetching roles:', err.response?.data || err.message);
         throw err;
     }
 };

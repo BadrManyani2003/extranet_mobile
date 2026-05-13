@@ -1,238 +1,169 @@
-import React, { useState, useMemo } from 'react';
-import {
-  RefreshControl,
-  TouchableOpacity,
-  ScrollView,
-  FlatList,
-  Platform,
-  StyleSheet,
-} from 'react-native';
-import { useTheme } from '@shopify/restyle';
-import { Ionicons as Icon } from '@expo/vector-icons';
-
-import { useAuth } from '../context/AuthContext';
-import { quittancesAPI } from '../api';
-import { Quittance } from '../types';
-import { useApiCall, formatDate, formatMontant } from '../hooks/useApiCall';
-import { Theme } from '../theme/theme';
+import React, { useState, useEffect } from 'react';
+import { FlatList, RefreshControl, Platform, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { Box, Text } from '../theme/restyle';
-import { rsp } from '../utils/responsive';
-import { LoadingSpinner, ErrorView, EmptyView, InfoRow, Section, StatusBadge, Button, CardUp, SummaryCard } from '../components/common';
 import AppHeader from '../components/layout/AppHeader';
+import { quittancesAPI } from '../api';
+import { StatusBadge, LoadingSpinner, EmptyView } from '../components/common';
+import { Ionicons as Icon } from '@expo/vector-icons';
+import { Theme } from '../theme/theme';
+import { useTheme } from '@shopify/restyle';
+import { cacheService } from '../services/cacheService';
 
-// ─── Hook de Logique Métier ───────────────────────────────────────────────────
-const useQuittances = () => {
-  const { data, loading, error, execute } = useApiCall<Quittance[]>();
-
-  const load = React.useCallback(() => {
-    execute(() => quittancesAPI.getAll());
-  }, [execute]);
-
-
-  React.useEffect(() => { load(); }, [load]);
-
-  const sortedData = useMemo(() => 
-    (data || []).sort((a, b) => b.id - a.id), 
-  [data]);
-
-  const stats = useMemo(() => {
-    const totalImpaye = sortedData.reduce((s, q) => s + Number(q.montant_impaye || 0), 0);
-    const nbImpayees = sortedData.filter(q => Number(q.montant_impaye || 0) > 0).length;
-    return { totalImpaye, nbImpayees };
-  }, [sortedData]);
-
-  return { quittances: sortedData, stats, loading, error, refresh: load };
-};
-
-// ─── Composants Internes ─────────────────────────────────────────────────────
-const QuittanceDetailModal: React.FC<{
-  quittance: Quittance;
-  visible: boolean;
-  onClose: () => void;
-  onPay?: () => void;
-}> = ({ quittance, visible, onClose, onPay }) => {
-  const isImpaye = Number(quittance.montant_impaye || 0) > 0;
-  
-
-
-  return (
-    <CardUp visible={visible} onClose={onClose} title="Récapitulatif Financier" subtitle={`Quittance N° ${quittance.num_quittance}`}>
-      <FlatList
-        data={['info', 'dates', 'financial']}
-        keyExtractor={item => item}
-        showsVerticalScrollIndicator={false}
-        renderItem={({ item }) => {
-          if (item === 'info') return (
-            <Section title="Informations Dossier" padding>
-               <InfoRow label="Référence" value={quittance.num_quittance} icon="finger-print" />
-               <InfoRow label="Branche" value={quittance.branche || 'NON SPÉCIFIÉ'} icon="layers" />
-               <InfoRow label="État Dossier" value={quittance.statut} valueColor={quittance.statut_variant as any} icon="shield-checkmark" isLast />
-            </Section>
-          );
-          if (item === 'dates') return (
-            <Section title="Période Validité" padding>
-               <InfoRow label="Début de Garantie" value={formatDate(quittance.date_effet)} icon="play-circle" />
-               <InfoRow label="Fin de Garantie" value={formatDate(quittance.date_echeance)} icon="stop-circle" isLast />
-            </Section>
-          );
-          return (
-            <Section title="Détail Financier" padding>
-               <InfoRow label="Prime à Échoir" value={formatMontant(quittance.prime_totale)} valueColor="text" icon="cash" />
-               <InfoRow label="Montant Régularisé" value={formatMontant(quittance.montant_encaisse)} valueColor="success" icon="checkmark-circle" />
-               <InfoRow label="Solde à Régler" value={formatMontant(quittance.montant_impaye)} valueColor="error" icon="alert-circle" isLast />
-            </Section>
-          );
-        }}
-        ListFooterComponent={
-          <Box paddingHorizontal="l" marginTop="m" paddingBottom="xl">
-          </Box>
-        }
-      />
-    </CardUp>
-  );
-};
-
-const QuittanceItem: React.FC<{ item: Quittance; index: number; onPress: () => void; onPay?: () => void }> = ({ item, index, onPress, onPay }) => {
+const QuittanceScreen = () => {
   const theme = useTheme<Theme>();
-  const isImpaye = Number(item.montant_impaye || 0) > 0;
+  const navigation = useNavigation<any>();
+  const [quittances, setQuittances] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
+  const fetchQuittances = async (useCache = true) => {
+    try {
+      if (useCache) {
+        const cachedData = await cacheService.get<any[]>('quittances');
+        if (cachedData) {
+          setQuittances(cachedData);
+          setLoading(false);
+        }
+      } else {
+        setLoading(true);
+      }
 
+      const data = await quittancesAPI.getAll();
+      setQuittances(data);
+      await cacheService.set('quittances', data);
+    } catch (error) {
+      console.error("Erreur chargement quittances:", error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
 
-  return (
-    <TouchableOpacity activeOpacity={0.9} onPress={onPress}>
-        <Box 
-          backgroundColor="cardBackground"
-          borderRadius="l"
-          marginHorizontal="m"
-          marginBottom="m"
-          overflow="hidden"
-          style={styles.card}
-        >
-          <Box paddingHorizontal="m" paddingVertical="s" backgroundColor="background" flexDirection="row" justifyContent="space-between" alignItems="center">
-            <Box flexDirection="row" alignItems="center">
-               <Box backgroundColor="primary" width={24} height={24} borderRadius="round" alignItems="center" justifyContent="center" marginRight="s">
-                  <Icon name="receipt" size={12} color="white" />
-               </Box>
-               <Text variant="bodySmall" color="text" fontSize={12} fontWeight="700">{item.branche || 'Assurance'}</Text>
+  useEffect(() => {
+    fetchQuittances();
+  }, []);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchQuittances(false);
+  };
+
+  const formatDate = (dateStr: string) => {
+    if (!dateStr) return '--/--/----';
+    try {
+      const date = new Date(dateStr);
+      if (isNaN(date.getTime())) return dateStr;
+      const d = String(date.getDate()).padStart(2, '0');
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const y = date.getFullYear();
+      return `${d}/${m}/${y}`;
+    } catch {
+      return dateStr;
+    }
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'MAD' }).format(amount);
+  };
+
+  const renderItem = ({ item }: { item: any }) => (
+    <TouchableOpacity activeOpacity={0.8} onPress={() => navigation.navigate('QuittanceDetail', { quittance: item })}>
+      <Box 
+        backgroundColor="cardBackground" 
+        marginHorizontal="m" 
+        marginVertical="s" 
+        borderRadius="l"
+        padding="l"
+        borderWidth={1}
+        borderColor="borderLight"
+        style={Platform.select({
+          ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.04, shadowRadius: 12 },
+          android: { elevation: 3 },
+          web: { boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }
+        })}
+      >
+        {/* Header: Type + Status */}
+        <Box flexDirection="row" justifyContent="space-between" alignItems="center" marginBottom="m">
+          <Box flexDirection="row" alignItems="center">
+            <Box backgroundColor="primaryBg" padding="s" borderRadius="m" marginRight="s">
+              <Icon name="receipt" size={18} color={theme.colors.primary} />
             </Box>
-            <StatusBadge label={item.statut} variant={item.statut_variant as any} />
+            <Text variant="caption" color="primary" fontWeight="800" style={{ letterSpacing: 1, textTransform: 'uppercase' }}>
+              Quittance
+            </Text>
           </Box>
+          <StatusBadge label={item.statut || 'Payée'} variant={item.statut_variant || 'success'} />
+        </Box>
 
-          <Box padding="m" borderBottomWidth={1} borderBottomColor="border">
-            <Box flexDirection="row" justifyContent="space-between" alignItems="flex-start">
-               <Box flex={1}>
-                  <Text variant="bodySmall" color="textSecondary" fontWeight="600">RÉF. {item.num_quittance}</Text>
-                  <Text variant="title" color="text" fontSize={rsp.normalize(22)} fontWeight="700" marginBottom="none">{formatMontant(item.prime_totale)}</Text>
-                  <Text variant="bodySmall" color="textSecondary" fontWeight="600">Police N°: {item.police_num || '-'}</Text>
-               </Box>
-                <TouchableOpacity onPress={isImpaye ? onPay : onPress}>
-                   <Box 
-                     backgroundColor={"primaryBg"} 
-                     paddingHorizontal="m" 
-                     paddingVertical="xxs" 
-                     borderRadius="s"
-                     minWidth={rsp.scale(80)}
-                     alignItems="center"
-                   >
-                      <Text 
-                        variant="caption" 
-                        color={isImpaye ? "white" : "text"} 
-                        fontWeight="700" 
-                        fontSize={rsp.normalize(11)}
-                      >
-                        {'DÉTAILS'}
-                      </Text>
-                   </Box>
-                </TouchableOpacity>
-            </Box>
+        {/* Quittance Number & Amount */}
+        <Box flexDirection="row" justifyContent="space-between" alignItems="flex-end" marginBottom="m">
+          <Box flex={1}>
+            <Text variant="caption" color="textTertiary" marginBottom="xxs">N° de quittance</Text>
+            <Text variant="title" fontWeight="900" fontSize={20} color="text">
+              {item.numero || item.quittance || item.num_quittance || 'N/A'}
+            </Text>
           </Box>
-
-          <Box paddingHorizontal="m" paddingVertical="s" flexDirection="row" justifyContent="space-between" alignItems="center">
-             <Text variant="caption" color="textSecondary" fontWeight="600">Dû: <Text fontWeight="800" color={isImpaye ? "error" : "success"}>{formatMontant(item.montant_impaye)}</Text></Text>
-             <Text variant="caption" color="textSecondary" fontWeight="600">{formatDate(item.date_effet)}</Text>
+          <Box alignItems="flex-end">
+            <Text variant="title" fontWeight="900" fontSize={22} color="primary">
+              {item.montantTotal || item.montant ? formatCurrency(item.montantTotal || item.montant) : '0,00 MAD'}
+            </Text>
           </Box>
         </Box>
+
+        <Box height={1} backgroundColor="borderLight" marginBottom="m" />
+
+        {/* Details Grid */}
+        <Box flexDirection="row" justifyContent="space-between">
+          <Box flex={1} marginRight="m">
+            <Box flexDirection="row" alignItems="center" marginBottom="xxs">
+              <Icon name="document-text-outline" size={14} color={theme.colors.textTertiary} style={{ marginRight: 4 }} />
+              <Text variant="caption" color="textTertiary">Police liée</Text>
+            </Box>
+            <Text variant="bodySmall" fontWeight="700" color="text">
+               {item.police || 'N/A'}
+            </Text>
+          </Box>
+
+          <Box alignItems="flex-end">
+            <Box flexDirection="row" alignItems="center" marginBottom="xxs">
+              <Icon name="time-outline" size={14} color={theme.colors.textTertiary} style={{ marginRight: 4 }} />
+              <Text variant="caption" color="textTertiary">Date d'échéance</Text>
+            </Box>
+            <Text variant="bodySmall" fontWeight="700" color="text">
+              {formatDate(item.dateEcheance || item.date_echeance)}
+            </Text>
+          </Box>
+        </Box>
+      </Box>
     </TouchableOpacity>
   );
-};
-
-// ─── Composant Principal de l'Écran - Style Meta ──────────────────────────────
-const QuittanceScreen: React.FC = () => {
-  const theme = useTheme<Theme>();
-  const { user } = useAuth();
-  const { quittances, stats, loading, error, refresh } = useQuittances();
-  const [selected, setSelected] = useState<Quittance | null>(null);
 
   return (
     <Box flex={1} backgroundColor="background">
-      <AppHeader 
-        title="Facturation" 
-        showBackButton={false} 
-        rightIconName="receipt" 
-      />
-
-      <ScrollView 
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl refreshing={loading} onRefresh={refresh} />
-        }
-        contentContainerStyle={{ paddingBottom: 120 }}
-      >
-        <Box paddingVertical="xl" paddingHorizontal="m">
-            <Text variant="header" color="text" fontSize={rsp.normalize(26)} fontWeight="700">Facturation</Text>
-            <Text variant="bodySmall" color="textSecondary" fontWeight="600">Consultez vos quittances</Text>
-        </Box>
-
-        <Box marginBottom="m" marginHorizontal="m">
-          <SummaryCard 
-              title="Situation Globale" 
-              subtitle="Montant total des impayés à régler." 
-              icon="wallet" 
-              amount={formatMontant(stats.totalImpaye)} 
-              amountLabel="SOLDE À RÉGLER"
-              variant={stats.totalImpaye > 0 ? 'error' : 'success'}
-          />
-        </Box>
-
-        <Box paddingHorizontal="m" marginBottom="m">
-           <Text variant="bodyMedium" color="textSecondary" fontWeight="700" fontSize={14} marginLeft="xs">HISTORIQUE DES PAIEMENTS</Text>
-        </Box>
-
-        {loading && quittances.length === 0 ? (
-          <LoadingSpinner message="Calcul du solde..." />
-        ) : error ? (
-          <ErrorView message={error} onRetry={refresh} />
-        ) : quittances.length === 0 ? (
-          <EmptyView message="Aucun document trouvé." icon="receipt-outline" />
-        ) : (
-          <Box>
-            {quittances.map((item, idx) => (
-              <QuittanceItem key={item.id} item={item} index={idx} onPress={() => setSelected(item)} onPay={() => {}} />
-            ))}
-          </Box>
-        )}
-      </ScrollView>
-
-      {selected && (
-        <QuittanceDetailModal
-          quittance={selected}
-          visible={!!selected}
-          onClose={() => setSelected(null)}
-          onPay={() => {}}
+      <AppHeader title="Mes Quittances" showBackButton={false} />
+      
+      {loading && !refreshing ? (
+        <LoadingSpinner />
+      ) : (
+        <FlatList
+          data={quittances}
+          renderItem={renderItem}
+          keyExtractor={(item, index) => (item.id || index).toString()}
+          contentContainerStyle={{ paddingVertical: 10, paddingBottom: 100 }}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+          ListEmptyComponent={
+            <EmptyView 
+              icon="receipt-outline" 
+              message="Vous n'avez pas encore de quittances enregistrées." 
+            />
+          }
         />
       )}
     </Box>
   );
 };
-
-const styles = StyleSheet.create({
-  card: {
-    ...Platform.select({
-      ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 3 },
-      android: { elevation: 2 },
-      web: { boxShadow: '0 1px 3px rgba(0,0,0,0.1)' },
-    }),
-  }
-});
 
 export default QuittanceScreen;

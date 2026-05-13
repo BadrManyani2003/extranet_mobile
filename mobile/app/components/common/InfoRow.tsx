@@ -23,43 +23,41 @@ const InfoRow: React.FC<InfoRowProps> = ({
     flexDirection="row" 
     alignItems="center" 
     paddingVertical="m" 
-    marginHorizontal="m" 
+    paddingHorizontal="m" 
     borderBottomWidth={isLast ? 0 : 1} 
-    borderBottomColor="border"
+    borderBottomColor="borderLight"
   >
     <Box flex={1} flexDirection="row" alignItems="center">
       {icon && (
         <Box 
-          width={32} 
-          height={32} 
-          borderRadius="round" 
-          backgroundColor="backgroundGray" 
+          width={36} 
+          height={36} 
+          borderRadius="m" 
+          backgroundColor="primaryBg" 
           alignItems="center" 
           justifyContent="center" 
           marginRight="m"
         >
           <Icon 
             name={icon as any} 
-            size={16} 
-            color="#65676B" 
+            size={18} 
+            color="#334155" 
           />
         </Box>
       )}
       <Text 
-        variant="bodyMedium" 
+        variant="bodySmall" 
         color="textSecondary" 
-        fontWeight="600" 
-        fontSize={rsp.normalize(14)}
+        fontWeight="600"
       >
         {label}
       </Text>
     </Box>
     <Text 
-      variant="body" 
+      variant="bodyMedium" 
       color={valueColor as any} 
-      fontWeight="700" 
-      textAlign="right" 
-      fontSize={rsp.normalize(14)}
+      fontWeight="800" 
+      textAlign="right"
     >
       {value ?? '-'}
     </Text>

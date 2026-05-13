@@ -2,18 +2,23 @@ import React from 'react';
 import { Platform } from 'react-native';
 import { Box, Text } from '../../theme/restyle';
 import { rsp } from '../../utils/responsive';
+import { Ionicons as Icon } from '@expo/vector-icons';
 
 interface SectionProps {
   title?: string;
+  icon?: string;
   children: React.ReactNode;
   padding?: boolean;
 }
 
-const Section: React.FC<SectionProps> = ({ title, children, padding = false }) => (
+const Section: React.FC<SectionProps> = ({ title, icon, children, padding = false }) => (
   <Box marginBottom="l">
     {title && (
-      <Box marginHorizontal="l" marginBottom="s">
-        <Text variant="labelBold" color="textSecondary" fontSize={rsp.normalize(14)} fontWeight="700">
+      <Box marginHorizontal="l" marginBottom="s" flexDirection="row" alignItems="center">
+        {icon && (
+          <Icon name={icon as any} size={16} color="#475569" style={{ marginRight: 8 }} />
+        )}
+        <Text variant="premiumLabel" color="textSecondary" fontSize={rsp.normalize(11)}>
           {title}
         </Text>
       </Box>
@@ -21,15 +26,15 @@ const Section: React.FC<SectionProps> = ({ title, children, padding = false }) =
     <Box 
       backgroundColor="cardBackground" 
       marginHorizontal={Platform.OS === 'web' ? 'none' : 'l'} 
-      borderRadius="m" 
+      borderRadius="xl" 
       padding={padding ? "m" : "none"} 
-      borderWidth={Platform.OS === 'web' ? 1 : 0}
-      borderColor="border"
+      borderWidth={1}
+      borderColor="borderLight"
       overflow="hidden"
       style={Platform.select({
-        ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 3 },
-        android: { elevation: 2 },
-        web: { boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }
+        ios: { shadowColor: '#0F172A', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 10 },
+        android: { elevation: 3 },
+        web: { boxShadow: '0 4px 12px rgba(15,23,42,0.05)' }
       })}
     >
       {children}

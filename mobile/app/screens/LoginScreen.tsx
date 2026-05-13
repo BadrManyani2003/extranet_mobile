@@ -53,7 +53,12 @@ const LoginScreen: React.FC<Props> = () => {
       Animated.timing(opacity,    { toValue: 1, duration: 800, useNativeDriver: Platform.OS !== 'web' }),
       Animated.spring(formSlide,  { toValue: 0, bounciness: 4, speed: 10, delay: 100, useNativeDriver: Platform.OS !== 'web' }),
     ]).start();
-  }, []);
+
+    // 🚀 Redirection automatique vers Keycloak dès que la requête est prête
+    if (request && !loading && !errorMsg && !response) {
+      promptAsync();
+    }
+  }, [request, loading, errorMsg, response]);
 
   // ── Handle OAuth response ────────────────────────────────────
   useEffect(() => {
@@ -83,34 +88,41 @@ const LoginScreen: React.FC<Props> = () => {
       const accessToken = tokenResult.accessToken;
       const decoded: any = jwtDecode(accessToken);
 
-      const roles: string[] = decoded.realm_access?.roles || [];
+      // Extraction des rôles depuis le token Keycloak (Realm Roles + Client Roles)
+      const realmRoles: string[] = decoded.realm_access?.roles || [];
+      const clientRoles: string[] = decoded.resource_access?.[keycloakConfig.clientId]?.roles || [];
+      const roles = [...new Set([...realmRoles, ...clientRoles])];
+      
       const hasRole = (roleName: string) => 
-        roles.some(r => r.toUpperCase() === roleName.toUpperCase() || r.toUpperCase() === `ROLE_${roleName.toUpperCase()}`);
+        roles.some(r => r.toUpperCase() === roleName.toUpperCase());
 
       const isAdherent = hasRole('ADHERENT');
       const isClient = hasRole('CLIENT');
 
-      // Restriction d'accès : Seuls les Adhérents et Clients peuvent entrer
+      // 🛑 Restriction stricte : Seuls les Adhérents et Clients peuvent se connecter
       if (!isAdherent && !isClient) {
-        setErrorMsg("Accès refusé. Cette application est réservée aux Adhérents et Clients.");
+        setErrorMsg("Accès non autorisé. Cette application est exclusivement réservée aux Adhérents et Clients.");
+        setLoading(false);
         return;
       }
+
+      // Détermination de la source pour les futures requêtes API
+      const userSource: 'ADHERENT' | 'CLIENT' = isAdherent ? 'ADHERENT' : 'CLIENT';
 
       const user = {
         id:     decoded.sub       || '',
         email:  decoded.email     || decoded.preferred_username || '',
         nom:    decoded.family_name  || '',
         prenom: decoded.given_name   || '',
-        role:   isAdherent ? 'ADHERENT' : 'CLIENT',
+        role:   userSource,
         roles:  roles,
       };
 
-      const userSource: 'ADHERENT' | 'CLIENT' = isAdherent ? 'ADHERENT' : 'CLIENT';
-
-      await signin(user, accessToken, userSource);
+      await signin(user, accessToken, userSource); 
 
 
-    } catch {
+    } catch (error) {
+      console.error("[Login] Error exchanging code for token:", error);
       setErrorMsg("Erreur lors de la récupération du token. Réessayez.");
     } finally {
       setLoading(false);
@@ -190,7 +202,7 @@ const LoginScreen: React.FC<Props> = () => {
                 </Box>
               )}
 
-              {/* Info card */}
+              {/* Login Section / Auto-redirect */}
               <Box
                 backgroundColor="cardBackground"
                 borderRadius="xl"
@@ -198,6 +210,7 @@ const LoginScreen: React.FC<Props> = () => {
                 borderWidth={1}
                 borderColor="borderLight"
                 marginBottom="xl"
+                alignItems="center"
                 style={Platform.select({
                   ios: {
                     shadowColor: c.primary,
@@ -209,43 +222,40 @@ const LoginScreen: React.FC<Props> = () => {
                   web: { boxShadow: `0 4px 12px ${c.primary}14` }
                 })}
               >
-                <Box flexDirection="row" alignItems="center" marginBottom="m">
-                  <Box
-                    backgroundColor="primaryBg"
-                    width={40}
-                    height={40}
-                    borderRadius="m"
-                    alignItems="center"
-                    justifyContent="center"
-                    marginRight="m"
-                  >
-                    <Icon name={"lock-closed" as any} size={20} color={c.primary} />
-                  </Box>
-                  <Box flex={1}>
-                    <Text variant="title" color="text" fontWeight="700" fontSize={16}>
+                {!errorMsg ? (
+                  <>
+                    <Box
+                      backgroundColor="primaryBg"
+                      width={60}
+                      height={60}
+                      borderRadius="round"
+                      alignItems="center"
+                      justifyContent="center"
+                      marginBottom="m"
+                    >
+                      <Icon name="lock-closed" size={28} color={c.primary} />
+                    </Box>
+                    <Text variant="title" color="text" fontWeight="700" fontSize={18} textAlign="center">
                       Connexion sécurisée
                     </Text>
-                    <Text variant="caption" color="textSecondary" marginTop="xs">
-                      Via Keycloak — tous les opérateurs
+                    <Text variant="bodySmall" color="textSecondary" marginTop="s" textAlign="center">
+                      Redirection vers la page de connexion Keycloak...
                     </Text>
-                  </Box>
-                </Box>
-
-                <Text variant="bodySmall" color="textTertiary" lineHeight={20}>
-                  Connectez-vous avec vos identifiants professionnels.
-                  Adhérents, Clients, Cabinets — une seule page de connexion.
-                </Text>
+                    <Box marginTop="l">
+                      <Button
+                        label={t('Se connecter')}
+                        onPress={() => promptAsync()}
+                        loading={loading || !request}
+                        disabled={!request}
+                        variant="primary"
+                        size="medium"
+                      />
+                    </Box>
+                  </>
+                ) : (
+                   <AlertBanner message={errorMsg} variant="error" />
+                )}
               </Box>
-
-              {/* Login Button */}
-              <Button
-                label={t('Se connecter')}
-                onPress={() => promptAsync()}
-                loading={loading || !request}
-                disabled={!request}
-                size="large"
-                variant="primary"
-              />
 
               <Box height={1} backgroundColor="border" width="100%" marginVertical="xl" />
 

@@ -1,212 +1,162 @@
-import React, { useState, useMemo } from 'react';
-import {
-  RefreshControl,
-  TouchableOpacity,
-  ScrollView,
-  FlatList,
-  Platform,
-  StyleSheet,
-} from 'react-native';
-import { useTheme } from '@shopify/restyle';
-import { Ionicons as Icon } from '@expo/vector-icons';
-
-import { useAuth } from '../context/AuthContext';
-import { policesAPI } from '../api';
-import { Police } from '../types';
-import { useApiCall, formatDate } from '../hooks/useApiCall';
-import { Theme } from '../theme/theme';
+import React, { useState, useEffect } from 'react';
+import { FlatList, RefreshControl, Platform, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { Box, Text } from '../theme/restyle';
-import { rsp } from '../utils/responsive';
-import { LoadingSpinner, ErrorView, EmptyView, InfoRow, Section, StatusBadge, Button, CardUp } from '../components/common';
 import AppHeader from '../components/layout/AppHeader';
+import { policesAPI } from '../api';
+import { StatusBadge, LoadingSpinner, EmptyView } from '../components/common';
+import { Ionicons as Icon } from '@expo/vector-icons';
+import { Theme } from '../theme/theme';
+import { useTheme } from '@shopify/restyle';
+import { cacheService } from '../services/cacheService';
 
-// ─── Business Logic Hook ─────────────────────────────────────────────────────
-const usePolices = () => {
-  const { data, loading, error, execute } = useApiCall<Police[]>();
-
-  const load = React.useCallback(() => {
-    execute(() => policesAPI.getAll());
-  }, [execute]);
-
-
-  React.useEffect(() => { load(); }, [load]);
-
-  const sortedData = useMemo(() => 
-    (data || []).sort((a, b) => b.id - a.id), 
-  [data]);
-
-  const stats = useMemo(() => {
-    const actives = (data || []).filter(p => p.is_active === 1).length;
-    return { total: (data || []).length, actives };
-  }, [data]);
-
-  return { polices: sortedData, stats, loading, error, refresh: load };
-};
-
-// ─── Internal Components ─────────────────────────────────────────────────────
-const ContratDetailModal: React.FC<{
-  police: Police;
-  visible: boolean;
-  onClose: () => void;
-}> = ({ police, visible, onClose }) => {
-
-
-  return (
-    <CardUp visible={visible} onClose={onClose} title="Expertise Contrat" subtitle={`Police N° ${police.num_police}`}>
-      <FlatList
-        data={['contrat', 'assure', 'dates']}
-        keyExtractor={item => item}
-        showsVerticalScrollIndicator={false}
-        renderItem={({ item }) => {
-          if (item === 'contrat') return (
-            <Section title="VOTRE CONTRAT" padding>
-               <InfoRow label="Identifiant" value={police.num_police} icon="card" />
-               <InfoRow label="Branche" value={police.branche} icon="layers" />
-               <InfoRow label="État Dossier" value={police.statut} valueColor={police.statut_variant as any} icon={police.statut_variant === 'success' ? 'checkmark-circle' : 'alert-circle'} isLast />
-            </Section>
-          );
-          if (item === 'assure') return (
-            <Section title="VOTRE PROTECTION" padding>
-               <InfoRow label="Compagnie" value={police.compagnie} icon="business" />
-               <InfoRow label="Assuré" value={police.assure || '-'} icon="person" isLast />
-            </Section>
-          );
-          return (
-            <Section title="VALIDITÉ" padding>
-               <InfoRow label="Depuis le" value={formatDate(police.date_souscription)} icon="play" />
-               <InfoRow label="Jusqu'au" value={formatDate(police.date_echeance)} icon="stop" isLast />
-            </Section>
-          );
-        }}
-        ListFooterComponent={
-          <Box paddingHorizontal="l" marginTop="m" paddingBottom="xl">
-            {/* Consultation only */}
-          </Box>
-        }
-      />
-    </CardUp>
-  );
-};
-
-const ContratItem: React.FC<{ item: Police; onPress: () => void }> = ({ item, onPress }) => {
+const ContratScreen = () => {
   const theme = useTheme<Theme>();
-  const isSuccess = item.statut_variant === 'success';
+  const navigation = useNavigation<any>();
+  const [polices, setPolices] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  return (
-    <TouchableOpacity activeOpacity={0.9} onPress={onPress}>
-        <Box 
-          backgroundColor="cardBackground"
-          borderRadius="l"
-          marginHorizontal="m"
-          marginBottom="m"
-          overflow="hidden"
-          style={styles.card}
-        >
-          <Box paddingHorizontal="m" paddingVertical="s" backgroundColor="background" flexDirection="row" justifyContent="space-between" alignItems="center">
-            <Box flexDirection="row" alignItems="center">
-               <Box backgroundColor={isSuccess ? "success" : "error"} width={24} height={24} borderRadius="round" alignItems="center" justifyContent="center" marginRight="s">
-                  <Icon name={isSuccess ? "shield-checkmark" : "shield-half"} size={12} color="white" />
-               </Box>
-               <Text variant="bodySmall" color="text" fontSize={12} fontWeight="700">{item.branche?.toUpperCase() || 'ASSURANCE'}</Text>
+  const fetchPolices = async (useCache = true) => {
+    try {
+      if (useCache) {
+        // 1. Essayer de charger depuis le cache pour un affichage instantané
+        const cachedData = await cacheService.get<any[]>('polices');
+        if (cachedData) {
+          setPolices(cachedData);
+          setLoading(false); // On arrête le loader car on a déjà de la donnée
+        }
+      } else {
+        setLoading(true);
+      }
+
+      // 2. Récupérer les données fraîches de l'API
+      const data = await policesAPI.getAll();
+      
+      // 3. Mettre à jour l'état et le cache
+      setPolices(data);
+      await cacheService.set('polices', data);
+    } catch (error) {
+      console.error("Erreur chargement polices:", error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPolices();
+  }, []);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchPolices(false); // Force le rechargement API sans passer par le cache
+  };
+
+  const formatDate = (dateStr: string) => {
+    if (!dateStr) return '--/--/----';
+    try {
+      const date = new Date(dateStr);
+      if (isNaN(date.getTime())) return dateStr;
+      const d = String(date.getDate()).padStart(2, '0');
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const y = date.getFullYear();
+      return `${d}/${m}/${y}`;
+    } catch {
+      return dateStr;
+    }
+  };
+
+  const renderItem = ({ item }: { item: any }) => (
+    <TouchableOpacity activeOpacity={0.8} onPress={() => navigation.navigate('ContratDetail', { police: item })}>
+      <Box 
+        backgroundColor="cardBackground" 
+        marginHorizontal="m" 
+        marginVertical="s" 
+        borderRadius="l"
+        padding="l"
+        borderWidth={1}
+        borderColor="borderLight"
+        style={Platform.select({
+          ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.04, shadowRadius: 12 },
+          android: { elevation: 3 },
+          web: { boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }
+        })}
+      >
+        {/* Header: Status + Badge */}
+        <Box flexDirection="row" justifyContent="space-between" alignItems="center" marginBottom="m">
+          <Box flexDirection="row" alignItems="center">
+            <Box backgroundColor="primaryBg" padding="s" borderRadius="m" marginRight="s">
+              <Icon name="shield-checkmark" size={18} color={theme.colors.primary} />
             </Box>
-            <StatusBadge label={item.statut} variant={item.statut_variant as any} />
+            <Text variant="caption" color="primary" fontWeight="800" style={{ letterSpacing: 1, textTransform: 'uppercase' }}>
+              {item.branche}
+            </Text>
+          </Box>
+          <StatusBadge label={item.statut} variant={item.statut_variant || 'primary'} />
+        </Box>
+
+        {/* Police Number */}
+        <Box marginBottom="m">
+          <Text variant="caption" color="textTertiary" marginBottom="xxs">Numéro de police</Text>
+          <Text variant="title" fontWeight="900" fontSize={20} color="text">
+            {item.police}
+          </Text>
+        </Box>
+
+        <Box height={1} backgroundColor="borderLight" marginBottom="m" />
+
+        {/* Details Grid */}
+        <Box flexDirection="row" justifyContent="space-between">
+          <Box flex={1} marginRight="m">
+            <Box flexDirection="row" alignItems="center" marginBottom="xxs">
+              <Icon name="business-outline" size={14} color={theme.colors.textTertiary} style={{ marginRight: 4 }} />
+              <Text variant="caption" color="textTertiary">Compagnie</Text>
+            </Box>
+            <Text variant="bodySmall" fontWeight="700" color="text" numberOfLines={1}>
+              {item.compagnie}
+            </Text>
           </Box>
 
-          <Box padding="m" borderBottomWidth={1} borderBottomColor="border">
-             <Text variant="bodySmall" color="textSecondary" fontWeight="600">POLICE #{item.num_police}</Text>
-             <Text variant="title" color="text" fontSize={rsp.normalize(18)} fontWeight="700" marginVertical="xxs">{item.compagnie}</Text>
-             <Text variant="bodySmall" color="textSecondary" fontWeight="600">Assuré: {item.assure || '-'}</Text>
-          </Box>
-
-          <Box paddingHorizontal="m" paddingVertical="s" flexDirection="row" justifyContent="space-between" alignItems="center">
-             <Box flexDirection="row" alignItems="center">
-               <Icon name="calendar-outline" size={12} color={theme.colors.textSecondary} style={{ marginRight: 6 }} />
-               <Text variant="caption" color="textSecondary" fontWeight="600">SOUSCRIT LE {formatDate(item.date_souscription)}</Text>
-             </Box>
-             <Icon name="chevron-forward" size={16} color={theme.colors.textTertiary} />
+          <Box alignItems="flex-end">
+            <Box flexDirection="row" alignItems="center" marginBottom="xxs">
+              <Icon name="calendar-outline" size={14} color={theme.colors.textTertiary} style={{ marginRight: 4 }} />
+              <Text variant="caption" color="textTertiary">Date d'échéance</Text>
+            </Box>
+            <Text variant="bodySmall" fontWeight="700" color="text">
+              {formatDate(item.dateEcheance)}
+            </Text>
           </Box>
         </Box>
+      </Box>
     </TouchableOpacity>
   );
-};
-
-// ─── Main Screen Component - Meta Style ──────────────────────────────────────
-const ContratScreen: React.FC = () => {
-  const theme = useTheme<Theme>();
-  const { user } = useAuth();
-  const { polices, stats, loading, error, refresh } = usePolices();
-  const [selected, setSelected] = useState<Police | null>(null);
 
   return (
     <Box flex={1} backgroundColor="background">
-      <AppHeader 
-        title="Mes Contrats" 
-        showBackButton={false} 
-        rightIconName="shield" 
-      />
-
-      <ScrollView 
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl refreshing={loading} onRefresh={refresh} />
-        }
-        contentContainerStyle={{ paddingBottom: 120 }}
-      >
-        <Box paddingVertical="xl" paddingHorizontal="m">
-            <Text variant="header" color="text" fontSize={rsp.normalize(26)} fontWeight="700">Mes Contrats</Text>
-            <Text variant="bodySmall" color="textSecondary" fontWeight="600">Consultation de vos garanties</Text>
-        </Box>
-
-        <Box paddingHorizontal="m" marginBottom="l">
-          <Box backgroundColor="cardBackground" borderRadius="l" padding="m" style={styles.card} flexDirection="row" alignItems="center">
-             <Box backgroundColor="primaryBg" width={48} height={48} borderRadius="round" alignItems="center" justifyContent="center" marginRight="m">
-                <Text variant="header" color="primary" fontSize={22} fontWeight="900">{stats.actives}</Text>
-             </Box>
-             <Box flex={1}>
-                <Text variant="title" fontSize={16} fontWeight="700">Contrats Actifs</Text>
-                <Text variant="bodySmall" color="textSecondary">Votre protection est à jour sur {stats.total} dossiers.</Text>
-             </Box>
-          </Box>
-        </Box>
-
-        <Box paddingHorizontal="m" marginBottom="m">
-           <Text variant="bodyMedium" color="textSecondary" fontWeight="700" fontSize={14} marginLeft="xs">VOS POLICES EN VIGUEUR</Text>
-        </Box>
-
-        {loading && polices.length === 0 ? (
-          <LoadingSpinner message="Recherche des polices..." />
-        ) : error ? (
-          <ErrorView message={error} onRetry={refresh} />
-        ) : polices.length === 0 ? (
-          <EmptyView message="Aucun contrat découvert." icon="shield-outline" />
-        ) : (
-          <Box>
-            {polices.map((item) => (
-              <ContratItem key={item.id} item={item} onPress={() => setSelected(item)} />
-            ))}
-          </Box>
-        )}
-      </ScrollView>
-
-      {selected && (
-        <ContratDetailModal
-          police={selected}
-          visible={!!selected}
-          onClose={() => setSelected(null)}
+      <AppHeader title="Mes Contrats" showBackButton={false} />
+      
+      {loading && !refreshing ? (
+        <LoadingSpinner />
+      ) : (
+        <FlatList
+          data={polices}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id.toString()}
+          contentContainerStyle={{ paddingVertical: 10, paddingBottom: 100 }}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+          ListEmptyComponent={
+            <EmptyView 
+              icon="document-text-outline" 
+              message="Vous n'avez pas encore de contrats d'assurance enregistrés." 
+            />
+          }
         />
       )}
     </Box>
   );
 };
-
-const styles = StyleSheet.create({
-  card: {
-    ...Platform.select({
-      ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 3 },
-      android: { elevation: 2 },
-      web: { boxShadow: '0 1px 3px rgba(0,0,0,0.1)' },
-    }),
-  }
-});
 
 export default ContratScreen;

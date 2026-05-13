@@ -73,7 +73,7 @@ const getPersACharge = asyncHandler(async (req, res) => {
 const getStats = asyncHandler(async (req, res) => {
     const { userId, source, token } = getContext(req);
     const result = await dataService.getStats(userId, source, token);
-    success(res, result[0] || []);
+    success(res, result || []);
 });
 
 const getStatsByPolice = asyncHandler(async (req, res) => {
@@ -81,6 +81,13 @@ const getStatsByPolice = asyncHandler(async (req, res) => {
     const { policeId } = req.query;
     const result = await dataService.getStatsByPolice(userId, source, token, policeId);
     success(res, result[0]?.[0] || {});
+});
+
+const getDocumentsByPolice = asyncHandler(async (req, res) => {
+    const { userId, source, token } = getContext(req);
+    const { policeId } = req.query;
+    const result = await dataService.getDocumentsByPolice(userId, source, token, policeId);
+    success(res, result[0] || []);
 });
 
 module.exports = {
@@ -94,5 +101,6 @@ module.exports = {
     getAdherents,
     getPersACharge,
     getStats,
-    getStatsByPolice
+    getStatsByPolice,
+    getDocumentsByPolice
 };

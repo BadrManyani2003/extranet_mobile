@@ -11,6 +11,7 @@ const qry = {
     getGarantiesByRisque: "exec dbo.sp_GetGarantiesByRisque @0, @1, @2, @3",
     getStats:             "exec dbo.sp_GetStats             @0, @1, @2",
     getStatsByPolice:     "exec dbo.ps_GetStatsByPolice     @0, @1, @2, @3",
+    getDocumentsByPolice: "exec dbo.sp_GetDocumentsByPolice @0, @1, @2, @3",
 
     getReclamations:       "exec dbo.sp_GetReclamations          @0, @1, @2",
     getReclamationDetails: "exec dbo.sp_GetReclamationDetails    @0, @1, @2, @3",
