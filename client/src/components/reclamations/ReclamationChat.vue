@@ -70,7 +70,7 @@ const formatDate = (date: string) => {
 
 <template>
   <div class="flex flex-col h-full bg-slate-50/50 overflow-hidden font-['Outfit']">
-    <!-- Messages Area -->
+    <!-- Zone des Messages -->
     <ScrollArea ref="scrollAreaRef" class="flex-1">
       <div class="p-6 md:p-10 min-h-full flex flex-col justify-end">
         <div v-if="loading && messages.length === 0" class="flex flex-col items-center justify-center h-64 gap-4">
@@ -137,7 +137,7 @@ const formatDate = (date: string) => {
       </div>
     </ScrollArea>
 
-    <!-- Input Area -->
+    <!-- Zone de Saisie -->
     <div class="p-6 md:p-8 bg-white/80 backdrop-blur-xl border-t border-slate-100">
       <div class="max-w-4xl mx-auto">
         <div v-if="selectedTicket?.statut === 'Clôturé' || selectedTicket?.statut === 'C'" 

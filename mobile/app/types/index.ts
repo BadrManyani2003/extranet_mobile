@@ -26,7 +26,7 @@ export interface AuthState {
 export interface Police {
   id: number;
   num_police: string;
-  police_num?: string; // Standardized field name from API
+  police_num?: string; // Nom de champ standardisé depuis l'API
   categorie: string;
   compagnie: string;
   branche: string;
@@ -94,7 +94,7 @@ export interface SinReglement {
 // --- Réponses API ---
 export interface ApiResponse<T> {
   message?: string;
-  data?: T; // Pour certains endpoints qui pourraient encore utiliser ce format
+  data?: T; // Pour certains points de terminaison qui pourraient encore utiliser ce format
 }
 
 export interface LoginResponse {

@@ -20,6 +20,5 @@ router.get('/adherents',            auth.checkRole(['admin_cabinet', 'commercial
 router.get('/adherent/personnes',   auth.checkRole(['admin_cabinet', 'commercial_cabinet', 'client', 'adherent']), ctrl.getPersACharge);
 router.get('/sinistres',            auth.checkRole(['admin_cabinet', 'commercial_cabinet', 'client', 'adherent']), ctrl.getSinistres);
 router.get('/sinistres/encours',    auth.checkRole(['admin_cabinet', 'commercial_cabinet', 'client', 'adherent']), ctrl.getSinistresEnCours);
- // Allowed for all
 
 module.exports = router;

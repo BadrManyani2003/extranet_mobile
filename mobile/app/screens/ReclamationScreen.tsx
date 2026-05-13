@@ -106,7 +106,6 @@ const ReclamationScreen: React.FC<Props> = ({ navigation }) => {
         </Box>
       </ScrollView>
 
-      {/* Consultation only */}
     </Box>
   );
 };

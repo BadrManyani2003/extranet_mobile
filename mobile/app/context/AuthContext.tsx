@@ -1,3 +1,4 @@
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as WebBrowser from 'expo-web-browser';
@@ -36,7 +37,7 @@ export const useAuth = (): AuthContextType => {
 };
 
 // ============================================================
-// AuthProvider — sessions backed by Keycloak tokens
+// AuthProvider — sessions basées sur les tokens Keycloak
 // ============================================================
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser]     = useState<User | null>(null);
@@ -44,7 +45,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [source, setSource] = useState<'ADHERENT' | 'CLIENT' | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // ── Called after successful Keycloak authentication ─────────
+  // ── Appelé après une authentification Keycloak réussie ───────
   const signin = useCallback(async (
     userData: User,
     userToken: string,
@@ -83,7 +84,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
-  // ── Restore persisted session on app start ──────────────────
+  // ── Restaurer la session persistée au démarrage de l'app ──────
   useEffect(() => {
     const restoreSession = async () => {
       try {
@@ -103,7 +104,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
           try {
             const freshUser = await authAPI.me();
-            setUser(prev => ({ ...prev, ...freshUser }));
+            setUser(prev => prev ? ({ ...prev, ...freshUser }) : null);
           } catch {
             logout();
           }
@@ -117,7 +118,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     restoreSession();
   }, [logout]);
 
-  // ── Handle unauthorized event from API ──────────────────────
+  // ── Gérer l'événement non autorisé depuis l'API ───────────────
   useEffect(() => {
     let logoutTimer: NodeJS.Timeout;
     const handleUnauthorized = () => {

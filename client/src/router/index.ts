@@ -52,7 +52,7 @@ const router = createRouter({
 router.beforeEach(async (to) => {
   if (to.name === 'restricted') return true
 
-  // Check role first
+  // Vérifier d'abord le rôle
   const isClient = keycloak.hasRole('client')
   if (!isClient) return { name: 'restricted' }
 

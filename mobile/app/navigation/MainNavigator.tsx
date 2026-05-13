@@ -57,11 +57,11 @@ export type RootStackParamList = {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<TabParamList>();
 
-// ─── Design Categories ────────────────────────────────────────────────────────
+// ─── Catégories de Design ─────────────────────────────────────────────────────
 const isSmall = rsp.isSmallDevice;
 const isTablet = rsp.isTablet;
 
-// Tab bar height calculations per device size
+// Calcul de la hauteur de la barre d'onglets selon la taille de l'appareil
 function getTabBarHeight(insetBottom: number): number {
   if (isTablet) return rsp.verticalScale(72) + insetBottom;
   if (rsp.isLargeDevice) return rsp.verticalScale(68) + insetBottom;
@@ -81,7 +81,7 @@ function getLabelSize(): number {
   return 10;
 }
 
-// ─── Tab Config ────────────────────────────────────────────────────────────────
+// ─── Configuration des Onglets ──────────────────────────────────────────────────
 const getTabConfig = (colors: Theme['colors'], t: any) => ({
   Accueil: { label: t('Accueil'), active: 'home', inactive: 'home-outline', accentColor: colors.primary, accentBg: colors.primaryBg },
   Contrats: { label: t('Contrats'), active: 'shield-checkmark', inactive: 'shield-checkmark-outline', accentColor: colors.primary, accentBg: colors.primaryBg },
@@ -91,7 +91,7 @@ const getTabConfig = (colors: Theme['colors'], t: any) => ({
   Profil: { label: t('Profil'), active: 'person-circle', inactive: 'person-circle-outline', accentColor: colors.primary, accentBg: colors.primaryBg },
 });
 
-// ─── Animated Tab Button ────────────────────────────────────────────────────────
+// ─── Bouton d'Onglet Animé ─────────────────────────────────────────────────────
 interface TabButtonProps {
   routeName: keyof TabParamList;
   focused: boolean;
@@ -129,7 +129,7 @@ const TabButton: React.FC<TabButtonProps> = ({ routeName, focused, onPress, colo
   const iconSize = getIconSize();
   const labelSize = getLabelSize();
 
-  // Icon pill dimensions
+  // Dimensions de la pilule de l'icône
   const pillW = isTablet ? 68 : isSmall ? 48 : 56;
   const pillH = isTablet ? 34 : isSmall ? 28 : 30;
 
@@ -144,7 +144,7 @@ const TabButton: React.FC<TabButtonProps> = ({ routeName, focused, onPress, colo
       accessibilityState={{ selected: focused }}
     >
       <Animated.View style={{ transform: [{ scale: scaleAnim }, { translateY }], alignItems: 'center' }}>
-        {/* Icon pill */}
+        {/* Pilule de l'icône */}
         <Animated.View
           style={[
             styles.iconPill,
@@ -163,7 +163,7 @@ const TabButton: React.FC<TabButtonProps> = ({ routeName, focused, onPress, colo
           />
         </Animated.View>
 
-        {/* Label */}
+        {/* Libellé */}
         <Animated.Text
           style={[
             styles.tabLabel,
@@ -180,7 +180,7 @@ const TabButton: React.FC<TabButtonProps> = ({ routeName, focused, onPress, colo
           {config.label}
         </Animated.Text>
 
-        {/* Active dot indicator */}
+        {/* Indicateur point actif */}
         {focused && (
           <Animated.View
             style={[
@@ -194,7 +194,7 @@ const TabButton: React.FC<TabButtonProps> = ({ routeName, focused, onPress, colo
   );
 };
 
-// ─── Custom Tab Bar ─────────────────────────────────────────────────────────────
+// ─── Barre d'Onglets Personnalisée ──────────────────────────────────────────────
 interface CustomTabBarProps {
   state: any;
   descriptors: any;
@@ -223,7 +223,7 @@ const CustomTabBar: React.FC<CustomTabBarProps> = ({ state, descriptors, navigat
           paddingTop,
           backgroundColor: bgColor,
           borderTopColor: borderColor,
-          // Tablet: horizontal padding to center tabs
+          // Tablette : padding horizontal pour centrer les onglets
           paddingHorizontal: isTablet ? rsp.width * 0.1 : 0,
         },
         Platform.select({
@@ -269,7 +269,7 @@ const CustomTabBar: React.FC<CustomTabBarProps> = ({ state, descriptors, navigat
   );
 };
 
-// ─── Bottom Tabs Navigator ──────────────────────────────────────────────────────
+// ─── Navigateur d'Onglets Inférieur ───────────────────────────────────────────────
 const BottomTabs: React.FC = () => {
   const theme = useTheme<Theme>();
   const { user } = useAuth();
@@ -302,7 +302,7 @@ const BottomTabs: React.FC = () => {
   );
 };
 
-// ─── Main Navigator ─────────────────────────────────────────────────────────────
+// ─── Navigateur Principal ───────────────────────────────────────────────────────
 const MainNavigator: React.FC = () => {
   const { t } = useTranslation();
   const theme = useTheme<Theme>();
@@ -373,7 +373,7 @@ const MainNavigator: React.FC = () => {
 
 // ─── Styles ────────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  // Tab bar container
+  // Conteneur de la barre d'onglets
   tabBar: {
     flexDirection: 'row',
     borderTopWidth: 0.5,
@@ -383,31 +383,31 @@ const styles = StyleSheet.create({
     }),
   },
 
-  // Individual tab button
+  // Bouton d'onglet individuel
   tabButton: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    // Minimum touch target 44px per HIG / Material specs
+    // Cible tactile minimale de 44px selon les spécifications HIG / Material
     minHeight: 44,
     minWidth: 44,
   },
 
-  // Icon pill (pill-shaped highlight when focused)
+  // Pilule de l'icône (mise en évidence en forme de pilule quand focalisé)
   iconPill: {
     alignItems: 'center',
     justifyContent: 'center',
   },
 
-  // Label below icon
+  // Libellé sous l'icône
   tabLabel: {
     letterSpacing: 0.2,
     textAlign: 'center',
-    // Cap width so long labels don't overflow on small screens
+    // Limitation de la largeur pour que les longs libellés ne débordent pas sur les petits écrans
     maxWidth: isSmall ? 52 : isTablet ? 80 : 64,
   },
 
-  // Small dot under active label
+  // Petit point sous le libellé actif
   activeDot: {
     width: 4,
     height: 4,
@@ -415,7 +415,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
 
-  // Loading screen
+  // Écran de chargement
   loadingContainer: {
     flex: 1,
     alignItems: 'center',

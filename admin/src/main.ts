@@ -11,7 +11,7 @@ import keycloakService from './services/keycloak'
 const app = createApp(App)
 const pinia = createPinia()
 
-// Initialize Keycloak before attaching the router to prevent race conditions in guards
+// Initialiser Keycloak avant d'attacher le routeur pour éviter les conditions de concurrence dans les gardes
 keycloakService.init(() => {
   app.use(pinia)
   app.use(router)

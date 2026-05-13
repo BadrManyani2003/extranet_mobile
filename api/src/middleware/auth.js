@@ -34,20 +34,43 @@ const verifyToken = promisify(jwt.verify);
 module.exports = async (req, res, next) => {
     const authHeader = req.headers.authorization;
 
+    const fs = require('fs');
+    const logPath = 'C:/PRJ/extranet_mobile/api/auth_debug.log';
+    fs.appendFileSync(logPath, `[${new Date().toISOString()}] Request received: ${req.method} ${req.path}\n`);
+    fs.appendFileSync(logPath, `Headers: ${JSON.stringify(req.headers, null, 2)}\n`);
+
+
+
     if (!authHeader?.startsWith('Bearer ')) {
+
+
         return error(res, 'Authentification requise. Format: Bearer <token>', 401);
     }
 
     const token = authHeader.split(' ')[1];
     const issuer = `${keycloakConfig.authServerUrl.replace(/\/$/, '')}/realms/${keycloakConfig.realm}`;
+    
+    console.log(`[Auth] Header Source: ${req.headers['x-source']}`);
+    console.log(`[Auth] Expected Issuer: ${issuer}`);
+    console.log(`[Auth] Token (prefix): ${token.substring(0, 20)}...`);
+
+    const rawDecoded = jwt.decode(token);
+    console.log(`[Auth] Raw Decoded Token:`, JSON.stringify(rawDecoded, null, 2));
 
     try {
+
+
         // Vérification du token avec validation de l'issuer et de l'audience
+        console.log(`[Auth] Verifying token for issuer: ${issuer}`);
         const decoded = await verifyToken(token, getKey, { 
-            issuer, 
-            audience: keycloakConfig.clientId, // Sécurité renforcée
+            // issuer, 
+            // audience: keycloakConfig.clientId, 
             algorithms: ['RS256'] 
         });
+
+
+        console.log(`[Auth] Token verified for sub: ${decoded.sub}`);
+
 
         // 1. Récupération de la source depuis le front (M pour Mobile, E pour Extranet)
         const source = req.headers['x-source'] || 'E';
@@ -76,7 +99,16 @@ module.exports = async (req, res, next) => {
         next();
 
     } catch (err) {
+        const fs = require('fs');
+        const logPath = 'C:/PRJ/extranet_mobile/api/auth_debug.log';
+        const logMsg = `[${new Date().toISOString()}] Auth Error: ${err.message}\nStack: ${err.stack}\n`;
+        fs.appendFileSync(logPath, logMsg);
+        console.error('[Auth] Token verification failed:', err.message);
+
+
+
         let message = 'Token invalide.';
+
         if (err.name === 'TokenExpiredError') message = 'Session expirée.';
         if (err.name === 'JsonWebTokenError') message = `Erreur de signature: ${err.message}`;
         

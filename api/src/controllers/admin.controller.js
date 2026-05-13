@@ -1,5 +1,6 @@
 const adminService = require('../services/admin.service');
-const { success, error } = require('../common/response');
+const { success } = require('../common/response');
+const asyncHandler = require('../middleware/asyncHandler');
 
 const getContext = (req) => ({
     userId: req.user.id,
@@ -7,115 +8,89 @@ const getContext = (req) => ({
     source: req.headers['x-source'] || 'A'
 });
 
-const getUsers = async (req, res) => {
-    try {
-        const { userId, source, token } = getContext(req);
-        const result = await adminService.getUsers(userId, token, source);
-        success(res, result[0] || []);
-    } catch (e) { error(res, e.message); }
-};
+const getUsers = asyncHandler(async (req, res) => {
+    const { userId, source, token } = getContext(req);
+    const result = await adminService.getUsers(userId, token, source);
+    success(res, result[0] || []);
+});
 
-const saveUser = async (req, res) => {
-    try {
-        const { userId, source, token } = getContext(req);
-        const { id, targetId, idAuth, nom, telephone, email, nature, extranet, mobile } = req.body;
-        const result = await adminService.saveUser(userId, token, source, id || targetId, idAuth, nom, telephone, email, nature, extranet, mobile);
-        success(res, result[0]?.[0] || {});
-    } catch (e) { error(res, e.message); }
-};
+const saveUser = asyncHandler(async (req, res) => {
+    const { userId, source, token } = getContext(req);
+    const { id, targetId, idAuth, nom, telephone, email, nature, extranet, mobile } = req.body;
+    const result = await adminService.saveUser(userId, token, source, id || targetId, idAuth, nom, telephone, email, nature, extranet, mobile);
+    success(res, result[0]?.[0] || {}, 'Utilisateur enregistré');
+});
 
-const deleteUser = async (req, res) => {
-    try {
-        const { userId, source, token } = getContext(req);
-        const { deleteId, userId: idToDelete } = req.body;
-        const targetId = deleteId || idToDelete;
-        
-        if (!targetId) {
-            return error(res, 'ID utilisateur manquant.');
-        }
+const deleteUser = asyncHandler(async (req, res) => {
+    const { userId, source, token } = getContext(req);
+    const { deleteId, userId: idToDelete } = req.body;
+    const targetId = deleteId || idToDelete;
+    
+    if (!targetId) throw new Error('ID utilisateur manquant.');
 
-        await adminService.deleteUser(userId, token, source, targetId);
-        success(res, { success: true });
-    } catch (e) { error(res, e.message); }
-};
+    await adminService.deleteUser(userId, token, source, targetId);
+    success(res, null, 'Utilisateur supprimé');
+});
 
-const getClients = async (req, res) => {
-    try {
-        const { userId, source, token } = getContext(req);
-        const result = await adminService.getClients(userId, token, source);
-        success(res, result[0] || []);
-    } catch (e) { error(res, e.message); }
-};
+const getClients = asyncHandler(async (req, res) => {
+    const { userId, source, token } = getContext(req);
+    const result = await adminService.getClients(userId, token, source);
+    success(res, result[0] || []);
+});
 
-const createUserFromClient = async (req, res) => {
-    try {
-        const { userId, source, token } = getContext(req);
-        const { clientId } = req.body;
-        const result = await adminService.createUserFromClient(userId, token, source, clientId);
-        success(res, result[0]?.[0] || {});
-    } catch (e) { error(res, e.message); }
-};
+const createUserFromClient = asyncHandler(async (req, res) => {
+    const { userId, source, token } = getContext(req);
+    const { clientId } = req.body;
+    const result = await adminService.createUserFromClient(userId, token, source, clientId);
+    success(res, result[0]?.[0] || {}, 'Utilisateur créé depuis le client');
+});
 
-const getAdherents = async (req, res) => {
-    try {
-        const { userId, source, token } = getContext(req);
-        const { policeId = 0 } = req.body;
-        const result = await adminService.getAdherents(userId, source, token, policeId);
-        success(res, result[0] || []);
-    } catch (e) { error(res, e.message); }
-};
+const getAdherents = asyncHandler(async (req, res) => {
+    const { userId, source, token } = getContext(req);
+    const { policeId = 0 } = req.body;
+    const result = await adminService.getAdherents(userId, source, token, policeId);
+    success(res, result[0] || []);
+});
 
-const createUserFromAdherent = async (req, res) => {
-    try {
-        const { userId, source, token } = getContext(req);
-        const { adherentId } = req.body;
-        const result = await adminService.createUserFromAdherent(userId, token, source, adherentId);
-        success(res, result[0]?.[0] || {});
-    } catch (e) { error(res, e.message); }
-};
+const createUserFromAdherent = asyncHandler(async (req, res) => {
+    const { userId, source, token } = getContext(req);
+    const { adherentId } = req.body;
+    const result = await adminService.createUserFromAdherent(userId, token, source, adherentId);
+    success(res, result[0]?.[0] || {}, 'Utilisateur créé depuis l\'adhérent');
+});
 
-const syncKeycloak = async (req, res) => {
-    try {
-        const { userId, source, token } = getContext(req);
-        const { id } = req.body;
-        await adminService.syncKeycloak(userId, token, source, id);
-        success(res, { success: true });
-    } catch (e) { error(res, e.message); }
-};
+const syncKeycloak = asyncHandler(async (req, res) => {
+    const { userId, source, token } = getContext(req);
+    const { id } = req.body;
+    await adminService.syncKeycloak(userId, token, source, id);
+    success(res, null, 'Synchronisation réussie');
+});
 
-const linkUserToClient = async (req, res) => {
-    try {
-        const { userId, source, token } = getContext(req);
-        const { targetUserId, clientId } = req.body;
-        await adminService.linkUserToClient(userId, token, source, targetUserId, clientId);
-        success(res, { success: true });
-    } catch (e) { error(res, e.message); }
-};
+const linkUserToClient = asyncHandler(async (req, res) => {
+    const { userId, source, token } = getContext(req);
+    const { targetUserId, clientId } = req.body;
+    await adminService.linkUserToClient(userId, token, source, targetUserId, clientId);
+    success(res, null, 'Liaison réussie');
+});
 
-const linkUserToAdherent = async (req, res) => {
-    try {
-        const { userId, source, token } = getContext(req);
-        const { targetUserId, adherentId } = req.body;
-        await adminService.linkUserToAdherent(userId, token, source, targetUserId, adherentId);
-        success(res, { success: true });
-    } catch (e) { error(res, e.message); }
-};
+const linkUserToAdherent = asyncHandler(async (req, res) => {
+    const { userId, source, token } = getContext(req);
+    const { targetUserId, adherentId } = req.body;
+    await adminService.linkUserToAdherent(userId, token, source, targetUserId, adherentId);
+    success(res, null, 'Liaison réussie');
+});
 
-const getAvailableRoles = async (req, res) => {
-    try {
-        const result = await adminService.getAvailableRoles();
-        success(res, result);
-    } catch (e) { error(res, e.message); }
-};
+const getAvailableRoles = asyncHandler(async (req, res) => {
+    const result = await adminService.getAvailableRoles();
+    success(res, result);
+});
 
-const updateUserRoles = async (req, res) => {
-    try {
-        const { userId, source, token } = getContext(req);
-        const { targetUserId, authId, roles } = req.body;
-        await adminService.updateUserRoles(userId, token, source, targetUserId, authId, roles);
-        success(res, { success: true });
-    } catch (e) { error(res, e.message); }
-};
+const updateUserRoles = asyncHandler(async (req, res) => {
+    const { userId, source, token } = getContext(req);
+    const { targetUserId, authId, roles } = req.body;
+    await adminService.updateUserRoles(userId, token, source, targetUserId, authId, roles);
+    success(res, null, 'Rôles mis à jour');
+});
 
 module.exports = {
     getUsers,
@@ -130,4 +105,4 @@ module.exports = {
     linkUserToAdherent,
     getAvailableRoles,
     updateUserRoles
-};
+};

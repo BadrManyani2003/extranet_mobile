@@ -20,7 +20,7 @@ import { rsp } from '../utils/responsive';
 import { LoadingSpinner, ErrorView, EmptyView, InfoRow, Section, StatusBadge, Button, CardUp, SummaryCard } from '../components/common';
 import AppHeader from '../components/layout/AppHeader';
 
-// ─── Business Logic Hook ─────────────────────────────────────────────────────
+// ─── Hook de Logique Métier ───────────────────────────────────────────────────
 const useQuittances = () => {
   const { data, loading, error, execute } = useApiCall<Quittance[]>();
 
@@ -44,7 +44,7 @@ const useQuittances = () => {
   return { quittances: sortedData, stats, loading, error, refresh: load };
 };
 
-// ─── Internal Components ─────────────────────────────────────────────────────
+// ─── Composants Internes ─────────────────────────────────────────────────────
 const QuittanceDetailModal: React.FC<{
   quittance: Quittance;
   visible: boolean;
@@ -85,7 +85,6 @@ const QuittanceDetailModal: React.FC<{
         }}
         ListFooterComponent={
           <Box paddingHorizontal="l" marginTop="m" paddingBottom="xl">
-            {/* Consultation only */}
           </Box>
         }
       />
@@ -157,7 +156,7 @@ const QuittanceItem: React.FC<{ item: Quittance; index: number; onPress: () => v
   );
 };
 
-// ─── Main Screen Component - Meta Style ──────────────────────────────────────
+// ─── Composant Principal de l'Écran - Style Meta ──────────────────────────────
 const QuittanceScreen: React.FC = () => {
   const theme = useTheme<Theme>();
   const { user } = useAuth();

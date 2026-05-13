@@ -1,7 +1,7 @@
 USE IBS_Extranet_Mobile;
 GO
 
--- Vider les tables pour repartir sur une base propre (attention à l'ordre des dépendances)
+-- Vider les tables
 DELETE FROM dbo.ReclamationsDet;
 DELETE FROM dbo.ReclamationsIdt;
 DELETE FROM dbo.Quittances;
@@ -21,31 +21,33 @@ DELETE FROM dbo.sysUser;
 GO
 
 -- 1. UTILISATEURS
--- Nature: 'A' = Admin, 'C' = Client/Adherent
 SET IDENTITY_INSERT dbo.sysUser ON;
 INSERT INTO dbo.sysUser (Id, Id_Auth, Nom, Telephone, Email, Nature, Extranet, Mobile, CreatedAt) 
-VALUES (1, '8bbe0f44-ec3a-450a-b07a-1b93f345f2ed', 'Badr Admin', '0600000001', 'admin@ibs.ma', 'A', 'O', 'O', GETDATE());
+VALUES (1, 'bc3d71ef-6c83-4aa5-bf16-98cb7dca91d9', 'Admin Cabinet', '0600000001', 'admin_cabinet@ibs.ma', 'A', 'O', 'O', GETDATE());
 
 INSERT INTO dbo.sysUser (Id, Id_Auth, Nom, Telephone, Email, Nature, Extranet, Mobile, CreatedAt) 
-VALUES (2, '', 'Responsable ABC SARL', '0522000001', 'contact@abc.ma', 'C', 'O', 'N', GETDATE());
+VALUES (2, '83135d15-1d9e-4657-8335-cf7e8d379b9f', 'Commercial Cabinet', '0600000002', 'commercial_cabinet@ibs.ma', 'A', 'O', 'O', GETDATE());
 
 INSERT INTO dbo.sysUser (Id, Id_Auth, Nom, Telephone, Email, Nature, Extranet, Mobile, CreatedAt) 
-VALUES (3, '', 'Mohamed Alaoui', '0611223344', 'm.alaoui@gmail.com', 'C', 'O', 'O', GETDATE());
+VALUES (3, '39a0ee46-d3af-4705-9657-7d6bdceb8564', 'Client Alpha', '0611111111', 'client1@test.ma', 'C', 'O', 'O', GETDATE());
 
 INSERT INTO dbo.sysUser (Id, Id_Auth, Nom, Telephone, Email, Nature, Extranet, Mobile, CreatedAt) 
-VALUES (4, 'f2c406a0-ad06-4388-b215-34ac3e5ec35a', 'Fatima Zahra', '0677889955', 'fatima.zahra@example.com', 'C', 'N', 'O', GETDATE());
+VALUES (4, 'f54f4545-2f20-4152-a45c-49cb85e2b45a', 'Client Beta', '0622222222', 'client2@test.ma', 'C', 'O', 'O', GETDATE());
 
 INSERT INTO dbo.sysUser (Id, Id_Auth, Nom, Telephone, Email, Nature, Extranet, Mobile, CreatedAt) 
-VALUES (5, '', 'Yassine Combiné', '0655443322', 'yassine@test.com', 'C', 'O', 'O', GETDATE());
+VALUES (5, 'e5207aed-c931-4241-a762-defe0f67a324', 'Adherent Solo', '0633333333', 'adherent1@test.ma', 'C', 'O', 'O', GETDATE());
+
+INSERT INTO dbo.sysUser (Id, Id_Auth, Nom, Telephone, Email, Nature, Extranet, Mobile, CreatedAt) 
+VALUES (6, '5df05dec-075a-4f23-9f35-43c3385b0e66', 'Adherent Famille', '0644444444', 'adherent2@test.ma', 'C', 'O', 'O', GETDATE());
 SET IDENTITY_INSERT dbo.sysUser OFF;
 
--- 2. RÔLES (Optionnel mais utile pour le front)
+-- 2. RÔLES
 INSERT INTO dbo.Roles (FK_User_Id, Role) VALUES (1, 'admin');
-INSERT INTO dbo.Roles (FK_User_Id, Role) VALUES (2, 'client');
+INSERT INTO dbo.Roles (FK_User_Id, Role) VALUES (2, 'commercial');
 INSERT INTO dbo.Roles (FK_User_Id, Role) VALUES (3, 'client');
-INSERT INTO dbo.Roles (FK_User_Id, Role) VALUES (4, 'adherent');
-INSERT INTO dbo.Roles (FK_User_Id, Role) VALUES (5, 'client');
+INSERT INTO dbo.Roles (FK_User_Id, Role) VALUES (4, 'client');
 INSERT INTO dbo.Roles (FK_User_Id, Role) VALUES (5, 'adherent');
+INSERT INTO dbo.Roles (FK_User_Id, Role) VALUES (6, 'adherent');
 
 -- 3. COMPAGNIES
 SET IDENTITY_INSERT dbo.Compagnies ON;
@@ -54,143 +56,109 @@ INSERT INTO dbo.Compagnies (Id, RaisonSociale, CreatedAt) VALUES (2, 'Atlanta As
 INSERT INTO dbo.Compagnies (Id, RaisonSociale, CreatedAt) VALUES (3, 'AXA Assurance Maroc', GETDATE());
 SET IDENTITY_INSERT dbo.Compagnies OFF;
 
--- 4. CLIENTS (Entités IBS)
+-- 4. CLIENTS (Pas d'IDENTITY)
 INSERT INTO dbo.Clients (Id, Fk_Client_Id, RaisonSociale, Particulier, Email, Adresse, Telephone, CreatedAt) 
-VALUES (100, NULL, 'ABC SARL', 'N', 'contact@abc.ma', 'Casablanca, Sidi Maarouf', '0522123456', GETDATE());
+VALUES (100, NULL, 'SOCIETE ALPHA', 'N', 'client1@test.ma', 'Zone Ind.', '0522111111', GETDATE());
 
 INSERT INTO dbo.Clients (Id, Fk_Client_Id, RaisonSociale, Particulier, Email, Adresse, Telephone, CreatedAt) 
-VALUES (102, NULL, 'Mohamed Alaoui', 'O', 'm.alaoui@gmail.com', 'Marrakech, Gueliz', '0611223344', GETDATE());
+VALUES (101, NULL, 'BETA SERVICES', 'N', 'client2@test.ma', 'Centre Ville', '0522222222', GETDATE());
 
 INSERT INTO dbo.Clients (Id, Fk_Client_Id, RaisonSociale, Particulier, Email, Adresse, Telephone, CreatedAt) 
-VALUES (103, NULL, 'Fatima Zahra', 'O', 'fatima.zahra@example.com', 'Fès, Ville Nouvelle', '0677889955', GETDATE());
+VALUES (105, NULL, 'Adherent Solo', 'O', 'adherent1@test.ma', 'Rue 1', '0633333333', GETDATE());
 
 INSERT INTO dbo.Clients (Id, Fk_Client_Id, RaisonSociale, Particulier, Email, Adresse, Telephone, CreatedAt) 
-VALUES (105, NULL, 'Yassine Combiné', 'O', 'yassine@test.com', 'Rabat, Agdal', '0655443322', GETDATE());
+VALUES (106, NULL, 'Adherent Famille', 'O', 'adherent2@test.ma', 'Rue 2', '0644444444', GETDATE());
 
--- Liaison Utilisateurs <-> Clients (Droit de voir le client et ses polices)
-INSERT INTO dbo.UsersXClients (FK_User_Id, FK_Client_Id, Actif, CreatedAt) VALUES (2, 100, 'O', GETDATE());
-INSERT INTO dbo.UsersXClients (FK_User_Id, FK_Client_Id, Actif, CreatedAt) VALUES (3, 102, 'O', GETDATE());
-INSERT INTO dbo.UsersXClients (FK_User_Id, FK_Client_Id, Actif, CreatedAt) VALUES (4, 103, 'O', GETDATE());
+-- Liaisons
+INSERT INTO dbo.UsersXClients (FK_User_Id, FK_Client_Id, Actif, CreatedAt) VALUES (3, 100, 'O', GETDATE());
+INSERT INTO dbo.UsersXClients (FK_User_Id, FK_Client_Id, Actif, CreatedAt) VALUES (4, 101, 'O', GETDATE());
 INSERT INTO dbo.UsersXClients (FK_User_Id, FK_Client_Id, Actif, CreatedAt) VALUES (5, 105, 'O', GETDATE());
+INSERT INTO dbo.UsersXClients (FK_User_Id, FK_Client_Id, Actif, CreatedAt) VALUES (6, 106, 'O', GETDATE());
 
--- 5. POLICES (CONTRATS)
--- Statuts : E=En cours, S=Suspendu, R=Résilié, M=Mise en demeure
+-- 5. POLICES (Pas d'IDENTITY)
 INSERT INTO dbo.Polices (Id, Fk_Client_Id, FK_Compagnie_Id, Branche, Police, DateEcheance, Statut, Module, DateEffet, CreatedAt) 
-VALUES (1000, 100, 1, 'Automobile', 'POL-AUTO-ABC-001', '20270101', 'E', 'Véhicules', '20260101', GETDATE());
-
-INSERT INTO dbo.Polices (Id, Fk_Client_Id, FK_Compagnie_Id, Branche, Police, DateEcheance, Statut, Module, DateEffet, CreatedAt) 
-VALUES (1001, 100, 2, 'Incendie', 'POL-INC-ABC-002', '20260601', 'S', 'Professionnel', '20250601', GETDATE());
+VALUES (1000, 100, 1, 'Automobile', 'POL-ALPHA-AUTO', '20270101', 'E', 'Véhicules', '20260101', GETDATE());
 
 INSERT INTO dbo.Polices (Id, Fk_Client_Id, FK_Compagnie_Id, Branche, Police, DateEcheance, Statut, Module, DateEffet, CreatedAt) 
-VALUES (1002, 102, 3, 'Santé', 'POL-SANTE-ALAOUI', '20270101', 'E', 'Santé', '20260101', GETDATE());
+VALUES (1001, 100, 3, 'Santé', 'POL-ALPHA-SANTE', '20270101', 'E', 'Santé', '20260101', GETDATE());
 
 INSERT INTO dbo.Polices (Id, Fk_Client_Id, FK_Compagnie_Id, Branche, Police, DateEcheance, Statut, Module, DateEffet, CreatedAt) 
-VALUES (1003, 103, 1, 'Automobile', 'POL-AUTO-FATIMA', '20261231', 'M', 'Véhicules', '20260101', GETDATE());
+VALUES (1002, 101, 2, 'Incendie', 'POL-BETA-INC', '20261231', 'M', 'Bâtiments', '20260101', GETDATE());
 
--- Police Individuelle pour Yassine (Client Particulier)
 INSERT INTO dbo.Polices (Id, Fk_Client_Id, FK_Compagnie_Id, Branche, Police, DateEcheance, Statut, Module, DateEffet, CreatedAt) 
-VALUES (1005, 105, 2, 'Automobile', 'POL-AUTO-YASSINE', '20270501', 'E', 'Véhicules', '20260501', GETDATE());
+VALUES (1003, 105, 3, 'Santé', 'POL-SOLO-SANTE', '20270601', 'E', 'Santé', '20260601', GETDATE());
 
--- Police Santé Entreprise (où Yassine est adhérent)
 INSERT INTO dbo.Polices (Id, Fk_Client_Id, FK_Compagnie_Id, Branche, Police, DateEcheance, Statut, Module, DateEffet, CreatedAt) 
-VALUES (1006, 100, 3, 'Santé', 'POL-SANTE-GROUPE-ABC', '20271231', 'E', 'Santé', '20260101', GETDATE());
+VALUES (1004, 106, 1, 'Santé', 'POL-FAMILLE-SANTE', '20270101', 'E', 'Santé', '20260101', GETDATE());
 
--- 6. ADHÉRENTS
--- Mohamed Alaoui est adhérent de sa propre police santé
+-- 6. ADHÉRENTS (Pas d'IDENTITY)
 INSERT INTO dbo.Adherents (Id, FK_Police_Id, FK_User_Id, NomComplet, Email, NumAdhesion, Matricule, DateNaissance, Actif, CreatedAt) 
-VALUES (500, 1002, 3, 'Mohamed Alaoui', 'm.alaoui@gmail.com', 'ADH-ALAOUI-01', 'MAT-123', '19800510', 'O', GETDATE());
+VALUES (500, 1003, 5, 'Adherent Solo', 'adherent1@test.ma', 'ADH-SOLO-01', 'MAT-SOLO', '19900101', 'O', GETDATE());
 
--- Fatima Zahra est adhérente via une police
 INSERT INTO dbo.Adherents (Id, FK_Police_Id, FK_User_Id, NomComplet, Email, NumAdhesion, Matricule, DateNaissance, Actif, CreatedAt) 
-VALUES (501, 1003, 4, 'Fatima Zahra', 'fatima.zahra@example.com', 'ADH-FATIMA-02', 'MAT-456', '19850320', 'O', GETDATE());
+VALUES (501, 1004, 6, 'Adherent Famille', 'adherent2@test.ma', 'ADH-FAM-02', 'MAT-FAM', '19850515', 'O', GETDATE());
 
--- Yassine est adhérent de la police santé de son entreprise (ABC SARL)
-INSERT INTO dbo.Adherents (Id, FK_Police_Id, FK_User_Id, NomComplet, Email, NumAdhesion, Matricule, DateNaissance, Actif, CreatedAt) 
-VALUES (505, 1006, 5, 'Yassine Combiné', 'yassine@test.com', 'ADH-YASSINE-05', 'MAT-YAS99', '19920815', 'O', GETDATE());
-
--- Personnes à charge
+-- Personnes à charge pour Adherent 2 (Pas d'IDENTITY)
 INSERT INTO dbo.PersACharge (Id, FK_Adherent_Id, Nom, Lien, DateNaissance, DateAdhesion, CreatedAt) 
-VALUES (800, 500, 'Salma Alaoui', 'Epouse', '19820412', '20260101', GETDATE());
+VALUES (800, 501, 'Conjoint Famille', 'Epouse', '19870210', '20260101', GETDATE());
 INSERT INTO dbo.PersACharge (Id, FK_Adherent_Id, Nom, Lien, DateNaissance, DateAdhesion, CreatedAt) 
-VALUES (801, 500, 'Youssef Alaoui', 'Fils', '20100815', '20260101', GETDATE());
+VALUES (801, 501, 'Enfant 1 Famille', 'Fils', '20150320', '20260101', GETDATE());
+INSERT INTO dbo.PersACharge (Id, FK_Adherent_Id, Nom, Lien, DateNaissance, DateAdhesion, CreatedAt) 
+VALUES (802, 501, 'Enfant 2 Famille', 'Fille', '20180905', '20260101', GETDATE());
 
--- 7. RISQUES (Objets assurés)
+-- 7. RISQUES (IDENTITY)
 SET IDENTITY_INSERT dbo.Risques ON;
 INSERT INTO dbo.Risques (Id, FK_Police_Id, Libelle, Identifiant, Description, DateDu, DateEcheance, Statut, NumeroIBS, CreatedAt) 
-VALUES (200, 1000, 'Renault Clio V', '1234-A-10', 'Véhicule de fonction direction', '20260101', '20270101', 'E', 'IBS-V-001', GETDATE());
+VALUES (200, 1000, 'Peugeot 3008', '1111-B-10', 'Véhicule de fonction', '20260101', '20270101', 'E', 'IBS-V-ALPHA', GETDATE());
 
 INSERT INTO dbo.Risques (Id, FK_Police_Id, Libelle, Identifiant, Description, DateDu, DateEcheance, Statut, NumeroIBS, CreatedAt) 
-VALUES (201, 1003, 'Hyundai i10', '5678-B-15', 'Véhicule personnel Fatima', '20260101', '20261231', 'E', 'IBS-V-002', GETDATE());
-
-INSERT INTO dbo.Risques (Id, FK_Police_Id, Libelle, Identifiant, Description, DateDu, DateEcheance, Statut, NumeroIBS, CreatedAt) 
-VALUES (205, 1005, 'BMW Série 1', '9999-X-20', 'Véhicule personnel Yassine', '20260501', '20270501', 'E', 'IBS-V-005', GETDATE());
+VALUES (201, 1002, 'Entrepôt Principal', 'BAT-01', 'Stock marchandises', '20260101', '20261231', 'E', 'IBS-B-BETA', GETDATE());
 SET IDENTITY_INSERT dbo.Risques OFF;
 
--- 8. GARANTIES
+-- 8. GARANTIES (IDENTITY)
 SET IDENTITY_INSERT dbo.Garanties ON;
-INSERT INTO dbo.Garanties (Id, FK_Risque_Id, Libelle, Capital, Franchise, CreatedAt) VALUES (300, 200, 'Responsabilité Civile', 1000000.0, 0, GETDATE());
-INSERT INTO dbo.Garanties (Id, FK_Risque_Id, Libelle, Capital, Franchise, CreatedAt) VALUES (301, 200, 'Dommages Collision', 50000.0, 2500.0, GETDATE());
-INSERT INTO dbo.Garanties (Id, FK_Risque_Id, Libelle, Capital, Franchise, CreatedAt) VALUES (302, 201, 'Responsabilité Civile', 500000.0, 0, GETDATE());
-INSERT INTO dbo.Garanties (Id, FK_Risque_Id, Libelle, Capital, Franchise, CreatedAt) VALUES (305, 205, 'Tous Risques', 300000.0, 5000.0, GETDATE());
+INSERT INTO dbo.Garanties (Id, FK_Risque_Id, Libelle, Capital, Franchise, CreatedAt) VALUES (300, 200, 'Responsabilité Civile', 2000000.0, 0, GETDATE());
+INSERT INTO dbo.Garanties (Id, FK_Risque_Id, Libelle, Capital, Franchise, CreatedAt) VALUES (301, 200, 'Dommages', 150000.0, 3000.0, GETDATE());
+INSERT INTO dbo.Garanties (Id, FK_Risque_Id, Libelle, Capital, Franchise, CreatedAt) VALUES (302, 201, 'Incendie & Explosion', 5000000.0, 10000.0, GETDATE());
 SET IDENTITY_INSERT dbo.Garanties OFF;
 
--- 9. SINISTRES
--- Statuts : E=En cours, C=Clôturé, R=Réouvert
+-- 9. SINISTRES (Pas d'IDENTITY dans votre schéma actuel pour cette table)
 INSERT INTO dbo.Sinistres (Id, FK_Risque_Id, FK_Police_Id, FK_Adherent_Id, NumeroSin, DateSin, DateDeclaration, Statut, DateStatut, MT_Dommages, Observations, CreatedAt) 
-VALUES (400, 200, 1000, NULL, 'SIN-2026-001', '20260215', '20260216', 'E', '20260216', 15000.0, 'Choc avant sur parking', GETDATE());
+VALUES (400, 200, 1000, NULL, 'SIN-AUTO-001', '20260201', '20260202', 'E', '20260202', 25000.0, 'Choc latéral', GETDATE());
 
 INSERT INTO dbo.Sinistres (Id, FK_Risque_Id, FK_Police_Id, FK_Adherent_Id, NumeroSin, DateSin, DateDeclaration, Statut, DateStatut, MT_Indemnite, Observations, CreatedAt) 
-VALUES (401, 201, 1003, 501, 'SIN-2026-002', '20260110', '20260111', 'C', '20260125', 4500.0, 'Bris de glace Fatima', GETDATE());
+VALUES (401, NULL, 1004, 501, 'SIN-SANTE-002', '20260115', '20260120', 'C', '20260201', 850.0, 'Pharmacie', GETDATE());
 
 INSERT INTO dbo.Sinistres (Id, FK_Risque_Id, FK_Police_Id, FK_Adherent_Id, NumeroSin, DateSin, DateDeclaration, Statut, DateStatut, MT_Dommages, Observations, CreatedAt) 
-VALUES (402, NULL, 1002, 500, 'SIN-SANTE-ALAOUI', '20260301', '20260305', 'R', '20260310', 1200.0, 'Soins dentaires Mohamed', GETDATE());
+VALUES (402, NULL, 1003, 500, 'SIN-SANTE-003', '20260310', '20260312', 'E', '20260312', 4500.0, 'Hospitalisation', GETDATE());
 
-INSERT INTO dbo.Sinistres (Id, FK_Risque_Id, FK_Police_Id, FK_Adherent_Id, NumeroSin, DateSin, DateDeclaration, Statut, DateStatut, MT_Dommages, Observations, CreatedAt) 
-VALUES (405, 205, 1005, NULL, 'SIN-AUTO-YASSINE', '20260601', '20260602', 'E', '20260602', 8000.0, 'Accrochage Yassine', GETDATE());
-
-INSERT INTO dbo.Sinistres (Id, FK_Risque_Id, FK_Police_Id, FK_Adherent_Id, NumeroSin, DateSin, DateDeclaration, Statut, DateStatut, MT_Indemnite, Observations, CreatedAt) 
-VALUES (406, NULL, 1006, 505, 'SIN-SANTE-YASSINE', '20260415', '20260420', 'C', '20260501', 350.0, 'Consultation Yassine (Adherent)', GETDATE());
-
-
--- 10. QUITTANCES
--- Statuts : E=En cours (Impayée), S=Suspendue, R=Réglée, M=Mise en demeure, A=Annulée
+-- 10. QUITTANCES (Pas d'IDENTITY)
 INSERT INTO dbo.Quittances (Id, FK_Police_Id, NumQuittance, DateDu, DateAu, Montant, Solde, DateEcheance, Statut, CreatedAt) 
-VALUES (600, 1000, 'QUIT-AUTO-ABC-01', '20260101', '20261231', 4500.0, 0.0, '20260115', 'R', GETDATE());
+VALUES (600, 1000, 'QUIT-001', '20260101', '20261231', 6500.0, 0.0, '20260115', 'R', GETDATE());
 
 INSERT INTO dbo.Quittances (Id, FK_Police_Id, NumQuittance, DateDu, DateAu, Montant, Solde, DateEcheance, Statut, CreatedAt) 
-VALUES (601, 1003, 'QUIT-FATIMA-01', '20260101', '20261231', 3200.0, 3200.0, '20260215', 'E', GETDATE());
+VALUES (601, 1002, 'QUIT-002', '20260101', '20261231', 12000.0, 12000.0, '20260201', 'M', GETDATE());
 
 INSERT INTO dbo.Quittances (Id, FK_Police_Id, NumQuittance, DateDu, DateAu, Montant, Solde, DateEcheance, Statut, CreatedAt) 
-VALUES (602, 1001, 'QUIT-SUSP-ABC', '20250601', '20260531', 1500.0, 1500.0, '20250701', 'S', GETDATE());
+VALUES (602, 1003, 'QUIT-003', '20260601', '20270531', 3500.0, 0.0, '20260615', 'R', GETDATE());
 
-INSERT INTO dbo.Quittances (Id, FK_Police_Id, NumQuittance, DateDu, DateAu, Montant, Solde, DateEcheance, Statut, CreatedAt) 
-VALUES (605, 1005, 'QUIT-YASSINE-01', '20260501', '20270430', 5000.0, 0.0, '20260515', 'R', GETDATE());
-
--- 11. RÉCLAMATIONS
+-- 11. RÉCLAMATIONS (IDENTITY)
 SET IDENTITY_INSERT dbo.ReclamationsIdt ON;
 INSERT INTO dbo.ReclamationsIdt (Id, FK_User_Client, DateReclamation, Sujet, Statut, Nature, CreatedAt) 
-VALUES (700, 2, '20260301 10:00:00', 'Contrat ABC non visible', 'C', 'D', GETDATE());
+VALUES (700, 3, '20260301 09:00:00', 'Question Prime Auto', 'C', 'D', GETDATE());
 
 INSERT INTO dbo.ReclamationsIdt (Id, FK_User_Client, DateReclamation, Sujet, Statut, Nature, CreatedAt) 
-VALUES (701, 3, '20260310 14:00:00', 'Remboursement Soins Mohamed', 'E', 'R', GETDATE());
-
-INSERT INTO dbo.ReclamationsIdt (Id, FK_User_Client, DateReclamation, Sujet, Statut, Nature, CreatedAt) 
-VALUES (705, 5, '20260515 11:00:00', 'Question sur ma police Auto', 'E', 'D', GETDATE());
+VALUES (701, 6, '20260315 11:30:00', 'Remboursement Sinistre 401', 'E', 'R', GETDATE());
 SET IDENTITY_INSERT dbo.ReclamationsIdt OFF;
 
 SET IDENTITY_INSERT dbo.ReclamationsDet ON;
 INSERT INTO dbo.ReclamationsDet (Id, FK_Reclamation_Id, FK_User_Id, DateMessage, Nature, Message) 
-VALUES (800, 700, 2, '20260301 10:00:00', 'C', 'Je ne vois pas mon nouveau contrat.');
+VALUES (800, 700, 3, '20260301 09:00:00', 'C', 'Bonjour, pourquoi ma prime auto a augmenté ?');
 
 INSERT INTO dbo.ReclamationsDet (Id, FK_Reclamation_Id, FK_User_Id, DateMessage, Nature, Message) 
-VALUES (801, 700, 1, '20260302 09:00:00', 'A', 'Bonjour, il sera visible après validation demain.');
+VALUES (801, 700, 2, '20260301 10:00:00', 'A', 'Bonjour, cest dû à la taxe légale de 2%.');
 
 INSERT INTO dbo.ReclamationsDet (Id, FK_Reclamation_Id, FK_User_Id, DateMessage, Nature, Message) 
-VALUES (802, 701, 3, '20260310 14:00:00', 'C', 'Le dossier SIN-SANTE-ALAOUI est toujours en attente.');
-
-INSERT INTO dbo.ReclamationsDet (Id, FK_Reclamation_Id, FK_User_Id, DateMessage, Nature, Message) 
-VALUES (805, 705, 5, '20260515 11:00:00', 'C', 'Bonjour, est-ce que ma BMW est bien assurée tous risques ?');
+VALUES (802, 701, 6, '20260315 11:30:00', 'C', 'Je nai pas encore reçu le virement pour le sinistre du 15/01.');
 SET IDENTITY_INSERT dbo.ReclamationsDet OFF;
-GO
-
 GO

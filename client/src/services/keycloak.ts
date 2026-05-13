@@ -1,8 +1,8 @@
 import Keycloak from 'keycloak-js';
 
 /**
- * Expert Keycloak Configuration & Service for Client Frontend
- * Handles authentication, token refreshing, and user profiles.
+ * Configuration & Service Keycloak Expert pour le Frontend Client
+ * Gère l'authentification, le rafraîchissement des tokens et les profils utilisateurs.
  */
 class KeycloakService {
   private static instance: KeycloakService;
@@ -24,8 +24,8 @@ class KeycloakService {
     return KeycloakService.instance;
   }
 
-  /**
-   * Initializes Keycloak and sets up token refresh timer
+   /**
+   * Initialise Keycloak et configure le minuteur de rafraîchissement du token
    */
   public async init(onAuthenticated: () => void): Promise<void> {
     if (this.isInitialized) return;
@@ -52,7 +52,7 @@ class KeycloakService {
   }
 
   private setupTokenRefresh(): void {
-    // Refresh token 30 seconds before it expires
+    // Rafraîchir le token 30 secondes avant son expiration
     setInterval(async () => {
       try {
         const refreshed = await this.keycloak.updateToken(30);
@@ -61,9 +61,9 @@ class KeycloakService {
         }
       } catch (error) {
         console.error('❌ Failed to refresh client token:', error);
-        this.login(); // Force login if refresh fails
+        this.login(); // Forcer la connexion si le rafraîchissement échoue
       }
-    }, 10000); // Check every 10s
+    }, 10000); // Vérifier toutes les 10s
   }
 
   private cleanUrl(): void {

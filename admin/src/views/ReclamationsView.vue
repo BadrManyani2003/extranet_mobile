@@ -87,7 +87,7 @@ const selectTicket = async (ticket: any) => {
 const handleSendMessage = async (text: string) => {
   if (!selectedTicket.value) return
   
-  // Optimistic update
+  // Mise à jour optimiste
   const tempMsg = {
     id: Date.now(),
     message: text,
@@ -101,12 +101,12 @@ const handleSendMessage = async (text: string) => {
     await api.admin.replyToReclamation(selectedTicket.value.id, text)
     toast.success("Réponse envoyée")
     selectedTicket.value.statut = 'Traité'
-    // Refresh to get final data from server
+    // Rafraîchir pour obtenir les données finales du serveur
     const freshMessages = await api.data.getMessages(selectedTicket.value.id)
     messages.value = freshMessages
   } catch (e: any) { 
     toast.error(e.message)
-    // Remove optimistic message on error
+    // Supprimer le message optimiste en cas d'erreur
     messages.value = messages.value.filter(m => m.id !== tempMsg.id)
     console.error(e) 
   }

@@ -21,7 +21,7 @@ import { useTranslation } from '../utils/i18n';
 import { LoadingSpinner, ErrorView, EmptyView, InfoRow, Section, StatusBadge, Button, CardUp, SummaryCard } from '../components/common';
 import AppHeader from '../components/layout/AppHeader';
 
-// ─── Business Logic Hook ─────────────────────────────────────────────────────
+// ─── Hook de Logique Métier ───────────────────────────────────────────────────
 const useSinistres = () => {
   const { data, loading, error, execute } = useApiCall<Sinistre[]>();
 
@@ -44,7 +44,7 @@ const useSinistres = () => {
   return { sinistres: sortedData, stats, loading, error, refresh: load };
 };
 
-// ─── Internal Components ─────────────────────────────────────────────────────
+// ─── Composants Internes ─────────────────────────────────────────────────────
 const SinistreDetailModal: React.FC<{
   sinistre: Sinistre;
   visible: boolean;
@@ -83,7 +83,6 @@ const SinistreDetailModal: React.FC<{
         }}
         ListFooterComponent={
           <Box paddingHorizontal="l" marginTop="m" paddingBottom="xl">
-            {/* Consultation only */}
           </Box>
         }
       />
@@ -133,7 +132,7 @@ const SinistreItem: React.FC<{ item: Sinistre; onPress: () => void }> = ({ item,
   );
 };
 
-// ─── Main Screen Component - Meta Style ──────────────────────────────────────
+// ─── Composant Principal de l'Écran - Style Meta ──────────────────────────────
 const SinistreScreen: React.FC = () => {
   const theme = useTheme<Theme>();
   const { user } = useAuth();

@@ -1,12 +1,12 @@
 import { makeRedirectUri } from 'expo-auth-session';
 import * as WebBrowser from 'expo-web-browser';
 
-// Required for web redirection to work properly
+// Requis pour que la redirection web fonctionne correctement
 WebBrowser.maybeCompleteAuthSession();
 
 // ============================================================
-// Keycloak Configuration for Expo (React Native)
-// ⚠️  Use your machine's LAN IP (not 'localhost') so the device can reach the server
+// Configuration Keycloak pour Expo (React Native)
+// ⚠️ Utilisez l'adresse IP LAN de votre machine (pas 'localhost') pour que l'appareil puisse joindre le serveur
 // ============================================================
 const KEYCLOAK_URL =
   process.env.EXPO_PUBLIC_KEYCLOAK_URL || 'http://192.168.1.100:8080';
@@ -15,7 +15,7 @@ const REALM =
 const CLIENT_ID =
   process.env.EXPO_PUBLIC_KEYCLOAK_CLIENT_ID || 'keyclock-app-frontend';
 
-// OAuth 2.0 / OIDC endpoints for Keycloak
+// Points de terminaison OAuth 2.0 / OIDC pour Keycloak
 export const keycloakDiscovery = {
   authorizationEndpoint: `${KEYCLOAK_URL}/realms/${REALM}/protocol/openid-connect/auth`,
   tokenEndpoint:         `${KEYCLOAK_URL}/realms/${REALM}/protocol/openid-connect/token`,
@@ -24,10 +24,10 @@ export const keycloakDiscovery = {
   endSessionEndpoint:    `${KEYCLOAK_URL}/realms/${REALM}/protocol/openid-connect/logout`,
 };
 
-// Auth request config — scheme MUST match app.json "scheme" field
+// Configuration de la requête d'authentification — le schéma DOIT correspondre au champ "scheme" dans app.json
 const redirectUri = makeRedirectUri({
-  scheme: 'assurplus', // For native apps
-  preferLocalhost: true, // For web/development
+  scheme: 'assurplus', // Pour les applications natives
+  preferLocalhost: true, // Pour le web/développement
 });
 
 

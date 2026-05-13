@@ -2,13 +2,13 @@ import { Dimensions, PixelRatio, Platform } from 'react-native';
 
 const { width: W, height: H } = Dimensions.get('window');
 
-// iPhone 14 Pro reference sizes
+// Tailles de référence iPhone 14 Pro
 const guidelineBaseWidth = 390;
 const guidelineBaseHeight = 844;
 
 /**
- * Expert Responsive Scaling (Horizontal)
- * Scale with optional clamp to avoid excessively large/small sizes.
+ * Mise à l'échelle responsive experte (Horizontale)
+ * Échelle avec clamp optionnel pour éviter des tailles excessivement grandes/petites.
  */
 const scale = (size: number, min?: number, max?: number) => {
   const scaled = (W / guidelineBaseWidth) * size;
@@ -19,28 +19,28 @@ const scale = (size: number, min?: number, max?: number) => {
 };
 
 /**
- * Vertical Scaling
+ * Mise à l'échelle verticale
  */
 const verticalScale = (size: number) => Math.round((H / guidelineBaseHeight) * size);
 
 /**
- * Moderate Scaling
+ * Mise à l'échelle modérée
  */
 const moderateScale = (size: number, factor = 0.5) => size + (scale(size) - size) * factor;
 
 /**
- * Expert Font Normalization
+ * Normalisation experte des polices
  */
 const normalize = (size: number) => {
   const newSize = (W / guidelineBaseWidth) * size;
   return Math.round(PixelRatio.getFontScale() * newSize);
 };
 
-// Device Categories
-const isSmallDevice = W < 360;                     // iPhone SE, small Androids
+// Catégories d'appareils
+const isSmallDevice = W < 360;                     // iPhone SE, petits Androids
 const isMediumDevice = W >= 360 && W < 414;         // iPhone 14, Pixel 6
-const isLargeDevice = W >= 414 && W < 768;         // iPhone Plus/Max, large Androids
-const isTablet = W >= 768;                         // Tablets
+const isLargeDevice = W >= 414 && W < 768;         // iPhone Plus/Max, grands Androids
+const isTablet = W >= 768;                         // Tablettes
 
 export const rsp = {
   width: W,
@@ -53,7 +53,7 @@ export const rsp = {
   isMediumDevice,
   isLargeDevice,
   isTablet,
-  // Helper for grid layouts
+  // Utilitaire pour les mises en page en grille
   grid: (columns: number, margin = 16) => {
     const totalMargin = margin * 2 + (columns - 1) * 12;
     return (W - totalMargin) / columns;

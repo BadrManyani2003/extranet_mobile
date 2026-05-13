@@ -1,5 +1,5 @@
 import path from "path"
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
 // @ts-ignore
 import viteCompression from 'vite-plugin-compression'
@@ -7,22 +7,24 @@ import viteCompression from 'vite-plugin-compression'
 import { visualizer } from 'rollup-plugin-visualizer'
 
 // https://vite.dev/config/
-export default defineConfig({
-  plugins: [
-    vue(),
-    viteCompression({ algorithm: 'brotliCompress' }),
-    viteCompression({ algorithm: 'gzip' }),
-    visualizer({ open: false, gzipSize: true, brotliSize: true })
-  ],
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '');
+  return {
+    plugins: [
+      vue(),
+      viteCompression({ algorithm: 'brotliCompress' }),
+      viteCompression({ algorithm: 'gzip' }),
+      visualizer({ open: false, gzipSize: true, brotliSize: true })
+    ],
+    resolve: {
+      alias: {
+        "@": path.resolve(__dirname, "./src"),
+      },
     },
-  },
-  server: {
-    port: 5173,
-    strictPort: true
-  },
+    server: {
+      port: parseInt(env.VITE_PORT) || 5174,
+      strictPort: true
+    },
   build: {
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
@@ -41,4 +43,6 @@ export default defineConfig({
       }
     }
   }
-})
+  };
+});
+

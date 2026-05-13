@@ -23,12 +23,12 @@ const linkUserToAdherent = (userId, token, source, targetUserId, adherentId) => 
 const getAvailableRoles = () => keycloakService.getAvailableRoles();
 
 const updateUserRoles = async (userId, token, source, targetUserId, authId, roles) => {
-    // 1. Keycloak sync
+    // 1. Synchronisation Keycloak
     const currentRoles = await keycloakService.getUserRoles(authId);
     if (currentRoles.length > 0) await keycloakService.removeUserRoles(authId, currentRoles);
     if (roles.length > 0) await keycloakService.assignUserRoles(authId, roles);
 
-    // 2. DB sync
+    // 2. Synchronisation BDD
     const rolesCSV = roles.map(r => r.name).join(',');
     return db.execute(qry.updateUserRoles, [userId, token, source, targetUserId, rolesCSV]);
 };

@@ -29,12 +29,13 @@ const iconColors = {
   warning: 'text-orange-600 bg-orange-50'
 }
 
-const buttonVariants = {
+const buttonVariants: Record<string, "default" | "destructive" | "outline" | "secondary" | "ghost" | "link"> = {
   danger: 'destructive',
   success: 'default',
   info: 'default',
   warning: 'default'
 }
+
 </script>
 
 <template>

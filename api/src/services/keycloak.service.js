@@ -4,7 +4,7 @@ const qs = require('qs');
 const authServerUrl = process.env.KEYCLOAK_AUTH_SERVER_URL;
 const realm = process.env.KEYCLOAK_REALM;
 const clientId = process.env.KEYCLOAK_CLIENT_ID;
-const clientSecret = process.env.KEYCLOAK_SECRET;
+const clientSecret = process.env.KEYCLOAK_CLIENT_SECRET;
 
 /**
  * Obtient un token d'accès administrateur via le flux client_credentials.
@@ -26,18 +26,30 @@ const getAdminToken = async () => {
 };
 
 /**
- * Récupère tous les rôles de royaume disponibles.
+ * Récupère tous les rôles de royaume disponibles (filtrés).
  */
 const getAvailableRoles = async () => {
-    const token = await getAdminToken();
-    const url = `${authServerUrl}/admin/realms/${realm}/roles`;
-    
-    const response = await axios.get(url, {
-        headers: { Authorization: `Bearer ${token}` }
-    });
+    try {
+        const token = await getAdminToken();
+        const url = `${authServerUrl}/admin/realms/${realm}/roles`;
+        
+        console.log(`[Keycloak] Fetching roles from: ${url}`);
+        const response = await axios.get(url, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
 
-    return response.data;
+        // Filtrage des rôles techniques Keycloak
+        const technicalRoles = ['offline_access', 'uma_authorization', `default-roles-${realm}`];
+        const filteredRoles = response.data.filter(role => !technicalRoles.includes(role.name));
+        
+        console.log(`[Keycloak] Found ${filteredRoles.length} roles (after filtering)`);
+        return filteredRoles;
+    } catch (err) {
+        console.error('[Keycloak] Error fetching roles:', err.response?.data || err.message);
+        throw err;
+    }
 };
+
 
 /**
  * Récupère les rôles assignés à un utilisateur.
