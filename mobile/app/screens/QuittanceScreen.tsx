@@ -69,18 +69,18 @@ const QuittanceScreen = () => {
 
   const renderItem = ({ item }: { item: any }) => (
     <TouchableOpacity activeOpacity={0.8} onPress={() => navigation.navigate('QuittanceDetail', { quittance: item })}>
-      <Box 
-        backgroundColor="cardBackground" 
-        marginHorizontal="m" 
-        marginVertical="s" 
+      <Box
+        backgroundColor="cardBackground"
+        marginHorizontal="m"
+        marginVertical="s"
         borderRadius="l"
         padding="l"
         borderWidth={1}
         borderColor="borderLight"
         style={Platform.select({
-          ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.04, shadowRadius: 12 },
+          ios: { shadowColor: theme.colors.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.04, shadowRadius: 12 },
           android: { elevation: 3 },
-          web: { boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }
+          web: { boxShadow: `0 4px 12px ${theme.colors.border}` }
         })}
       >
         {/* Header: Type + Status */}
@@ -101,7 +101,7 @@ const QuittanceScreen = () => {
           <Box flex={1}>
             <Text variant="caption" color="textTertiary" marginBottom="xxs">N° de quittance</Text>
             <Text variant="title" fontWeight="900" fontSize={20} color="text">
-              {item.numero || item.quittance || item.num_quittance || 'N/A'}
+              {item.numero || item.quittance || item.num_quittance || '-'}
             </Text>
           </Box>
           <Box alignItems="flex-end">
@@ -121,7 +121,7 @@ const QuittanceScreen = () => {
               <Text variant="caption" color="textTertiary">Police liée</Text>
             </Box>
             <Text variant="bodySmall" fontWeight="700" color="text">
-               {item.police || 'N/A'}
+              {item.police || '-'}
             </Text>
           </Box>
 
@@ -142,7 +142,7 @@ const QuittanceScreen = () => {
   return (
     <Box flex={1} backgroundColor="background">
       <AppHeader title="Mes Quittances" showBackButton={false} />
-      
+
       {loading && !refreshing ? (
         <LoadingSpinner />
       ) : (
@@ -155,9 +155,9 @@ const QuittanceScreen = () => {
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
           ListEmptyComponent={
-            <EmptyView 
-              icon="receipt-outline" 
-              message="Vous n'avez pas encore de quittances enregistrées." 
+            <EmptyView
+              icon="receipt-outline"
+              message="Vous n'avez pas encore de quittances enregistrées."
             />
           }
         />

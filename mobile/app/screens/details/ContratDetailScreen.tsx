@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, RefreshControl, TouchableOpacity, Animated, Platform } from 'react-native';
+import { ScrollView, RefreshControl, TouchableOpacity, Animated, Platform, ActivityIndicator, LayoutAnimation } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { Box, Text } from '../../theme/restyle';
 import AppHeader from '../../components/layout/AppHeader';
@@ -22,6 +22,9 @@ const ContratDetailScreen = () => {
   const [risques, setRisques] = useState<any[]>([]);
   const [quittances, setQuittances] = useState<any[]>([]);
   const [adherents, setAdherents] = useState<any[]>([]);
+  const [expandedRisqueId, setExpandedRisqueId] = useState<number | null>(null);
+  const [garantiesMap, setGarantiesMap] = useState<Record<number, any[]>>({});
+  const [garantiesLoading, setGarantiesLoading] = useState<Record<number, boolean>>({});
 
   const fetchData = async () => {
     try {
@@ -41,6 +44,28 @@ const ContratDetailScreen = () => {
     } finally {
       setLoading(false);
       setRefreshing(false);
+    }
+  };
+
+  const toggleRisque = async (risqueId: number) => {
+    if (expandedRisqueId === risqueId) {
+      setExpandedRisqueId(null);
+      return;
+    }
+    
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setExpandedRisqueId(risqueId);
+    
+    if (!garantiesMap[risqueId]) {
+      setGarantiesLoading(prev => ({ ...prev, [risqueId]: true }));
+      try {
+        const res = await dataAPI.getGaranties(risqueId);
+        setGarantiesMap(prev => ({ ...prev, [risqueId]: res }));
+      } catch (err) {
+        console.error("Erreur garanties:", err);
+      } finally {
+        setGarantiesLoading(prev => ({ ...prev, [risqueId]: false }));
+      }
     }
   };
 
@@ -67,57 +92,16 @@ const ContratDetailScreen = () => {
       
       <ScrollView 
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-        contentContainerStyle={{ paddingBottom: 40 }}
+        contentContainerStyle={{ paddingBottom: 40, paddingTop: 10 }}
       >
-        {/* Header Card */}
-        <Box 
-          backgroundColor="cardBackground" 
-          margin="m" 
-          borderRadius="l" 
-          padding="l"
-          borderWidth={1}
-          borderColor="borderLight"
-          style={Platform.select({
-            ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 8 },
-            android: { elevation: 2 },
-            web: { boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }
-          })}
-        >
-          <Box flexDirection="row" justifyContent="space-between" alignItems="center" marginBottom="m">
-            <Box backgroundColor="primaryBg" padding="s" borderRadius="m">
-              <Icon name="shield-checkmark" size={24} color={theme.colors.primary} />
-            </Box>
-            <StatusBadge label={police.statut} variant={police.statut_variant || 'primary'} />
-          </Box>
-
-          <Text variant="title" fontWeight="900" fontSize={24} color="text" marginBottom="xs">
-            {police.branche}
-          </Text>
-          <Text variant="body" color="textSecondary" marginBottom="l">
-            Compagnie: {police.compagnie}
-          </Text>
-
-          <Box height={1} backgroundColor="borderLight" marginBottom="m" />
-
-          <Box flexDirection="row" flexWrap="wrap">
-            <Box width="50%" marginBottom="m">
-              <Text variant="caption" color="textTertiary">N° Police</Text>
-              <Text variant="body" fontWeight="700">{police.police}</Text>
-            </Box>
-            <Box width="50%" marginBottom="m">
-              <Text variant="caption" color="textTertiary">Échéance</Text>
-              <Text variant="body" fontWeight="700">{formatDate(police.dateEcheance)}</Text>
-            </Box>
-            <Box width="50%">
-              <Text variant="caption" color="textTertiary">Client</Text>
-              <Text variant="body" fontWeight="700">{police.client}</Text>
-            </Box>
-            <Box width="50%">
-              <Text variant="caption" color="textTertiary">Module</Text>
-              <Text variant="body" fontWeight="700">{police.module || '-'}</Text>
-            </Box>
-          </Box>
-        </Box>
+        <Box height={10} />
+        {/* Informations Générales */}
+        <Section title="Informations du Contrat" icon="information-circle-outline">
+          <InfoRow label="Branche" value={police.branche} icon="shield-checkmark-outline" />
+          <InfoRow label="Compagnie" value={police.compagnie} icon="business-outline" />
+          <InfoRow label="Date d'échéance" value={formatDate(police.dateEcheance)} icon="calendar-outline" />
+          <InfoRow label="Statut" value={police.statut} icon="stats-chart-outline" valueColor={police.statut_variant === 'success' ? 'success' : 'warning'} isLast={true} />
+        </Section>
 
         {/* Stats Section */}
         {stats && (
@@ -142,22 +126,63 @@ const ContratDetailScreen = () => {
         {/* Risques Section */}
         {risques.length > 0 && (
           <Section title="Objets Assurés (Risques)" icon="car-sport-outline">
-            {risques.map((risque, index) => (
-              <Box 
-                key={risque.id} 
-                padding="m" 
-                borderBottomWidth={index === risques.length - 1 ? 0 : 1}
-                borderColor="borderLight"
-              >
-                <Box flexDirection="row" justifyContent="space-between" alignItems="center">
-                  <Box flex={1}>
-                    <Text variant="body" fontWeight="700">{risque.nom}</Text>
-                    <Text variant="caption" color="textTertiary">{risque.identifiant} • {risque.description}</Text>
-                  </Box>
-                  <Icon name="chevron-forward" size={20} color={theme.colors.textTertiary} />
+            {risques.map((risque, index) => {
+              const isExpanded = expandedRisqueId === risque.id;
+              const gList = garantiesMap[risque.id] || [];
+              const isLoadingG = garantiesLoading[risque.id];
+
+              return (
+                <Box 
+                  key={risque.id} 
+                  borderBottomWidth={index === risques.length - 1 ? 0 : 1}
+                  borderColor="borderLight"
+                >
+                  <TouchableOpacity activeOpacity={0.7} onPress={() => toggleRisque(risque.id)}>
+                    <Box padding="m" flexDirection="row" justifyContent="space-between" alignItems="center">
+                      <Box flex={1}>
+                        <Text variant="body" fontWeight="700">{risque.nom}</Text>
+                        <Text variant="caption" color="textTertiary">{risque.identifiant} • {risque.description}</Text>
+                      </Box>
+                      <Box style={{ transform: [{ rotate: isExpanded ? '90deg' : '0deg' }] }}>
+                        <Icon name="chevron-forward" size={20} color={theme.colors.textTertiary} />
+                      </Box>
+                    </Box>
+                  </TouchableOpacity>
+
+                  {isExpanded && (
+                    <Box backgroundColor="background" paddingHorizontal="m" paddingBottom="m">
+                      {isLoadingG ? (
+                        <ActivityIndicator size="small" color={theme.colors.primary} style={{ marginVertical: 10 }} />
+                      ) : gList.length > 0 ? (
+                        <Box backgroundColor="borderLight" borderRadius="m" padding="s" marginTop="xs">
+                          {gList.map((g, idx) => (
+                            <Box 
+                              key={g.id} 
+                              flexDirection="row" 
+                              justifyContent="space-between" 
+                              paddingVertical="s"
+                              paddingHorizontal="s"
+                              borderBottomWidth={idx === gList.length - 1 ? 0 : 1}
+                              borderColor="cardBackground"
+                            >
+                              <Box flex={2}>
+                                <Text variant="bodySmall" fontWeight="600">{g.nom}</Text>
+                              </Box>
+                              <Box flex={1} alignItems="flex-end">
+                                <Text variant="caption" color="primary" fontWeight="700">{g.capital > 0 ? `${g.capital} DH` : '-'}</Text>
+                                {g.franchise > 0 && <Text variant="caption" color="textTertiary" fontSize={9}>Franchise: {g.franchise}</Text>}
+                              </Box>
+                            </Box>
+                          ))}
+                        </Box>
+                      ) : (
+                        <Text variant="caption" color="textTertiary" textAlign="center" marginVertical="s">Aucune garantie spécifique</Text>
+                      )}
+                    </Box>
+                  )}
                 </Box>
-              </Box>
-            ))}
+              );
+            })}
           </Section>
         )}
 

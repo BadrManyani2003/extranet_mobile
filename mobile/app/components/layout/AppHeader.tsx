@@ -7,7 +7,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '@shopify/restyle';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons as Icon } from '@expo/vector-icons';
+import { ChevronLeft, LucideIcon } from 'lucide-react-native';
 import { Box, Text } from '../../theme/restyle';
 import { Theme, shadows } from '../../theme/theme';
 import { rsp } from '../../utils/responsive';
@@ -17,8 +17,8 @@ type AppHeaderProps = {
   title: string;
   showBackButton?: boolean;
   onBackPress?: () => void;
-  leftIconName?: string;
-  rightIconName?: string;
+  leftIcon?: LucideIcon;
+  rightIcon?: LucideIcon;
   onRightIconPress?: () => void;
   showNotificationBadge?: boolean;
   notificationCount?: number;
@@ -32,8 +32,8 @@ const AppHeader: React.FC<AppHeaderProps> = ({
   title,
   showBackButton = false,
   onBackPress,
-  leftIconName,
-  rightIconName,
+  leftIcon: LeftIcon,
+  rightIcon: RightIcon,
   onRightIconPress,
   showNotificationBadge = false,
   notificationCount = 0,
@@ -86,31 +86,31 @@ const AppHeader: React.FC<AppHeaderProps> = ({
         <Box width={rsp.scale(60)} alignItems="flex-start">
           {showBackButton ? (
             <TouchableOpacity onPress={handleBackPress} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-              <Icon name={(leftIconName || 'chevron-back') as any} size={24} color={theme.colors[iconColor]} />
+              <ChevronLeft size={24} color={theme.colors[iconColor]} />
             </TouchableOpacity>
-          ) : leftIconName ? (
+          ) : LeftIcon ? (
             <TouchableOpacity onPress={handleBackPress} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-              <Icon name={leftIconName as any} size={24} color={theme.colors[iconColor]} />
+              <LeftIcon size={24} color={theme.colors[iconColor]} />
             </TouchableOpacity>
           ) : null}
         </Box>
 
         {/* Center Title */}
         <Box flex={1} alignItems="center">
-          <Text variant="subheader" color={titleColor} numberOfLines={1} style={{ fontSize: rsp.normalize(18) }}>
+          <Text variant="title" color={titleColor} numberOfLines={1}>
             {title}
           </Text>
         </Box>
 
         {/* Right Side */}
         <Box width={rsp.scale(60)} alignItems="flex-end">
-          {rightIconName ? (
+          {RightIcon ? (
             <TouchableOpacity 
               onPress={onRightIconPress} 
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
               <Box position="relative" backgroundColor="primaryBg" width={38} height={38} borderRadius="m" alignItems="center" justifyContent="center">
-                <Icon name={rightIconName as any} size={20} color={theme.colors[iconColor]} />
+                <RightIcon size={20} color={theme.colors[iconColor]} />
                 {showNotificationBadge && notificationCount > 0 && (
                   <Box 
                     position="absolute"

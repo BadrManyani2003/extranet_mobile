@@ -20,65 +20,36 @@ const SinistreDetailScreen = () => {
     return date.toLocaleDateString('fr-FR');
   };
 
+  const isSante = sinistre.branche && sinistre.branche.toLowerCase().includes('sant');
+
   return (
     <Box flex={1} backgroundColor="background">
       <AppHeader title={`Sinistre ${sinistre.numero}`} showBackButton={true} />
       
-      <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
-        {/* Header Summary */}
-        <Box 
-          backgroundColor="cardBackground" 
-          margin="m" 
-          borderRadius="l" 
-          padding="l"
-          borderWidth={1}
-          borderColor="borderLight"
-          style={Platform.select({
-            ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 8 },
-            android: { elevation: 2 },
-            web: { boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }
-          })}
-        >
-          <Box flexDirection="row" justifyContent="space-between" alignItems="center" marginBottom="m">
-            <Box backgroundColor="errorBg" padding="s" borderRadius="m">
-              <Icon name="warning" size={24} color={theme.colors.error} />
-            </Box>
-            <StatusBadge label={sinistre.statut} variant={sinistre.statut_variant || 'warning'} />
-          </Box>
+      <ScrollView contentContainerStyle={{ paddingBottom: 40, paddingTop: 10 }}>
+        <Box height={10} />
+        
+        {/* Détails du Sinistre */}
+        <Section title="Détails du Sinistre" icon="alert-circle-outline">
+          <InfoRow label="N° Sinistre" value={sinistre.numero} icon="document-text-outline" />
+          <InfoRow label="Branche" value={sinistre.branche || '-'} icon="shield-checkmark-outline" />
+          {isSante ? (
+            <InfoRow label="Adhérent" value={sinistre.objet || '-'} icon="person-outline" />
+          ) : (
+            <InfoRow label="Risque" value={sinistre.objet || '-'} icon="car-sport-outline" />
+          )}
+          <InfoRow label="Date du Sinistre" value={formatDate(sinistre.date)} icon="calendar-outline" />
+          <InfoRow label="Date de Déclaration" value={formatDate(sinistre.dateDeclaration)} icon="time-outline" />
+          <InfoRow label="Statut" value={sinistre.statut} icon="stats-chart-outline" valueColor={sinistre.statut_variant === 'success' ? 'success' : 'warning'} isLast={true} />
+        </Section>
 
-          <Text variant="title" fontWeight="900" fontSize={24} color="text" marginBottom="xs">
-            {sinistre.objet || 'Sinistre sans titre'}
-          </Text>
-          <Text variant="body" color="textSecondary" marginBottom="l">
-            ID: {sinistre.identifiant || '-'}
-          </Text>
-
-          <Box height={1} backgroundColor="borderLight" marginBottom="m" />
-
-          <Box flexDirection="row" flexWrap="wrap">
-            <Box width="50%" marginBottom="m">
-              <Text variant="caption" color="textTertiary">N° Sinistre</Text>
-              <Text variant="body" fontWeight="700">{sinistre.numero}</Text>
-            </Box>
-            <Box width="50%" marginBottom="m">
-              <Text variant="caption" color="textTertiary">Date Sinistre</Text>
-              <Text variant="body" fontWeight="700">{formatDate(sinistre.date)}</Text>
-            </Box>
-            <Box width="50%">
-              <Text variant="caption" color="textTertiary">Déclaration</Text>
-              <Text variant="body" fontWeight="700">{formatDate(sinistre.dateDeclaration)}</Text>
-            </Box>
-            <Box width="50%">
-              <Text variant="caption" color="textTertiary">Statut</Text>
-              <Text variant="body" fontWeight="700">{sinistre.statut}</Text>
-            </Box>
-          </Box>
-        </Box>
-
-        {/* Financial Details */}
+        {/* Informations Financières */}
         <Section title="Informations Financières" icon="cash-outline">
-          <InfoRow label="Montant Dommages" value={`${sinistre.mtDommage || 0} DH`} icon="hammer-outline" />
-          <InfoRow label="Montant Frais" value={`${sinistre.mtFrais || 0} DH`} icon="receipt-outline" />
+          {isSante ? (
+            <InfoRow label="Frais engagé" value={`${sinistre.mtFrais || 0} DH`} icon="receipt-outline" />
+          ) : (
+            <InfoRow label="Montant Dommages" value={`${sinistre.mtDommage || 0} DH`} icon="hammer-outline" />
+          )}
           <InfoRow label="Franchise" value={`${sinistre.mtFranchise || 0} DH`} icon="remove-circle-outline" valueColor="error" />
           <InfoRow label="Montant Remboursé" value={`${sinistre.mtRembourse || 0} DH`} icon="checkmark-circle-outline" valueColor="success" isLast={true} />
         </Section>
@@ -87,7 +58,7 @@ const SinistreDetailScreen = () => {
         {sinistre.observation ? (
           <Section title="Observations" icon="document-text-outline">
             <Box padding="m">
-              <Text variant="body" color="textSecondary" lineHeight={22}>
+              <Text variant="bodySmall" color="textSecondary" lineHeight={22}>
                 {sinistre.observation}
               </Text>
             </Box>

@@ -16,7 +16,7 @@ const Section: React.FC<SectionProps> = ({ title, icon, children, padding = fals
     {title && (
       <Box marginHorizontal="l" marginBottom="s" flexDirection="row" alignItems="center">
         {icon && (
-          <Icon name={icon as any} size={16} color="#475569" style={{ marginRight: 8 }} />
+          <Icon name={icon as any} size={16} color="#075985" style={{ marginRight: 8 }} />
         )}
         <Text variant="premiumLabel" color="textSecondary" fontSize={rsp.normalize(11)}>
           {title}
@@ -32,9 +32,9 @@ const Section: React.FC<SectionProps> = ({ title, icon, children, padding = fals
       borderColor="borderLight"
       overflow="hidden"
       style={Platform.select({
-        ios: { shadowColor: '#0F172A', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 10 },
+        ios: { shadowColor: '#075985', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 10 },
         android: { elevation: 3 },
-        web: { boxShadow: '0 4px 12px rgba(15,23,42,0.05)' }
+        web: { boxShadow: '0 4px 12px rgba(7, 89, 133, 0.05)' }
       })}
     >
       {children}

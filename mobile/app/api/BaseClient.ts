@@ -1,4 +1,6 @@
+import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 import { authEvents } from '../utils/events';
 
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5000/api';
@@ -11,7 +13,9 @@ export async function apiRequest<T>(
   method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'GET',
   body: any = null
 ): Promise<T> {
-  const token = await AsyncStorage.getItem('token');
+  const token = Platform.OS === 'web' 
+    ? await AsyncStorage.getItem('token')
+    : await SecureStore.getItemAsync('token');
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FlatList, RefreshControl, Platform, TouchableOpacity } from 'react-native';
+import { FlatList, RefreshControl, Platform, TouchableOpacity, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Box, Text } from '../theme/restyle';
 import AppHeader from '../components/layout/AppHeader';
@@ -16,6 +16,10 @@ const SinistreScreen = () => {
   const [sinistres, setSinistres] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  
+  // Filter States
+  const [selectedBranche, setSelectedBranche] = useState<string | null>(null);
+  const [selectedStatut, setSelectedStatut] = useState<string | null>(null);
 
   const fetchSinistres = async (useCache = true) => {
     try {
@@ -63,6 +67,53 @@ const SinistreScreen = () => {
     }
   };
 
+  // Extract unique branches and statuses for filters
+  const uniqueBranches = React.useMemo(() => {
+    const branches = sinistres.map(s => s.branche).filter(Boolean);
+    return ['Toutes', ...new Set(branches)];
+  }, [sinistres]);
+
+  const uniqueStatuses = React.useMemo(() => {
+    const statuses = sinistres.map(s => s.statut).filter(Boolean);
+    return ['Tous', ...new Set(statuses)];
+  }, [sinistres]);
+
+  // Filtered List
+  const filteredSinistres = React.useMemo(() => {
+    return sinistres.filter(s => {
+      const matchBranche = !selectedBranche || selectedBranche === 'Toutes' || s.branche === selectedBranche;
+      const matchStatut = !selectedStatut || selectedStatut === 'Tous' || s.statut === selectedStatut;
+      return matchBranche && matchStatut;
+    });
+  }, [sinistres, selectedBranche, selectedStatut]);
+
+  const FilterChip = ({ label, isSelected, onPress, icon }: any) => (
+    <TouchableOpacity 
+      onPress={onPress}
+      activeOpacity={0.7}
+      style={{
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 20,
+        backgroundColor: isSelected ? theme.colors.primary : theme.colors.primaryBg,
+        marginRight: 8,
+        borderWidth: 1,
+        borderColor: isSelected ? theme.colors.primary : theme.colors.border,
+        flexDirection: 'row',
+        alignItems: 'center'
+      }}
+    >
+      {icon && <Icon name={icon} size={14} color={isSelected ? 'white' : theme.colors.primary} style={{ marginRight: 4 }} />}
+      <Text 
+        fontSize={12} 
+        fontWeight={isSelected ? '800' : '600'} 
+        color={isSelected ? 'white' : 'primary'}
+      >
+        {label}
+      </Text>
+    </TouchableOpacity>
+  );
+
   const renderItem = ({ item }: { item: any }) => (
     <TouchableOpacity activeOpacity={0.8} onPress={() => navigation.navigate('SinistreDetail', { sinistre: item })}>
       <Box 
@@ -74,9 +125,9 @@ const SinistreScreen = () => {
         borderWidth={1}
         borderColor="borderLight"
         style={Platform.select({
-          ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.04, shadowRadius: 12 },
+          ios: { shadowColor: theme.colors.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.04, shadowRadius: 12 },
           android: { elevation: 3 },
-          web: { boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }
+          web: { boxShadow: `0 4px 12px ${theme.colors.border}` }
         })}
       >
         {/* Header: Branche + Status */}
@@ -132,21 +183,65 @@ const SinistreScreen = () => {
     <Box flex={1} backgroundColor="background">
       <AppHeader title="Mes Sinistres" showBackButton={false} />
       
+      {/* Filters Section */}
+      <Box paddingVertical="s" borderBottomWidth={1} borderBottomColor="borderLight">
+        {/* Branch Filters */}
+        <Box marginBottom="s">
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false} 
+            contentContainerStyle={{ paddingHorizontal: 16 }}
+          >
+            {uniqueBranches.map((b) => (
+              <FilterChip 
+                key={`branche-${b}`} 
+                label={b} 
+                isSelected={selectedBranche === b || (!selectedBranche && b === 'Toutes')} 
+                onPress={() => setSelectedBranche(b)} 
+                icon={b === 'Toutes' ? 'options-outline' : 'business-outline'}
+              />
+            ))}
+          </ScrollView>
+        </Box>
+
+        {/* Status Filters */}
+        <Box>
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false} 
+            contentContainerStyle={{ paddingHorizontal: 16 }}
+          >
+            {uniqueStatuses.map((s) => (
+              <FilterChip 
+                key={`statut-${s}`} 
+                label={s} 
+                isSelected={selectedStatut === s || (!selectedStatut && s === 'Tous')} 
+                onPress={() => setSelectedStatut(s)} 
+                icon={s === 'Tous' ? 'layers-outline' : 'stats-chart-outline'}
+              />
+            ))}
+          </ScrollView>
+        </Box>
+      </Box>
+
       {loading && !refreshing ? (
         <LoadingSpinner />
       ) : (
         <FlatList
-          data={sinistres}
+          data={filteredSinistres}
           renderItem={renderItem}
           keyExtractor={(item, index) => (item.id || index).toString()}
-          contentContainerStyle={{ paddingVertical: 10, paddingBottom: 100 }}
+          contentContainerStyle={{ paddingVertical: 10, paddingBottom: 120 }}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
           ListEmptyComponent={
             <EmptyView 
               icon="warning-outline" 
-              message="Aucun sinistre déclaré pour le moment." 
+              message={(selectedBranche || selectedStatut) 
+                ? "Aucun sinistre ne correspond à ces filtres." 
+                : "Aucun sinistre déclaré pour le moment."
+              } 
             />
           }
         />

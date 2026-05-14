@@ -10,10 +10,11 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { Ionicons as Icon } from '@expo/vector-icons';
+import { ShieldCheck } from 'lucide-react-native';
 import { useTheme } from '@shopify/restyle';
 import * as AuthSession from 'expo-auth-session';
 import { jwtDecode } from 'jwt-decode';
+import { LinearGradient } from 'expo-linear-gradient';
 
 import { useAuth } from '../context/AuthContext';
 import { Theme } from '../theme/theme';
@@ -30,7 +31,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
 const LoginScreen: React.FC<Props> = () => {
   const theme = useTheme<Theme>();
-  const { signin } = useAuth();
+  const { signin, logout } = useAuth();
   const { t } = useTranslation();
 
   const [loading, setLoading] = useState(false);
@@ -100,10 +101,14 @@ const LoginScreen: React.FC<Props> = () => {
       const isClient = hasRole('CLIENT');
       const isExpert = hasRole('EXPERT');
 
+      console.log("[Login] User roles:", roles);
+
       // 🛑 Restriction : Seuls les Adhérents, Clients et Experts peuvent se connecter
       if (!isAdherent && !isClient && !isExpert) {
-        setErrorMsg("Accès non autorisé. Cette application est réservée aux Adhérents, Clients et Experts.");
+        console.warn("[Login] Access denied: User lacks required roles.");
+        setErrorMsg("non autoriser");
         setLoading(false);
+        await logout(false);
         return;
       }
 
@@ -136,6 +141,10 @@ const LoginScreen: React.FC<Props> = () => {
 
   return (
     <Box flex={1} backgroundColor="background">
+      <LinearGradient
+        colors={[theme.colors.primaryBg, '#FFFFFF', theme.colors.primaryBg]}
+        style={StyleSheet.absoluteFill}
+      />
       <SafeAreaView style={{ flex: 1 }}>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -151,120 +160,72 @@ const LoginScreen: React.FC<Props> = () => {
               opacity,
               transform: [{ scale: logoScale }],
               alignItems: 'center',
-              marginBottom: rsp.verticalScale(40),
+              marginBottom: rsp.verticalScale(60),
             }}>
               <Box
                 backgroundColor="primary"
-                width={88}
-                height={88}
+                width={rsp.scale(120)}
+                height={rsp.scale(120)}
                 borderRadius="round"
                 alignItems="center"
                 justifyContent="center"
-                marginBottom="l"
+                marginBottom="xl"
                 style={Platform.select({
                   ios: {
                     shadowColor: c.primary,
-                    shadowOffset: { width: 0, height: 12 },
-                    shadowOpacity: 0.35,
-                    shadowRadius: 20,
+                    shadowOffset: { width: 0, height: 20 },
+                    shadowOpacity: 0.2,
+                    shadowRadius: 30,
                   },
-                  android: { elevation: 12 },
-                  web: { boxShadow: `0 12px 20px ${c.primary}59` }
+                  android: { elevation: 20 },
+                  web: { boxShadow: `0 20px 40px rgba(3, 105, 161, 0.25)` }
                 })}
               >
-                <Icon name={"shield-checkmark" as any} size={48} color="#FFF" />
+                <ShieldCheck size={rsp.scale(60)} color="#FFF" />
               </Box>
 
               <Text
                 variant="header"
                 color="primary"
-                fontSize={rsp.normalize(34)}
-                fontWeight="800"
-                letterSpacing={-1}
+                fontSize={rsp.normalize(44)}
+                fontWeight="900"
+                letterSpacing={-2}
               >
-                AssurPlus
+                MyAsk
               </Text>
+              
               <Text
                 variant="bodyMedium"
                 color="textSecondary"
                 marginTop="xs"
-                fontWeight="600"
+                fontWeight="700"
                 textAlign="center"
+                fontSize={rsp.normalize(18)}
+                style={{ opacity: 0.6 }}
               >
-                {t('Gérez vos assurances comme jamais')}
+                Espace Assurance
               </Text>
             </Animated.View>
 
-            {/* ── Card Section ── */}
-            <Animated.View style={{ transform: [{ translateY: formSlide }], opacity }}>
+            {/* ── Action Section ── */}
+            <Animated.View style={{ transform: [{ translateY: formSlide }], opacity, width: '100%', alignItems: 'center' }}>
 
-              {/* Error banner */}
               {errorMsg && (
-                <Box marginBottom="l">
+                <Box marginBottom="xl" width="100%">
                   <AlertBanner message={errorMsg} variant="error" />
                 </Box>
               )}
 
-              {/* Login Section / Auto-redirect */}
-              <Box
-                backgroundColor="cardBackground"
-                borderRadius="xl"
-                padding="xl"
-                borderWidth={1}
-                borderColor="borderLight"
-                marginBottom="xl"
-                alignItems="center"
-                style={Platform.select({
-                  ios: {
-                    shadowColor: c.primary,
-                    shadowOffset: { width: 0, height: 4 },
-                    shadowOpacity: 0.08,
-                    shadowRadius: 12,
-                  },
-                  android: { elevation: 4 },
-                  web: { boxShadow: `0 4px 12px ${c.primary}14` }
-                })}
-              >
-                {!errorMsg ? (
-                  <>
-                    <Box
-                      backgroundColor="primaryBg"
-                      width={60}
-                      height={60}
-                      borderRadius="round"
-                      alignItems="center"
-                      justifyContent="center"
-                      marginBottom="m"
-                    >
-                      <Icon name="lock-closed" size={28} color={c.primary} />
-                    </Box>
-                    <Text variant="title" color="text" fontWeight="700" fontSize={18} textAlign="center">
-                      Connexion sécurisée
-                    </Text>
-                    <Text variant="bodySmall" color="textSecondary" marginTop="s" textAlign="center">
-                      Redirection vers la page de connexion Keycloak...
-                    </Text>
-                    <Box marginTop="l">
-                      <Button
-                        label={t('Se connecter')}
-                        onPress={() => promptAsync()}
-                        loading={loading || !request}
-                        disabled={!request}
-                        variant="primary"
-                        size="medium"
-                      />
-                    </Box>
-                  </>
-                ) : (
-                   <AlertBanner message={errorMsg} variant="error" />
-                )}
+              <Box width="100%" paddingHorizontal="l">
+                <Button
+                  label={t('Se connecter')}
+                  onPress={() => promptAsync()}
+                  loading={loading || !request}
+                  disabled={!request}
+                  variant="primary"
+                  size="large"
+                />
               </Box>
-
-              <Box height={1} backgroundColor="border" width="100%" marginVertical="xl" />
-
-              <Text variant="caption" color="textTertiary" textAlign="center">
-                AssurPlus v1.0 — Portail Extranet Mobile
-              </Text>
             </Animated.View>
           </ScrollView>
         </KeyboardAvoidingView>
@@ -277,7 +238,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     justifyContent: 'center',
-    paddingHorizontal: rsp.scale(28),
+    paddingHorizontal: rsp.scale(32),
     paddingBottom: 40,
   },
 });

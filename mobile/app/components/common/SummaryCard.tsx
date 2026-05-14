@@ -1,7 +1,6 @@
 import React from 'react';
-import { Platform } from 'react-native';
 import { useTheme } from '@shopify/restyle';
-import { Ionicons as Icon } from '@expo/vector-icons';
+import { ArrowRight, LucideIcon } from 'lucide-react-native';
 import { Box, Text } from '../../theme/restyle';
 import { Theme, shadows } from '../../theme/theme';
 import { rsp } from '../../utils/responsive';
@@ -9,7 +8,7 @@ import { rsp } from '../../utils/responsive';
 interface SummaryCardProps {
   title: string;
   subtitle: string;
-  icon: string;
+  icon: LucideIcon;
   amount: string;
   amountLabel: string;
   variant?: 'primary' | 'error' | 'success' | 'warning';
@@ -18,7 +17,7 @@ interface SummaryCardProps {
 const SummaryCard: React.FC<SummaryCardProps> = ({ 
   title, 
   subtitle, 
-  icon, 
+  icon: Icon, 
   amount, 
   amountLabel, 
   variant = 'primary' 
@@ -36,48 +35,49 @@ const SummaryCard: React.FC<SummaryCardProps> = ({
 
   return (
     <Box 
-      padding="l" 
+      padding="m" 
       borderRadius="xl" 
-      backgroundColor="cardBackground" 
-      style={shadows.medium}
+      backgroundColor="white" 
+      style={shadows.small}
+      borderWidth={1}
+      borderColor="borderLight"
     >
-       <Box flexDirection="row" justifyContent="space-between" alignItems="flex-start" marginBottom="l">
-          <Box flex={1}>
-            <Text variant="premiumLabel" color="textTertiary" marginBottom="xxs">{title}</Text>
-            <Text variant="subheader" fontSize={rsp.normalize(20)} numberOfLines={1}>{subtitle}</Text>
-          </Box>
+       <Box flexDirection="row" alignItems="center" marginBottom="m">
           <Box 
-            width={48} 
-            height={48} 
+            width={44} 
+            height={44} 
             borderRadius="l" 
             backgroundColor={active.bg as keyof Theme['colors']} 
             alignItems="center" 
             justifyContent="center"
+            marginRight="m"
           >
             <Icon 
-              name={icon as any} 
-              size={24} 
+              size={22} 
               color={theme.colors[active.main as keyof Theme['colors']]} 
             />
+          </Box>
+          <Box flex={1}>
+            <Text variant="labelBold" color="textMuted" letterSpacing={1}>{title}</Text>
+            <Text variant="bodyMedium" color="text" numberOfLines={1}>{subtitle}</Text>
           </Box>
        </Box>
        
        <Box 
          flexDirection="row" 
          justifyContent="space-between" 
-         alignItems="center"
-         marginTop="s"
+         alignItems="flex-end"
        >
-          <Box>
-            <Text variant="header" color="primary" fontSize={rsp.normalize(28)}>
+          <Box flex={1}>
+            <Text variant="header" color="primary" fontSize={rsp.normalize(24)} fontWeight="800">
               {amount}
             </Text>
-            <Text variant="caption" color="textTertiary" fontWeight="600">
+            <Text variant="bodySmall" color="textMuted">
               {amountLabel}
             </Text>
           </Box>
-          <Box backgroundColor="primary" width={32} height={32} borderRadius="m" alignItems="center" justifyContent="center" style={shadows.small}>
-             <Icon name="chevron-forward" size={18} color="white" />
+          <Box backgroundColor="primaryBg" width={36} height={36} borderRadius="m" alignItems="center" justifyContent="center">
+             <ArrowRight size={20} color={theme.colors.primary} />
           </Box>
        </Box>
     </Box>

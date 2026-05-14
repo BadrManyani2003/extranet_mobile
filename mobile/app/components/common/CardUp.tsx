@@ -29,7 +29,7 @@ const CardUp: React.FC<CardUpProps> = ({ visible, onClose, title, subtitle, chil
 
   return (
     <Modal visible={visible} animationType="slide" transparent statusBarTranslucent>
-      <Box flex={1} backgroundColor="transparentGray" justifyContent="flex-end">
+      <Box flex={1} backgroundColor="transparentNavy" justifyContent="flex-end">
         <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
         <AnimatedBox 
           backgroundColor="cardBackground" 
@@ -40,13 +40,13 @@ const CardUp: React.FC<CardUpProps> = ({ visible, onClose, title, subtitle, chil
           paddingBottom="xl"
           style={Platform.select({ 
             ios: { 
-              shadowColor: '#000', 
+              shadowColor: theme.colors.primary, 
               shadowOffset: { width: 0, height: -12 }, 
               shadowOpacity: 0.15, 
               shadowRadius: 24 
             },
             android: { elevation: 20 },
-            web: { boxShadow: '0 -12px 24px rgba(0,0,0,0.15)' }
+            web: { boxShadow: `0 -12px 24px ${theme.colors.transparentNavy}` }
           })}
         >
           {/* Handle */}

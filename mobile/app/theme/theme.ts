@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import { createTheme } from '@shopify/restyle';
 import { rsp } from '../utils/responsive';
 
@@ -5,68 +6,87 @@ import { rsp } from '../utils/responsive';
  * Palette de Couleurs - Premium Inspiration from Client Frontend
  */
 const palette = {
-  // Brand colors
-  primary:      '#0F172A', // Slate 900 (Client style)
-  primaryLight: '#334155', // Slate 700
-  primaryBg:    '#F1F5F9', // Slate 100
+  // Brand colors - Insurance Sky Blue Theme (Professional/Expert)
+  primary:      '#075985', // Sky 800 - Deep professional blue
+  primaryLight: '#0EA5E9', // Sky 500 - Vibrant sky blue
+  primaryBg:    '#F0F9FF', // Sky 50
+  
+  secondary:    '#0284C7', // Sky 600
+  secondaryBg:  '#E0F2FE', // Sky 100
   
   // UI Colors
-  background:   '#F8FAFC', // Slate 50
+  background:   '#FFFFFF', 
   cardBg:       '#FFFFFF',
   white:        '#FFFFFF',
   
-  // Text
-  text:         '#0F172A',
-  textSecondary:'#475569',
-  textTertiary: '#94A3B8',
+  // Text (Expert Typography Palette - All Navy/Blue Shades)
+  text:         '#082F49', // Sky 950 - Deepest Navy
+  textSecondary:'#0C4A6E', // Sky 900 - Deep Navy
+  textTertiary: '#075985', // Sky 800 - Professional Blue
+  textMuted:    '#0369A1', // Sky 700 - Brand Blue
   
   // Accents
-  accent:       '#3B82F6', // Blue 500
-  accentBg:     '#EFF6FF',
+  accent:       '#0284C7', // Sky 600
+  accentBg:     '#E0F2FE', // Sky 100
   
-  // Semantic
-  success:      '#10B981',
-  warning:      '#F59E0B',
-  error:        '#EF4444',
+  // Semantic (Converted to Blue Shades)
+  success:      '#0284C7', // Sky 600 - Reliable Blue
+  warning:      '#0EA5E9', // Sky 500 - Alert Blue
+  error:        '#075985', // Sky 800 - Serious Blue
   
-  successBg:    '#ECFDF5',
-  warningBg:    '#FFFBEB',
-  errorBg:      '#FEF2F2',
+  successBg:    '#F0F9FF', // Sky 50
+  warningBg:    '#E0F2FE', // Sky 100
+  errorBg:      '#BAE6FD', // Sky 200
   
-  border:       '#E2E8F0',
-  borderLight:  '#F1F5F9',
+  border:       '#BAE6FD', // Sky 200
+  borderLight:  '#E0F2FE', // Sky 100
   
-  shadowColor:  '#000000',
+  shadowColor:  '#075985', 
 };
 
 export const shadows = {
+  none: {
+    shadowOpacity: 0,
+    elevation: 0,
+    boxShadow: 'none',
+  },
   small: {
     shadowColor: palette.shadowColor,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.04,
+    shadowRadius: 10,
     elevation: 2,
+    // @ts-ignore
+    boxShadow: `0 4px 10px rgba(7, 89, 133, 0.04)`,
   },
   medium: {
     shadowColor: palette.shadowColor,
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.08,
-    shadowRadius: 16,
-    elevation: 5,
+    shadowOpacity: 0.06,
+    shadowRadius: 20,
+    elevation: 4,
+    // @ts-ignore
+    boxShadow: `0 8px 20px rgba(7, 89, 133, 0.06)`,
   },
   premium: {
     shadowColor: palette.primary,
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.12,
-    shadowRadius: 24,
+    shadowOffset: { width: 0, height: 16 },
+    shadowOpacity: 0.1,
+    shadowRadius: 32,
     elevation: 8,
+    // @ts-ignore
+    boxShadow: `0 16px 32px rgba(7, 89, 133, 0.1)`,
   }
 };
 
 const lightTheme = createTheme({
   colors: {
     primary: palette.primary,
+    primaryLight: palette.primaryLight,
     primaryBg: palette.primaryBg,
+    
+    secondary: palette.secondary,
+    secondaryBg: palette.secondaryBg,
     
     background: palette.background,
     cardBackground: palette.cardBg,
@@ -74,6 +94,7 @@ const lightTheme = createTheme({
     text: palette.text,
     textSecondary: palette.textSecondary,
     textTertiary: palette.textTertiary,
+    textMuted: palette.textMuted,
     textInverse: palette.white,
     
     border: palette.border,
@@ -81,15 +102,12 @@ const lightTheme = createTheme({
     
     success: palette.success,
     successBg: palette.successBg,
-    successLight: palette.successBg,
     
     warning: palette.warning,
     warningBg: palette.warningBg,
-    warningLight: palette.warningBg,
     
     error: palette.error,
     errorBg: palette.errorBg,
-    errorLight: palette.errorBg,
     
     info: palette.accent,
     infoBg: palette.accentBg,
@@ -97,6 +115,10 @@ const lightTheme = createTheme({
     accent: palette.accent,
     white: palette.white,
     transparent: 'transparent',
+    transparentBlue: 'rgba(14, 165, 233, 0.15)',
+    transparentNavy: 'rgba(7, 89, 133, 0.5)',
+    buttonSecondaryBg: palette.secondaryBg,
+    backgroundLight: palette.primaryBg,
   },
   spacing: {
     none: 0,
@@ -128,66 +150,79 @@ const lightTheme = createTheme({
     defaults: {
       fontSize: rsp.normalize(15),
       color: 'text',
+      fontFamily: 'Inter-Regular',
+    },
+    display: {
+      fontSize: rsp.normalize(44),
+      fontFamily: 'Inter-ExtraBold',
+      color: 'primary',
+      letterSpacing: -2,
     },
     header: {
       fontSize: rsp.normalize(32),
-      fontWeight: '900',
+      fontFamily: 'Inter-ExtraBold',
       color: 'primary',
       letterSpacing: -1,
     },
     subheader: {
-      fontSize: rsp.normalize(20),
-      fontWeight: '800',
+      fontSize: rsp.normalize(22),
+      fontFamily: 'Inter-Bold',
       color: 'primary',
       letterSpacing: -0.5,
     },
     title: {
       fontSize: rsp.normalize(18),
-      fontWeight: '700',
+      fontFamily: 'Inter-Bold',
       color: 'text',
     },
     premiumLabel: {
-      fontSize: rsp.normalize(11),
-      fontWeight: '900',
+      fontSize: rsp.normalize(12),
+      fontFamily: 'Inter-ExtraBold',
       textTransform: 'uppercase',
-      letterSpacing: 2.5,
-      color: 'textTertiary',
+      letterSpacing: 2,
+      color: 'textMuted',
     },
     button: {
-      fontSize: rsp.normalize(14),
-      fontWeight: '900',
-      textTransform: 'uppercase',
-      letterSpacing: 1.5,
+      fontSize: rsp.normalize(15),
+      fontFamily: 'Inter-Bold',
+      color: 'white',
+    },
+    buttonLarge: {
+      fontSize: rsp.normalize(16),
+      fontFamily: 'Inter-ExtraBold',
+      letterSpacing: 0.5,
       color: 'white',
     },
     body: {
-      fontSize: rsp.normalize(15),
+      fontSize: rsp.normalize(16),
       lineHeight: 24,
+      fontFamily: 'Inter-Regular',
       color: 'textSecondary',
     },
     bodyMedium: {
       fontSize: rsp.normalize(15),
-      fontWeight: '600',
+      fontFamily: 'Inter-SemiBold',
       color: 'text',
     },
     bodySmall: {
-      fontSize: rsp.normalize(13),
+      fontSize: rsp.normalize(14),
+      fontFamily: 'Inter-Medium',
       color: 'textSecondary',
-      fontWeight: '500',
     },
     caption: {
       fontSize: rsp.normalize(12),
+      fontFamily: 'Inter-SemiBold',
       color: 'textTertiary',
-      fontWeight: '600',
     },
     labelBold: {
       fontSize: rsp.normalize(12),
-      fontWeight: '900',
+      fontFamily: 'Inter-ExtraBold',
       textTransform: 'uppercase',
-      letterSpacing: 1.2,
+      letterSpacing: 1,
       color: 'primary',
     },
   },
+
 });
 
 export type Theme = typeof lightTheme;

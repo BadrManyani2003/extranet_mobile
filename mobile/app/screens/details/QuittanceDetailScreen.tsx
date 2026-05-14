@@ -32,97 +32,23 @@ const QuittanceDetailScreen = () => {
   return (
     <Box flex={1} backgroundColor="background">
       <AppHeader title={`Quittance ${quittance.numero}`} showBackButton={true} />
-      
-      <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
-        {/* Receipt Header */}
-        <Box 
-          backgroundColor="cardBackground" 
-          margin="m" 
-          borderRadius="l" 
-          padding="l"
-          borderWidth={1}
-          borderColor="borderLight"
-          style={Platform.select({
-            ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 8 },
-            android: { elevation: 2 },
-            web: { boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }
-          })}
-        >
-          <Box flexDirection="row" justifyContent="space-between" alignItems="center" marginBottom="m">
-            <Box backgroundColor="successBg" padding="s" borderRadius="m">
-              <Icon name="receipt" size={24} color={theme.colors.success} />
-            </Box>
-            <StatusBadge label={quittance.statut} variant={quittance.statut_variant || 'neutral'} />
-          </Box>
 
-          <Text variant="caption" color="textTertiary">Montant Total</Text>
-          <Text variant="title" fontWeight="900" fontSize={32} color="text" marginBottom="l">
-            {quittance.montantTotal} <Text variant="body" fontWeight="700">DH</Text>
-          </Text>
+      <ScrollView contentContainerStyle={{ paddingBottom: 40, paddingTop: 10 }}>
+        <Box height={10} />
 
-          <Box height={1} backgroundColor="borderLight" marginBottom="m" />
-
-          <Box flexDirection="row" flexWrap="wrap">
-            <Box width="50%" marginBottom="m">
-              <Text variant="caption" color="textTertiary">N° Quittance</Text>
-              <Text variant="body" fontWeight="700">{quittance.numero}</Text>
-            </Box>
-            <Box width="50%" marginBottom="m">
-              <Text variant="caption" color="textTertiary">Échéance</Text>
-              <Text variant="body" fontWeight="700" color="error">{formatDate(quittance.dateEcheance)}</Text>
-            </Box>
-            <Box width="50%">
-              <Text variant="caption" color="textTertiary">Début Période</Text>
-              <Text variant="body" fontWeight="700">{formatDate(quittance.dateDebut)}</Text>
-            </Box>
-            <Box width="50%">
-              <Text variant="caption" color="textTertiary">Fin Période</Text>
-              <Text variant="body" fontWeight="700">{formatDate(quittance.dateFin)}</Text>
-            </Box>
-          </Box>
-        </Box>
-
-        {/* Payment Details */}
-        <Section title="Détails du Paiement" icon="card-outline">
-          <InfoRow label="Montant Total" value={`${quittance.montantTotal} DH`} icon="wallet-outline" />
-          <InfoRow label="Reste à Payer" value={`${quittance.montantImpaye || 0} DH`} icon="alert-circle-outline" valueColor={quittance.montantImpaye > 0 ? "error" : "success"} isLast={true} />
+        {/* Informations de la Quittance */}
+        <Section title="Détails de la Quittance" icon="receipt-outline">
+          <InfoRow label="N° Quittance" value={quittance.numero} icon="document-text-outline" />
+          <InfoRow label="Police liée" value={quittance.police || '-'} icon="shield-checkmark-outline" valueColor="primary" />
+          <InfoRow label="Période" value={`${formatDate(quittance.dateDebut)} - ${formatDate(quittance.dateFin)}`} icon="time-outline" />
+          <InfoRow label="Statut" value={quittance.statut} icon="stats-chart-outline" valueColor={quittance.statut_variant === 'success' ? 'success' : 'warning'} isLast={true} />
         </Section>
 
-        {/* Action Buttons */}
-        <Box padding="m" gap="m">
-          {quittance.montantImpaye > 0 && (
-            <TouchableOpacity 
-              style={{ 
-                backgroundColor: theme.colors.primary, 
-                padding: 16, 
-                borderRadius: 12, 
-                flexDirection: 'row', 
-                justifyContent: 'center', 
-                alignItems: 'center' 
-              }}
-            >
-              <Icon name="card" size={20} color="white" style={{ marginRight: 8 }} />
-              <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 16 }}>Payer maintenant</Text>
-            </TouchableOpacity>
-          )}
-
-          <TouchableOpacity 
-            onPress={onShare}
-            style={{ 
-              backgroundColor: theme.colors.cardBackground, 
-              padding: 16, 
-              borderRadius: 12, 
-              borderWidth: 1,
-              borderColor: theme.colors.border,
-              flexDirection: 'row', 
-              justifyContent: 'center', 
-              alignItems: 'center' 
-            }}
-          >
-            <Icon name="share-outline" size={20} color={theme.colors.primary} style={{ marginRight: 8 }} />
-            <Text style={{ color: theme.colors.primary, fontWeight: 'bold', fontSize: 16 }}>Partager / Imprimer</Text>
-          </TouchableOpacity>
-        </Box>
+        {/* Situation Financière */}
+        <Section title="Situation Financière" icon="wallet-outline">
+          <InfoRow label="Montant Total" value={`${quittance.montantTotal} DH`} icon="cash-outline" />
+          <InfoRow label="Reste à Payer" value={`${quittance.montantImpaye || 0} DH`} icon="alert-circle-outline" valueColor={quittance.montantImpaye > 0 ? "error" : "success"} isLast={true} />
+        </Section>
       </ScrollView>
     </Box>
   );

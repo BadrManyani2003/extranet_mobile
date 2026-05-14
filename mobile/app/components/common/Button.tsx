@@ -53,12 +53,19 @@ const Button: React.FC<ButtonProps> = ({
         backgroundColor={bg as any} 
         borderWidth={border ? 1 : 0} 
         borderColor={border as any} 
-        borderRadius="s" 
+        borderRadius="l" 
         height={height} 
         flexDirection="row" 
         alignItems="center" 
         justifyContent="center" 
         opacity={disabled || loading ? 0.6 : 1}
+        style={variant === 'primary' ? {
+          shadowColor: theme.colors.primary,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.2,
+          shadowRadius: 8,
+          elevation: 4,
+        } : {}}
       >
         {loading ? (
           <ActivityIndicator color={theme.colors[text as keyof Theme['colors']]} size="small" />

@@ -6,6 +6,7 @@ const keycloakConfig = require('../config/keycloak');
 const authService = require('../services/auth.service');
 
 // Configuration du client JWKS avec mise en cache et limitation de débit optimisées
+console.log('🌐 JWKS URI:', keycloakConfig.jwksUri);
 const client = jwksClient({
     jwksUri: keycloakConfig.jwksUri,
     cache: true,
@@ -72,6 +73,7 @@ module.exports = async (req, res, next) => {
         next();
 
     } catch (err) {
+        console.error('🔑 Auth Error:', err.message);
         let message = 'Token invalide.';
         if (err.name === 'TokenExpiredError') message = 'Session expirée.';
         if (err.name === 'JsonWebTokenError') message = `Erreur de signature: ${err.message}`;

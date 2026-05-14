@@ -30,7 +30,6 @@ interface AuthContextType {
   isLoading: boolean;
   signin: (userData: User, userToken: string, userSource: 'ADHERENT' | 'CLIENT' | 'EXPERT') => Promise<void>;
   logout: (shouldRedirect?: boolean) => Promise<void>;
-  login: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -49,13 +48,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [token, setToken] = useState<string | null>(null);
   const [source, setSource] = useState<'ADHERENT' | 'CLIENT' | 'EXPERT' | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isAuthenticating, setIsAuthenticating] = useState(false);
-
-  // ── Configuration Expo AuthSession ──────────────────────────
-  const [request, response, promptAsync] = AuthSession.useAuthRequest(
-    keycloakConfig,
-    keycloakDiscovery
-  );
 
   // ── Appelé après une authentification Keycloak réussie ───────
   const signin = useCallback(async (
@@ -63,6 +55,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     userToken: string,
     userSource: 'ADHERENT' | 'CLIENT' | 'EXPERT'
   ) => {
+    console.log("[AuthContext] Signin initiated for:", userData.email);
     // Stockage du token : SecureStore sur mobile, AsyncStorage sur Web
     if (Platform.OS === 'web') {
       await AsyncStorage.setItem('token', userToken);
@@ -79,6 +72,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(userData);
     setToken(userToken);
     setSource(userSource);
+    console.log("[AuthContext] Signin complete. State updated.");
+
+    // Récupérer immédiatement les données de la base de données
+    try {
+      const freshUser = await authAPI.me();
+      setUser(prev => prev ? ({ ...prev, ...freshUser }) : null);
+      console.log("[AuthContext] Database profile loaded.");
+    } catch (err) {
+      console.warn("[AuthContext] Failed to load database profile:", err);
+    }
   }, []);
 
   const logout = useCallback(async (shouldRedirect: boolean = true) => {
@@ -90,24 +93,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const tasks = [
         AsyncStorage.removeItem('user'),
         AsyncStorage.removeItem('user_source'),
+        AsyncStorage.removeItem('token'), // Toujours nettoyer AsyncStorage par sécurité
       ];
 
-      if (Platform.OS === 'web') {
-        tasks.push(AsyncStorage.removeItem('token'));
-      } else {
+      if (Platform.OS !== 'web') {
         tasks.push(SecureStore.deleteItemAsync('token'));
       }
 
       await Promise.all(tasks);
+      console.log("[AuthContext] Local storage cleared.");
 
       if (shouldRedirect) {
         const logoutUrl = `${keycloakDiscovery.endSessionEndpoint}?client_id=${keycloakConfig.clientId}&post_logout_redirect_uri=${encodeURIComponent(keycloakConfig.redirectUri)}`;
         WebBrowser.openAuthSessionAsync(logoutUrl, keycloakConfig.redirectUri);
       }
-    } catch {
-      // Ignorer les erreurs de déconnexion
+    } catch (e) {
+      console.error("[AuthContext] Logout error:", e);
     }
-  }, []);
+  }, [token, user]);
 
   // ── Restaurer la session persistée au démarrage de l'app ──────
   useEffect(() => {
@@ -129,93 +132,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setToken(savedToken);
           setUser(user);
           setSource(source);
+          
+          // Libérer l'écran de chargement dès qu'on a les jetons locaux
+          setIsLoading(false);
 
           try {
             const freshUser = await authAPI.me();
             setUser(prev => prev ? ({ ...prev, ...freshUser }) : null);
-          } catch {
-            logout(false);
+          } catch (err) {
+            console.warn("Background user refresh failed:", err);
+            // On ne déconnecte pas forcément ici si le token est encore valide localement
           }
+        } else {
+          setIsLoading(false);
         }
       } catch (e) {
         console.error("Session restoration error:", e);
-      } finally {
         setIsLoading(false);
       }
     };
     restoreSession();
-  }, [logout]);
-
-  // ── Gérer la réponse Keycloak ───────────────────────────────
-  useEffect(() => {
-    if (response?.type === 'success') {
-      const { code } = response.params;
-
-      const exchangeCode = async () => {
-        setIsAuthenticating(true);
-        try {
-          const tokenResult = await AuthSession.exchangeCodeAsync(
-            {
-              clientId: keycloakConfig.clientId,
-              code,
-              redirectUri: keycloakConfig.redirectUri,
-              extraParams: { code_verifier: request?.codeVerifier || '' },
-            },
-            keycloakDiscovery
-          );
-
-          const accessToken = tokenResult.accessToken;
-          const decoded: any = jwtDecode(accessToken);
-
-          const realmRoles: string[] = decoded.realm_access?.roles || [];
-          const clientRoles: string[] = decoded.resource_access?.[keycloakConfig.clientId]?.roles || [];
-          const roles = [...new Set([...realmRoles, ...clientRoles])];
-
-          const isAdherent = roles.some(r => r.toUpperCase() === 'ADHERENT');
-          const isClient = roles.some(r => r.toUpperCase() === 'CLIENT');
-          const isExpert = roles.some(r => r.toUpperCase() === 'EXPERT');
-
-          if (!isAdherent && !isClient && !isExpert) {
-            alert("Accès non autorisé.");
-            return;
-          }
-
-          let userSource: 'ADHERENT' | 'CLIENT' | 'EXPERT' = 'ADHERENT';
-          if (isExpert) userSource = 'EXPERT';
-          else if (isClient) userSource = 'CLIENT';
-          const userData = {
-            id: decoded.sub,
-            email: decoded.email || '',
-            nom: decoded.family_name || '',
-            prenom: decoded.given_name || '',
-            roles,
-          };
-
-          await signin(userData, accessToken, userSource);
-        } catch (error) {
-          console.error("Keycloak exchange error:", error);
-        } finally {
-          setIsAuthenticating(false);
-        }
-      };
-
-      exchangeCode();
-    }
-  }, [response, request, signin]);
+  }, []); // Run only once on mount
 
   // ── Gérer l'événement non autorisé depuis l'API ───────────────
   useEffect(() => {
-    let logoutTimer: NodeJS.Timeout;
     const handleUnauthorized = () => {
-      if (!logoutTimer) {
-        // Déconnexion sans redirection automatique après expiration (évite blocage popup)
-        logoutTimer = setTimeout(() => logout(false), 7000);
-      }
+      console.log("[AuthContext] Unauthorized event received. Logging out...");
+      logout(false);
     };
     authEvents.on('unauthorized', handleUnauthorized);
     return () => {
       authEvents.off('unauthorized', handleUnauthorized);
-      if (logoutTimer) clearTimeout(logoutTimer);
     };
   }, [logout]);
 
@@ -228,7 +175,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       isLoading,
       signin,
       logout,
-      login: () => promptAsync(),
     }}>
       {children}
     </AuthContext.Provider>

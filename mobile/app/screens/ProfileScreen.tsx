@@ -9,6 +9,7 @@ import { useAuth } from '../context/AuthContext';
 import { Ionicons as Icon } from '@expo/vector-icons';
 import { useTheme } from '@shopify/restyle';
 import { Theme } from '../theme/theme';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const ProfileScreen: React.FC = () => {
   const theme = useTheme<Theme>();
@@ -31,53 +32,69 @@ const ProfileScreen: React.FC = () => {
 
   const roles = user?.roles?.map(r => r.toUpperCase()) || [];
   const isAdherent = roles.includes('ADHERENT');
-  const isClient = roles.includes('CLIENT');
   const isExpert = roles.includes('EXPERT');
 
   return (
     <Box flex={1} backgroundColor="background">
       <AppHeader title={t('Mon Profil')} showBackButton={false} />
       
-      <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
-        {/* Profile Header */}
+      <ScrollView contentContainerStyle={{ paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
+        {/* Profile Header with Gradient */}
         <Box 
-          backgroundColor="primary" 
-          paddingVertical="xxl" 
-          alignItems="center"
+          height={240} 
+          marginBottom="xl"
           borderBottomLeftRadius="3xl"
           borderBottomRightRadius="3xl"
-          marginBottom="xl"
+          overflow="hidden"
+          style={{ elevation: 15, shadowColor: theme.colors.primary, shadowOpacity: 0.3, shadowRadius: 15 }}
         >
-          <Box 
-            width={100} 
-            height={100} 
-            borderRadius="round" 
-            backgroundColor="white" 
-            alignItems="center" 
-            justifyContent="center"
-            marginBottom="m"
-            style={{ elevation: 10, shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 10 }}
-          >
-             <Text variant="header" color="primary" fontSize={40}>
-                {user?.nom?.charAt(0).toUpperCase()}
-             </Text>
+          <LinearGradient
+            colors={[theme.colors.primary, theme.colors.secondary]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={StyleSheet.absoluteFill}
+          />
+          
+          <Box flex={1} alignItems="center" justifyContent="center" paddingTop="m">
+            <Box 
+              width={110} 
+              height={110} 
+              borderRadius="round" 
+              backgroundColor="white" 
+              alignItems="center" 
+              justifyContent="center"
+              marginBottom="m"
+              padding="xxs"
+              style={{ elevation: 10, shadowColor: theme.colors.primary, shadowOpacity: 0.2, shadowRadius: 10 }}
+            >
+               <Box 
+                 width="100%" 
+                 height="100%" 
+                 borderRadius="round" 
+                 backgroundColor="primaryBg" 
+                 alignItems="center" 
+                 justifyContent="center"
+                 borderWidth={2}
+                 borderColor="white"
+               >
+                 <Text variant="header" color="primary" fontSize={44} fontWeight="900">
+                    {user?.nom?.charAt(0).toUpperCase()}
+                 </Text>
+               </Box>
+            </Box>
+            
+            <Text variant="subheader" color="white" fontSize={24}>{user?.nom}</Text>
+            <Text variant="bodySmall" color="white" style={{ opacity: 0.85 }} marginTop="xs">
+              {user?.email}
+            </Text>
           </Box>
-          <Text variant="subheader" color="white">{user?.nom}</Text>
-          <Box flexDirection="row" alignItems="center" marginTop="s" backgroundColor="white" paddingHorizontal="m" paddingVertical="xxs" borderRadius="round">
-             <Box width={8} height={8} borderRadius="round" backgroundColor={isExpert ? "success" : "accent"} marginRight="xs" />
-             <Text variant="caption" color="primary" fontWeight="900" style={{ textTransform: 'uppercase', letterSpacing: 1 }}>
-                {t((user?.role || 'Utilisateur') as any)}
-             </Text>
-          </Box>
-          <Text variant="bodySmall" color="white" style={{ opacity: 0.7 }} marginTop="s">{user?.email}</Text>
         </Box>
 
         <Box paddingHorizontal="m">
           {/* Information Section */}
           <Section title="Informations Personnelles" icon="person-outline">
             <InfoRow label="Nom complet" value={user?.nom || '-'} icon="person-circle-outline" />
-            <InfoRow label="Email" value={user?.email || '-'} icon="mail-outline" />
-            <InfoRow label="Téléphone" value={user?.telephone || '-'} icon="call-outline" isLast={true} />
+            <InfoRow label="Email" value={user?.email || '-'} icon="mail-outline" isLast={true} />
           </Section>
 
           {/* Adhérent Specific Section */}
@@ -86,11 +103,11 @@ const ProfileScreen: React.FC = () => {
               <TouchableOpacity 
                 activeOpacity={0.7} 
                 onPress={() => navigation.navigate('PersACharge')}
-                style={{ padding: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
+                style={{ padding: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
               >
                 <Box flexDirection="row" alignItems="center">
-                   <Box width={36} height={36} borderRadius="m" backgroundColor="primaryBg" alignItems="center" justifyContent="center" marginRight="m">
-                      <Icon name="people-circle-outline" size={20} color={theme.colors.primary} />
+                   <Box width={40} height={40} borderRadius="m" backgroundColor="primaryBg" alignItems="center" justifyContent="center" marginRight="m">
+                      <Icon name="people-circle-outline" size={22} color={theme.colors.primary} />
                    </Box>
                    <Text variant="bodyMedium">Personnes à charge</Text>
                 </Box>
@@ -104,11 +121,11 @@ const ProfileScreen: React.FC = () => {
             <Section title="Espace Expert" icon="briefcase-outline">
               <TouchableOpacity 
                 activeOpacity={0.7} 
-                style={{ padding: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
+                style={{ padding: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
               >
                 <Box flexDirection="row" alignItems="center">
-                   <Box width={36} height={36} borderRadius="m" backgroundColor="successBg" alignItems="center" justifyContent="center" marginRight="m">
-                      <Icon name="analytics-outline" size={20} color={theme.colors.success} />
+                   <Box width={40} height={40} borderRadius="m" backgroundColor="successBg" alignItems="center" justifyContent="center" marginRight="m">
+                      <Icon name="analytics-outline" size={22} color={theme.colors.success} />
                    </Box>
                    <Text variant="bodyMedium">Rapports d'expertise</Text>
                 </Box>
@@ -118,20 +135,14 @@ const ProfileScreen: React.FC = () => {
           )}
 
           {/* Settings Section */}
-          <Section title="Paramètres" icon="settings-outline">
-            <TouchableOpacity style={{ padding: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Section title="Paramètres de Sécurité" icon="shield-checkmark-outline">
+            <TouchableOpacity 
+              activeOpacity={0.7}
+              style={{ padding: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
+            >
                 <Box flexDirection="row" alignItems="center">
-                   <Box width={36} height={36} borderRadius="m" backgroundColor="primaryBg" alignItems="center" justifyContent="center" marginRight="m">
-                      <Icon name="notifications-outline" size={20} color={theme.colors.primary} />
-                   </Box>
-                   <Text variant="bodyMedium">Notifications</Text>
-                </Box>
-                <Icon name="chevron-forward" size={20} color={theme.colors.textTertiary} />
-            </TouchableOpacity>
-            <TouchableOpacity style={{ padding: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderTopWidth: 1, borderTopColor: theme.colors.borderLight }}>
-                <Box flexDirection="row" alignItems="center">
-                   <Box width={36} height={36} borderRadius="m" backgroundColor="primaryBg" alignItems="center" justifyContent="center" marginRight="m">
-                      <Icon name="lock-closed-outline" size={20} color={theme.colors.primary} />
+                   <Box width={40} height={40} borderRadius="m" backgroundColor="primaryBg" alignItems="center" justifyContent="center" marginRight="m">
+                      <Icon name="lock-closed-outline" size={22} color={theme.colors.primary} />
                    </Box>
                    <Text variant="bodyMedium">Sécurité & Mot de passe</Text>
                 </Box>
@@ -142,20 +153,25 @@ const ProfileScreen: React.FC = () => {
           {/* Logout Section */}
           <TouchableOpacity 
             onPress={handleLogout}
+            activeOpacity={0.8}
             style={{ 
               backgroundColor: theme.colors.errorBg, 
-              padding: 16, 
-              borderRadius: 20, 
+              padding: 18, 
+              borderRadius: 24, 
               flexDirection: 'row', 
               alignItems: 'center', 
               justifyContent: 'center',
-              marginTop: 20,
+              marginTop: 24,
               borderWidth: 1,
-              borderColor: theme.colors.error
+              borderColor: theme.colors.error,
+              elevation: 4,
+              shadowColor: theme.colors.error,
+              shadowOpacity: 0.1,
+              shadowRadius: 8
             }}
           >
-            <Icon name="log-out-outline" size={20} color={theme.colors.error} style={{ marginRight: 8 }} />
-            <Text variant="bodyMedium" color="error" fontWeight="800" style={{ textTransform: 'uppercase', letterSpacing: 1 }}>
+            <Icon name="log-out-outline" size={22} color={theme.colors.error} style={{ marginRight: 10 }} />
+            <Text variant="bodyMedium" color="error" fontWeight="900" style={{ textTransform: 'uppercase', letterSpacing: 1.5 }}>
               {t('Se déconnecter')}
             </Text>
           </TouchableOpacity>

@@ -7,7 +7,7 @@ export default {
     "Mot de passe oublié ?": "Forgot?",
     "Créer un compte": "Sign up",
     "Gérez vos assurances comme jamais": "Pro Insurance",
-    "AssurPlus": "AssurPlus",
+    "AssurPlus": "MyAsk",
     "Désolé, vos accès sont incorrects": "Access denied",
     "Accueil": "Home",
     "Mes Contrats": "Contracts",

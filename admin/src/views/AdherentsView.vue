@@ -66,7 +66,7 @@ onMounted(fetchAdherents)
         </TableHeader>
         <TableBody>
           <TableRow v-for="adherent in items" :key="adherent.id" class="group hover:bg-slate-50/50 transition-colors border-b border-slate-50">
-            <TableCell class="font-bold text-slate-400 py-4">{{ adherent.matricule || 'N/A' }}</TableCell>
+            <TableCell class="font-bold text-slate-400 py-4">{{ adherent.matricule || '-' }}</TableCell>
             <TableCell>
               <div class="flex items-center gap-3">
                 <div class="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-slate-900 group-hover:text-white transition-all shadow-sm">

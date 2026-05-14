@@ -146,7 +146,7 @@ onMounted(fetchUsers)
             <TableCell>
               <Badge v-if="user.nature === 'C'" variant="secondary" class="bg-emerald-50 text-emerald-600 border-emerald-100 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-lg">{{ $t('users.natures.client') }}</Badge>
               <Badge v-else-if="user.nature === 'A'" variant="secondary" class="bg-orange-50 text-orange-600 border-orange-100 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-lg">{{ $t('users.natures.cabinet') }}</Badge>
-              <span v-else class="text-slate-300 italic text-[10px]">{{ user.nature || 'N/A' }}</span>
+              <span v-else class="text-slate-300 italic text-[10px]">{{ user.nature || '-' }}</span>
             </TableCell>
             <TableCell>
               <div class="flex flex-wrap gap-1 max-w-[280px]">

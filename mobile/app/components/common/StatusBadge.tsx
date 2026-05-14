@@ -7,7 +7,7 @@ import { rsp } from '../../utils/responsive';
 
 interface StatusBadgeProps {
   label: string;
-  variant?: 'success' | 'warning' | 'error' | 'info' | 'neutral' | 'purple';
+  variant?: 'success' | 'warning' | 'error' | 'info' | 'neutral' | 'purple' | 'primary';
   size?: 'small' | 'medium';
 }
 
@@ -25,8 +25,8 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({
       case 'warning': return { bg: 'warningBg', text: 'warning', icon: 'time-outline' };
       case 'error':   return { bg: 'errorBg',   text: 'error',   icon: 'alert-circle-outline' };
       case 'info':    return { bg: 'infoBg',    text: 'info',    icon: 'information-circle-outline' };
-      case 'purple':  return { bg: 'purpleBg',  text: 'purple',  icon: 'ribbon-outline' };
-      default:        return { bg: 'backgroundGray', text: 'textSecondary', icon: 'ellipse-outline' };
+      case 'primary': return { bg: 'primaryBg', text: 'primary', icon: 'shield-checkmark' };
+      default:        return { bg: 'borderLight', text: 'textTertiary', icon: 'ellipse-outline' };
     }
   };
 

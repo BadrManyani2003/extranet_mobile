@@ -50,11 +50,15 @@ export async function request<T>(endpoint: string, options: RequestInit = {}): P
   }
 
   if (response.status === 401 || response.status === 403) {
+    const errorData = await response.json().catch(() => ({}));
+    const serverMessage = errorData.message || 'Session expirée ou accès refusé.';
+    
     if (!logoutPending) {
       logoutPending = true;
+      console.warn('🔒 401/403 Error from server:', serverMessage);
       setTimeout(() => keycloak.logout(), 5000)
     }
-    throw new Error('Session expirée ou accès refusé. Déconnexion automatique...')
+    throw new Error(serverMessage)
   }
 
   const contentType = response.headers.get('content-type')

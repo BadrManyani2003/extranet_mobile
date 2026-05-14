@@ -35,6 +35,9 @@ export const keycloakConfig = {
   clientId: CLIENT_ID,
   scopes: ['openid', 'profile', 'email'],
   redirectUri,
+  extraParams: {
+    prompt: 'login', // Force Keycloak to show login screen even if session exists
+  },
 };
 
 

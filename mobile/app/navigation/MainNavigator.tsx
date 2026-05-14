@@ -177,7 +177,7 @@ const TabButton: React.FC<TabButtonProps> = ({ routeName, focused, onPress, colo
               fontSize: labelSize,
               color: (focused ? config.accentColor : colors.textTertiary) as string,
               opacity: 1,
-              fontWeight: focused ? '700' : '500',
+              fontFamily: focused ? 'Inter-Bold' : 'Inter-Medium',
               marginTop: isSmall ? 2 : 3,
             },
           ]}
@@ -242,14 +242,14 @@ const CustomTabBar: React.FC<CustomTabBarProps> = ({ state, descriptors, navigat
         },
         Platform.select({
           ios: {
-            shadowColor: '#0F172A',
+            shadowColor: theme.colors.primary,
             shadowOffset: { width: 0, height: 10 },
             shadowOpacity: 0.15,
             shadowRadius: 20,
           },
           android: { elevation: 12 },
           web: {
-            boxShadow: `0 10px 30px rgba(15,23,42,0.15)`,
+            boxShadow: `0 10px 30px rgba(7, 89, 133, 0.15)`,
           } as any,
         }),
       ]}
@@ -301,7 +301,10 @@ const BottomTabs: React.FC = () => {
         tabBar={(props) => <CustomTabBar {...props} />}
         screenOptions={{ headerShown: false }}
       >
-        {/* Onglets à gauche de l'Accueil */}
+        {/* Accueil en premier */}
+        <Tab.Screen name="Accueil" component={HomeScreen} />
+
+        {/* Autres onglets selon rôle */}
         {(isClient || isExpert) && (
           <>
             <Tab.Screen name="Contrats" component={ContratScreen} />
@@ -309,11 +312,7 @@ const BottomTabs: React.FC = () => {
           </>
         )}
 
-        {/* Accueil au milieu */}
-        <Tab.Screen name="Accueil" component={HomeScreen} />
-
-        {/* Onglets à droite de l'Accueil */}
-        {(isAdherent || isExpert) && (
+        {(isAdherent || isClient || isExpert) && (
           <Tab.Screen name="Sinistres" component={SinistreScreen} />
         )}
 
@@ -350,16 +349,6 @@ const MainNavigator: React.FC = () => {
     );
   }
 
-  if (!isAuthenticated) {
-    return (
-      <NavigationContainer theme={isDark ? DarkTheme : DefaultTheme}>
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="Login" component={LoginScreen} />
-        </Stack.Navigator>
-      </NavigationContainer>
-    );
-  }
-
   const navTheme = {
     ...(isDark ? DarkTheme : DefaultTheme),
     colors: {
@@ -382,14 +371,19 @@ const MainNavigator: React.FC = () => {
           contentStyle: { backgroundColor: c.background },
         }}
       >
-        <Stack.Screen name="MainTabs" component={BottomTabs} />
-        <Stack.Screen name="Login" component={LoginScreen} />
-        <Stack.Screen name="ContratDetail" component={ContratDetailScreen} />
-        <Stack.Screen name="SinistreDetail" component={SinistreDetailScreen} />
-        <Stack.Screen name="QuittanceDetail" component={QuittanceDetailScreen} />
-        <Stack.Screen name="ReclamationDetail" component={ReclamationDetailScreen} />
-        <Stack.Screen name="ReclamationCreate" component={ReclamationCreateScreen} />
-        <Stack.Screen name="PersACharge" component={PersAChargeScreen} />
+        {!isAuthenticated ? (
+          <Stack.Screen name="Login" component={LoginScreen} />
+        ) : (
+          <>
+            <Stack.Screen name="MainTabs" component={BottomTabs} />
+            <Stack.Screen name="ContratDetail" component={ContratDetailScreen} />
+            <Stack.Screen name="SinistreDetail" component={SinistreDetailScreen} />
+            <Stack.Screen name="QuittanceDetail" component={QuittanceDetailScreen} />
+            <Stack.Screen name="ReclamationDetail" component={ReclamationDetailScreen} />
+            <Stack.Screen name="ReclamationCreate" component={ReclamationCreateScreen} />
+            <Stack.Screen name="PersACharge" component={PersAChargeScreen} />
+          </>
+        )}
       </Stack.Navigator>
     </NavigationContainer>
   );
@@ -416,6 +410,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   tabLabel: {
+    fontFamily: 'Inter-Medium',
     letterSpacing: 0.2,
     textAlign: 'center',
     maxWidth: isSmall ? 52 : isTablet ? 80 : 64,
@@ -434,7 +429,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontFamily: 'Inter-Medium',
     letterSpacing: 0.2,
   },
 });

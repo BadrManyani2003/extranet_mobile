@@ -3,7 +3,7 @@ setlocal enabledelayedexpansion
 
 :: --- CONFIGURATION KEYCLOAK ---
 set KC_PATH=C:\keycloak\bin\kcadm.bat
-set KC_SERVER=http://localhost:8180
+set KC_SERVER=http://localhost:8080
 set KC_REALM=ask_extranet_mobile
 set KC_USER=admin
 set KC_PASS=admin
@@ -17,14 +17,14 @@ if %ERRORLEVEL% neq 0 (
     exit /b
 )
 
-echo [2/3] Creation des utilisateurs...
+echo [2/3] Creation des utilisateurs avec attribution des roles...
 
-call :create_user "admin_cabinet@ibs.ma" "Admin Cabinet"
-call :create_user "commercial_cabinet@ibs.ma" "Commercial Cabinet"
-call :create_user "client1@test.ma" "Client Alpha"
-call :create_user "client2@test.ma" "Client Beta"
-call :create_user "adherent1@test.ma" "Adherent Solo"
-call :create_user "adherent2@test.ma" "Adherent Famille"
+call :create_user "admin_cabinet@ibs.ma" "Admin Cabinet" "admin_cabinet"
+call :create_user "commercial_cabinet@ibs.ma" "Commercial Cabinet" "commercial_cabinet"
+call :create_user "client1@test.ma" "Client Alpha" "client"
+call :create_user "client2@test.ma" "Client Beta" "client"
+call :create_user "adherent1@test.ma" "Adherent Solo" "adherent"
+call :create_user "adherent2@test.ma" "Adherent Famille" "adherent"
 
 echo.
 echo [3/3] Termine. Copiez les ID_AUTH ci-dessus dans votre fichier donnee_test.sql.
@@ -34,15 +34,26 @@ goto :eof
 :create_user
 set "EMAIL=%~1"
 set "NAME=%~2"
+set "ROLE=%~3"
 
 echo.
-echo Creation de %NAME% (%EMAIL%)...
+echo Creation de %NAME% (%EMAIL%) avec le role [%ROLE%]...
 
 REM Creation de l'utilisateur
 call %KC_PATH% create users -r %KC_REALM% -s email=%EMAIL% -s username=%EMAIL% -s firstName="%NAME%" -s enabled=true
 
 REM Definir le mot de passe
 call %KC_PATH% set-password -r %KC_REALM% --username %EMAIL% --new-password %DEFAULT_PASSWORD%
+
+REM Attribution du role
+if not "%ROLE%"=="" (
+    call %KC_PATH% add-roles -r %KC_REALM% --uusername %EMAIL% --rolename %ROLE%
+    if %ERRORLEVEL% equ 0 (
+        echo [OK] Role %ROLE% attribue.
+    ) else (
+        echo [ERREUR] Impossible d'attribuer le role %ROLE%.
+    )
+)
 
 REM Recuperer l'ID (sub)
 for /f "usebackq tokens=*" %%I in (`call %KC_PATH% get users -r %KC_REALM% -q email=%EMAIL% --fields id --format csv --no-header`) do (

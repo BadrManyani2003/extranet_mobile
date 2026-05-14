@@ -2,7 +2,7 @@
 setlocal enabledelayedexpansion
 
 :: ================= CONFIG =================
-set "KEYCLOAK_URL=http://localhost:8180"
+set "KEYCLOAK_URL=http://localhost:8080"
 set "ADMIN_USER=admin"
 set /p ADMIN_PASS=Mot de passe : 
 
@@ -31,13 +31,13 @@ echo KEYCLOAK AUTO CONFIG : %REALM_NAME%
 echo ------------------------------------------------------------
 
 :STEP1
-echo [1/7] Authentification...
+echo [1/6] Authentification...
 call "%KCADM_PATH%" config credentials --server %KEYCLOAK_URL% --realm master --user %ADMIN_USER% --password %ADMIN_PASS% >nul 2>&1
 if %ERRORLEVEL% NEQ 0 echo [ERREUR] Connexion echouee. & pause & exit /b 1
 echo OK
 
 :STEP2
-echo [2/7] Configuration du Realm...
+echo [2/6] Configuration du Realm...
 call "%KCADM_PATH%" get realms/%REALM_NAME% >nul 2>&1
 if %ERRORLEVEL% EQU 0 goto :REALM_EXISTS
 call "%KCADM_PATH%" create realms -s realm=%REALM_NAME% -s enabled=true -s resetPasswordAllowed=true -s editUsernameAllowed=false -s verifyEmail=true >nul
@@ -47,7 +47,7 @@ goto :STEP3
 echo Realm %REALM_NAME% existe deja (IGNORER).
 
 :STEP3
-echo [3/7] Configuration des Roles...
+echo [3/6] Configuration des Roles...
 call :CREATE_ROLE admin_cabinet
 call :CREATE_ROLE commercial_cabinet
 call :CREATE_ROLE client
@@ -55,7 +55,7 @@ call :CREATE_ROLE adherent
 echo Roles OK.
 
 :STEP4
-echo [4/7] Configuration des Clients...
+echo [4/6] Configuration des Clients...
 call :CREATE_CLIENT "%CLIENT_ADMIN%" "%REDIRECT_ADMIN%" true
 call :CREATE_CLIENT "%CLIENT_EXTRANET%" "%REDIRECT_EXTRANET%" true
 call :CREATE_CLIENT "%CLIENT_MOBILE%" "%REDIRECT_MOBILE%" true
@@ -69,36 +69,34 @@ call "%KCADM_PATH%" create clients -r %REALM_NAME% -s clientId=%CLIENT_API% -s e
 if %ERRORLEVEL% EQU 0 echo Client API OK.
 
 :STEP5
-echo [5/7] Recuperation de l'UUID du client %CLIENT_ADMIN%...
-set "CLIENT_UUID="
-for /f "tokens=2 delims=:, " %%a in ('call "%KCADM_PATH%" get clients -r %REALM_NAME% --query clientId^=%CLIENT_ADMIN% --fields id 2^>nul ^| findstr "id"') do (
-    set "val=%%a"
-    set "val=!val:"=!"
-    set "CLIENT_UUID=!val!"
-)
-
-if "%CLIENT_UUID%"=="" (
-    echo [ERREUR] Impossible de recuperer l'UUID de %CLIENT_ADMIN%.
-    echo Verifiez que le client existe dans le Realm %REALM_NAME%.
-    pause
-    exit /b 1
-)
-echo UUID detecte : %CLIENT_UUID%
-
-
-:STEP6
-echo [6/7] Configuration SMTP et Securite...
+echo [5/6] Configuration SMTP et Securite...
+:: Configuration du serveur SMTP
 call "%KCADM_PATH%" update realms/%REALM_NAME% -s smtpServer.host=%SMTP_HOST% -s smtpServer.port=%SMTP_PORT% -s smtpServer.from=%SMTP_FROM% -s smtpServer.auth=true -s smtpServer.user=%SMTP_USER% -s smtpServer.password=%SMTP_PASS% -s verifyEmail=true -s resetPasswordAllowed=true -s editUsernameAllowed=false
+
+:: Force l'action "Update Password" au premier login pour TOUS les nouveaux utilisateurs
+echo Activation de l'action requise : UPDATE_PASSWORD (par defaut)...
 call "%KCADM_PATH%" update authentication/required-actions/UPDATE_PASSWORD -r %REALM_NAME% -s defaultAction=true -s enabled=true
 call "%KCADM_PATH%" update authentication/required-actions/VERIFY_EMAIL -r %REALM_NAME% -s defaultAction=true -s enabled=true
 call "%KCADM_PATH%" update authentication/required-actions/UPDATE_PROFILE -r %REALM_NAME% -s defaultAction=false -s enabled=false
+echo Actions requises OK.
 
-:STEP7
-echo [7/7] Permissions du Compte de Service (%CLIENT_API%)...
+:STEP6
+echo [6/6] Permissions du Compte de Service (%CLIENT_API%)...
+:: On recupere d'abord le username du service account (format standard: service-account-clientid)
+:: On lui assigne le role 'realm-admin' du client 'realm-management' pour qu'il puisse gerer le realm via l'API
+echo Assignation du role realm-admin au compte service-account-%CLIENT_API%...
 call "%KCADM_PATH%" add-roles -r %REALM_NAME% --uusername service-account-%CLIENT_API% --cclientid realm-management --rolename realm-admin
+if %ERRORLEVEL% EQU 0 (
+    echo Role realm-admin assigne avec succes.
+) else (
+    echo [ERREUR] Impossible d'assigner le role realm-admin.
+)
 
 echo ------------------------------------------------------------
 echo CONFIGURATION TERMINEE AVEC SUCCES
+echo ------------------------------------------------------------
+echo Note: Tous les nouveaux utilisateurs devront changer leur mot de passe
+echo       et verifier leur email lors de leur premiere connexion.
 echo ------------------------------------------------------------
 pause
 exit /b 0

@@ -1,5 +1,5 @@
 {
-  "name": "assurplus-mobile",
+  "name": "myask-mobile",
   "version": "1.0.0",
   "main": "index.ts",
   "scripts": {
@@ -9,6 +9,7 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@expo-google-fonts/inter": "^0.4.2",
     "@expo/vector-icons": "^15.0.3",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-navigation/bottom-tabs": "^7.8.11",
@@ -24,10 +25,12 @@
     "expo-status-bar": "~3.0.9",
     "expo-web-browser": "~15.0.11",
     "jwt-decode": "^4.0.0",
+    "lucide-react-native": "^1.14.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-native": "0.81.5",
     "react-native-gesture-handler": "~2.28.0",
+    "react-native-reanimated": "~4.1.1",
     "react-native-safe-area-context": "~5.6.0",
     "react-native-screens": "~4.16.0",
     "react-native-vector-icons": "^10.3.0",

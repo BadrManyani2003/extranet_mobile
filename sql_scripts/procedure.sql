@@ -65,14 +65,14 @@ END
 GO
 
 CREATE OR ALTER PROCEDURE dbo.sp_GetSinistres
-    @FK_User_Id INT,
-    @Source CHAR(1),
-    @Token VARCHAR(MAX),
+    @FK_User_Id   INT,
+    @Source       CHAR(1),
+    @Token        VARCHAR(MAX),
     @FK_Police_Id INT
 AS
 BEGIN
     SET NOCOUNT ON;
-    
+
     IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
     BEGIN
         RAISERROR('Session expirée', 16, 1);
@@ -120,15 +120,20 @@ BEGIN
     LEFT JOIN dbo.Risques r ON s.FK_Risque_Id = r.Id
     LEFT JOIN dbo.Adherents a ON s.FK_Adherent_Id = a.Id
     LEFT JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id AND uxc.FK_User_Id = @FK_User_Id AND uxc.Actif = 'O'
-    WHERE (p.Id = @FK_Police_Id
-        AND (
-            (@Source = 'A' AND @UserNature = 'A')
-            OR (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
-        ))
-        OR (s.FK_Adherent_Id IN (SELECT Id FROM dbo.Adherents WHERE FK_User_Id = @FK_User_Id AND Actif = 'O'));
-    
+    WHERE s.FK_Police_Id = @FK_Police_Id
+      AND
+      (
+          (@Source = 'A' AND @UserNature = 'A')
+          OR
+          (@Source = 'E' AND @UserNature = 'C' AND c.Particulier = 'N' AND uxc.FK_User_Id IS NOT NULL)
+          OR
+          (@Source = 'M' AND @UserNature = 'C' AND c.Particulier = 'O' AND uxc.FK_User_Id IS NOT NULL)
+          OR
+          EXISTS (SELECT 1 FROM dbo.Adherents WHERE FK_Police_Id = p.Id AND FK_User_Id = @FK_User_Id AND Actif = 'O')
+      );
+
     RETURN;
-END
+END;
 GO
 
 CREATE OR ALTER PROCEDURE dbo.sp_GetSinistresEncour
@@ -183,6 +188,7 @@ BEGIN
                     OR (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
                 )
             )
+            OR (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
             OR (s.FK_Adherent_Id IN (SELECT Id FROM dbo.Adherents WHERE FK_User_Id = @FK_User_Id AND Actif = 'O'))
         );
     
@@ -221,9 +227,13 @@ BEGIN
     INNER JOIN dbo.Polices p ON r.FK_Police_Id = p.Id
     INNER JOIN dbo.Clients c ON p.Fk_Client_Id = c.Id
     LEFT JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id AND uxc.FK_User_Id = @FK_User_Id AND uxc.Actif = 'O'
-    WHERE p.Id = @FK_Police_Id
-        AND (
-            (@Source = 'A' AND @UserNature = 'A')
+    WHERE (
+            (p.Id = @FK_Police_Id
+                AND (
+                    (@Source = 'A' AND @UserNature = 'A')
+                    OR (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
+                )
+            )
             OR (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
             OR EXISTS (SELECT 1 FROM dbo.Adherents WHERE FK_Police_Id = p.Id AND FK_User_Id = @FK_User_Id AND Actif = 'O')
         );
@@ -272,14 +282,19 @@ BEGIN
             WHEN 'R' THEN 'success' 
             ELSE 'neutral' 
         END AS statut_variant,
-        CASE WHEN q.Statut = 'R' THEN 1 ELSE 0 END AS is_active
+        CASE WHEN q.Statut = 'R' THEN 1 ELSE 0 END AS is_active,
+        p.Police AS police
     FROM dbo.Quittances q
     INNER JOIN dbo.Polices p ON q.FK_Police_Id = p.Id
     INNER JOIN dbo.Clients c ON p.Fk_Client_Id = c.Id
     LEFT JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id AND uxc.FK_User_Id = @FK_User_Id AND uxc.Actif = 'O'
-    WHERE p.Id = @FK_Police_Id
-        AND (
-            (@Source = 'A' AND @UserNature = 'A')
+    WHERE (
+            (p.Id = @FK_Police_Id
+                AND (
+                    (@Source = 'A' AND @UserNature = 'A')
+                    OR (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
+                )
+            )
             OR (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
         );
     
@@ -321,10 +336,14 @@ BEGIN
         INNER JOIN dbo.Polices p ON q.FK_Police_Id = p.Id
         INNER JOIN dbo.Clients c ON p.Fk_Client_Id = c.Id
         LEFT JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id AND uxc.FK_User_Id = @FK_User_Id AND uxc.Actif = 'O'
-        WHERE p.Id = @FK_Police_Id
-            AND ((@Encour = 'O' AND q.Solde > 0) OR (@Encour = 'N'))
+        WHERE ((@Encour = 'O' AND q.Solde > 0) OR (@Encour = 'N'))
             AND (
-                (@Source = 'A' AND @UserNature = 'A')
+                (p.Id = @FK_Police_Id
+                    AND (
+                        (@Source = 'A' AND @UserNature = 'A')
+                        OR (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
+                    )
+                )
                 OR (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
             );
     END
@@ -1195,7 +1214,16 @@ CREATE OR ALTER PROCEDURE dbo.sp_GetUserInfoByAuthId
     @IdAuth VARCHAR(255)
 AS
 BEGIN
-    SELECT Id AS id, Nom AS nom, Email AS email, Mobile AS mobile, Extranet AS extranet 
+    SELECT 
+        Id AS id, 
+        Nom AS nom, 
+        CASE 
+            WHEN CHARINDEX('@', Email) > 1 
+            THEN STUFF(Email, 2, CHARINDEX('@', Email) - 2, '*****') 
+            ELSE Email 
+        END AS email, 
+        Mobile AS mobile, 
+        Extranet AS extranet 
     FROM dbo.sysUser 
     WHERE Id_Auth = @IdAuth;
 END

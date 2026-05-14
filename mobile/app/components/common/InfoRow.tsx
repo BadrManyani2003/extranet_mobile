@@ -41,7 +41,7 @@ const InfoRow: React.FC<InfoRowProps> = ({
           <Icon 
             name={icon as any} 
             size={18} 
-            color="#334155" 
+            color="#075985" 
           />
         </Box>
       )}
