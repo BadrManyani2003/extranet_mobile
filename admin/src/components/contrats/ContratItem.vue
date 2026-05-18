@@ -77,7 +77,7 @@ const gererMiseAJourRecherche = (onglet: string, requete: string) => {
                 <component :is="item.icon" class="w-4.5 h-4.5" />
               </div>
               <div>
-                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-none mb-1">{{ item.title }}</p>
+                <p class="text-[14px] text-slate-400 font-bold uppercase tracking-widest leading-none mb-1">{{ item.title }}</p>
                 <StatusBadge v-if="item.type === 'badge'" :status="item.value" />
                 <p v-else class="text-sm font-bold text-slate-800">{{ item.value }}</p>
               </div>
@@ -93,7 +93,7 @@ const gererMiseAJourRecherche = (onglet: string, requete: string) => {
                 <component :is="item.icon" class="w-4.5 h-4.5" />
               </div>
               <div class="flex-1">
-                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-none mb-1">{{ item.title }}</p>
+                <p class="text-[14px] text-slate-400 font-bold uppercase tracking-widest leading-none mb-1">{{ item.title }}</p>
                 <p class="text-sm font-bold transition-colors" :class="ongletActif === item.id ? (item.id === 'impayes' ? 'text-slate-600' : 'text-slate-900') : (item.isRedAlert ? 'text-slate-900' : 'text-slate-800')">{{ item.value }}</p>
               </div>
             </button>
@@ -147,3 +147,4 @@ const gererMiseAJourRecherche = (onglet: string, requete: string) => {
     </AccordionContent>
   </AccordionItem>
 </template>
+

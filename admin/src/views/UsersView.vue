@@ -114,12 +114,13 @@ onMounted(fetchUsers)
     @add="openEdit()"
   >
     <template #default="{ items }">
-      <Table class="border-t border-slate-100">
+      <Table class="border-t border-slate-100 w-full min-w-[1000px]">
         <TableHeader class="bg-slate-50/50">
           <TableRow>
-            <TableHead class="table-header-text py-6">{{ $t('users.table.name') }}</TableHead>
+            <TableHead class="table-header-text min-w-[260px]">{{ $t('users.table.name') }}</TableHead>
             <TableHead class="table-header-text">{{ $t('users.table.email') }}</TableHead>
             <TableHead class="table-header-text">{{ $t('users.table.nature') }}</TableHead>
+            <TableHead class="table-header-text">{{ $t('users.table.roles', 'Rôles') }}</TableHead>
             <TableHead class="table-header-text">{{ $t('users.table.status') }}</TableHead>
             <TableHead class="text-right table-header-text pr-8">{{ $t('users.table.actions') }}</TableHead>
           </TableRow>
@@ -132,38 +133,37 @@ onMounted(fetchUsers)
                   <UserCircle class="w-6 h-6" />
                 </div>
                 <div>
-                  <div class="font-bold text-slate-900 tracking-tight">{{ user.nom }}</div>
-                  <div class="text-[10px] text-slate-400 font-medium">{{ user.telephone || '---' }}</div>
+                  <div class="font-bold text-slate-900 tracking-tight text-base">{{ user.nom }}</div>
                 </div>
               </div>
             </TableCell>
             <TableCell>
               <div class="flex flex-col">
                 <span class="text-sm font-bold text-slate-700">{{ user.email }}</span>
-                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">{{ user.idAuth || '---' }}</span>
+                <span class="text-[14px] text-slate-400 font-medium mt-0.5">{{ user.telephone || '---' }}</span>
               </div>
             </TableCell>
             <TableCell>
-              <Badge v-if="user.nature === 'C'" variant="secondary" class="bg-emerald-50 text-emerald-600 border-emerald-100 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-lg">{{ $t('users.natures.client') }}</Badge>
-              <Badge v-else-if="user.nature === 'A'" variant="secondary" class="bg-orange-50 text-orange-600 border-orange-100 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-lg">{{ $t('users.natures.cabinet') }}</Badge>
-              <span v-else class="text-slate-300 italic text-[10px]">{{ user.nature || '-' }}</span>
+              <Badge v-if="user.nature === 'C'" variant="secondary" class="bg-emerald-50 text-emerald-600 border-emerald-100 text-[14px] font-black uppercase tracking-widest px-2 py-0.5 rounded-lg">{{ $t('users.natures.client') }}</Badge>
+              <Badge v-else-if="user.nature === 'A'" variant="secondary" class="bg-orange-50 text-orange-600 border-orange-100 text-[14px] font-black uppercase tracking-widest px-2 py-0.5 rounded-lg">{{ $t('users.natures.cabinet') }}</Badge>
+              <span v-else class="text-slate-300 italic text-[14px]">{{ user.nature || '-' }}</span>
             </TableCell>
             <TableCell>
               <div class="flex flex-wrap gap-1 max-w-[280px]">
                 <Badge v-for="role in (user.roles?.split(', ') || [])" :key="role" 
-                  class="bg-white border border-slate-100 text-slate-500 text-[9px] font-black uppercase tracking-tight py-0.5 px-1.5 shadow-sm">
+                  class="bg-white border border-slate-100 text-slate-500 text-[14px] font-black uppercase tracking-tight py-0.5 px-1.5 shadow-sm">
                   {{ role }}
                 </Badge>
-                <span v-if="!user.roles" class="text-[10px] text-slate-300 font-bold uppercase tracking-widest italic">Standard</span>
+                <span v-if="!user.roles" class="text-[14px] text-slate-300 font-bold uppercase tracking-widest italic">Standard</span>
               </div>
             </TableCell>
             <TableCell>
               <div class="flex flex-col gap-1.5">
                 <div v-if="user.idAuth" class="flex items-center gap-2">
                   <div class="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
-                  <span class="text-emerald-600 text-[10px] font-black uppercase tracking-widest">Actif</span>
+                  <span class="text-emerald-600 text-[14px] font-black uppercase tracking-widest">Actif</span>
                 </div>
-                <Button v-else variant="ghost" size="sm" class="h-8 gap-2 text-[10px] text-orange-600 font-black hover:bg-orange-50 rounded-xl px-2" @click="activeUser = user; dialogs.sync = true">
+                <Button v-else variant="ghost" size="sm" class="h-8 gap-2 text-[14px] text-orange-600 font-black hover:bg-orange-50 rounded-xl px-2" @click="activeUser = user; dialogs.sync = true">
                   <RefreshCcw class="w-3 h-3" /> Sync
                 </Button>
               </div>
@@ -215,22 +215,22 @@ onMounted(fetchUsers)
       <div class="p-8 space-y-6">
         <div class="grid grid-cols-2 gap-4">
           <div class="space-y-1.5">
-            <Label class="text-[10px] font-black uppercase tracking-widest text-slate-400">{{ $t('users.form.full_name') }}</Label>
+            <Label class="text-[14px] font-black uppercase tracking-widest text-slate-400">{{ $t('users.form.full_name') }}</Label>
             <Input v-model="formData.nom" placeholder="Ex: Jean Dupont" class="h-11 rounded-lg border-slate-200" />
           </div>
           <div class="space-y-1.5">
-            <Label class="text-[10px] font-black uppercase tracking-widest text-slate-400">{{ $t('users.form.email') }}</Label>
+            <Label class="text-[14px] font-black uppercase tracking-widest text-slate-400">{{ $t('users.form.email') }}</Label>
             <Input v-model="formData.email" placeholder="email@exemple.com" class="h-11 rounded-lg border-slate-200" />
           </div>
         </div>
         
         <div class="grid grid-cols-2 gap-4">
           <div class="space-y-1.5">
-            <Label class="text-[10px] font-black uppercase tracking-widest text-slate-400">{{ $t('users.form.phone') }}</Label>
+            <Label class="text-[14px] font-black uppercase tracking-widest text-slate-400">{{ $t('users.form.phone') }}</Label>
             <Input v-model="formData.telephone" placeholder="06..." class="h-11 rounded-lg border-slate-200" />
           </div>
           <div class="space-y-1.5">
-            <Label class="text-[10px] font-black uppercase tracking-widest text-slate-400">{{ $t('users.form.nature') }}</Label>
+            <Label class="text-[14px] font-black uppercase tracking-widest text-slate-400">{{ $t('users.form.nature') }}</Label>
             <select v-model="formData.nature" class="w-full border border-slate-200 rounded-lg h-11 px-3 text-sm font-bold bg-white outline-none focus:ring-2 focus:ring-slate-900/10">
               <option value="C">{{ $t('users.natures.client') }}</option>
               <option value="A">{{ $t('users.natures.cabinet') }}</option>
@@ -240,7 +240,7 @@ onMounted(fetchUsers)
 
         <div class="grid grid-cols-1 gap-4">
           <div class="space-y-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
-            <Label class="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-1">{{ $t('users.form.authorizations') }}</Label>
+            <Label class="text-[14px] font-black uppercase tracking-widest text-slate-400 block mb-1">{{ $t('users.form.authorizations') }}</Label>
             <div class="flex flex-col gap-3">
               <label class="flex items-center gap-3 cursor-pointer group">
                 <div class="relative flex items-center">
@@ -274,8 +274,8 @@ onMounted(fetchUsers)
   <Dialog v-model:open="dialogs.roles">
     <DialogContent class="sm:max-w-[480px] rounded-[2rem] shadow-2xl p-0 overflow-hidden border-none font-['Outfit']">
       <DialogHeader class="p-8 bg-slate-900 text-white">
-        <DialogTitle class="text-xl font-black tracking-tight">{{ $t('users.permissions', 'Permissions d\'accès') }}</DialogTitle>
-        <DialogDescription class="text-slate-400 text-xs">{{ $t('users.assign_roles', 'Assignez des rôles pour') }} {{ activeUser?.nom }}.</DialogDescription>
+        <DialogTitle class="text-xl font-black tracking-tight">{{ $t('users.permissions') }}</DialogTitle>
+        <DialogDescription class="text-slate-400 text-xs">{{ $t('users.assign_roles') }} {{ activeUser?.nom }}.</DialogDescription>
       </DialogHeader>
       <div class="p-8 max-h-[350px] overflow-y-auto">
         <div class="grid gap-2">
@@ -290,13 +290,14 @@ onMounted(fetchUsers)
       </div>
       <DialogFooter class="p-8 bg-slate-50/50 border-t border-slate-100">
         <div class="flex gap-3 w-full">
-          <Button variant="ghost" class="flex-1 rounded-lg font-bold" @click="dialogs.roles = false">Fermer</Button>
-          <Button @click="handleSaveRoles" :disabled="processing" class="flex-1 rounded-lg bg-slate-900 font-bold shadow-lg">
+          <Button variant="ghost" class="flex-1 rounded-xl font-bold" @click="dialogs.roles = false">{{ $t('commun.close') }}</Button>
+          <Button @click="handleSaveRoles" :disabled="processing" class="flex-1 rounded-xl bg-slate-900 font-bold shadow-lg">
             <span v-if="processing" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></span>
-            Mettre à jour
+            {{ $t('commun.save') }}
           </Button>
         </div>
       </DialogFooter>
     </DialogContent>
   </Dialog>
 </template>
+

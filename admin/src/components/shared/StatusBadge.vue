@@ -39,7 +39,8 @@ const colorClass = computed(() => {
 </script>
 
 <template>
-  <Badge :class="['font-black px-3 py-1 rounded-lg text-[9px] uppercase tracking-widest shadow-sm border-0 transition-all duration-300', colorClass]">
+  <Badge :class="['font-black px-3 py-1 rounded-lg text-[14px] uppercase tracking-widest shadow-sm border-0 transition-all duration-300', colorClass]">
     {{ translatedStatus }}
   </Badge>
 </template>
+

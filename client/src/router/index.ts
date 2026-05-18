@@ -31,7 +31,14 @@ const router = createRouter({
         {
           path: 'releve-global',
           name: 'releve-global',
-          component: () => import('../views/ReleveGlobalView.vue')
+          component: () => import('../views/ReleveGlobalView.vue'),
+          beforeEnter: (to, from, next) => {
+            if (keycloak.hasRole('client') || keycloak.hasRole('expert')) {
+              next()
+            } else {
+              next({ name: 'restricted' })
+            }
+          }
         },
         {
           path: 'statistiques',
@@ -52,8 +59,8 @@ router.beforeEach(async (to) => {
   if (to.name === 'restricted') return true
 
   // Vérifier d'abord le rôle
-  const isClient = keycloak.hasRole('client')
-  if (!isClient) return { name: 'restricted' }
+  const hasAccess = keycloak.hasRole('client') || keycloak.hasRole('adherent') || keycloak.hasRole('expert')
+  if (!hasAccess) return { name: 'restricted' }
 
   const userStore = useUserStore()
 
@@ -63,6 +70,10 @@ router.beforeEach(async (to) => {
     }
 
     if (String(userStore.user?.extranet).trim().toUpperCase() === 'N') {
+      return { name: 'restricted' }
+    }
+
+    if (to.name === 'reclamations' && String(userStore.user?.reclamation).trim().toUpperCase() === 'N') {
       return { name: 'restricted' }
     }
     

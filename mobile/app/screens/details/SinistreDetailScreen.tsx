@@ -24,19 +24,20 @@ const SinistreDetailScreen = () => {
 
   return (
     <Box flex={1} backgroundColor="background">
-      <AppHeader title={`Sinistre ${sinistre.numero}`} showBackButton={true} />
+      <AppHeader title={sinistre.numero} showBackButton={true} />
       
-      <ScrollView contentContainerStyle={{ paddingBottom: 40, paddingTop: 10 }}>
-        <Box height={10} />
+      <ScrollView contentContainerStyle={{ paddingBottom: 60, paddingTop: 10 }}>
+        <Box height={20} />
         
         {/* Détails du Sinistre */}
         <Section title="Détails du Sinistre" icon="alert-circle-outline">
           <InfoRow label="N° Sinistre" value={sinistre.numero} icon="document-text-outline" />
+          <InfoRow label="Police Associée" value={sinistre.police || '-'} icon="shield-outline" />
           <InfoRow label="Branche" value={sinistre.branche || '-'} icon="shield-checkmark-outline" />
           {isSante ? (
             <InfoRow label="Adhérent" value={sinistre.objet || '-'} icon="person-outline" />
           ) : (
-            <InfoRow label="Risque" value={sinistre.objet || '-'} icon="car-sport-outline" />
+            <InfoRow label="Risque" value={sinistre.objet || '-'} icon="shield-outline" />
           )}
           <InfoRow label="Date du Sinistre" value={formatDate(sinistre.date)} icon="calendar-outline" />
           <InfoRow label="Date de Déclaration" value={formatDate(sinistre.dateDeclaration)} icon="time-outline" />
@@ -46,12 +47,12 @@ const SinistreDetailScreen = () => {
         {/* Informations Financières */}
         <Section title="Informations Financières" icon="cash-outline">
           {isSante ? (
-            <InfoRow label="Frais engagé" value={`${sinistre.mtFrais || 0} DH`} icon="receipt-outline" />
+            <InfoRow label="Frais engagé" value={`${sinistre.mtFrais || 0}`} icon="receipt-outline" />
           ) : (
-            <InfoRow label="Montant Dommages" value={`${sinistre.mtDommage || 0} DH`} icon="hammer-outline" />
+            <InfoRow label="Montant Dommages" value={`${sinistre.mtDommage || 0}`} icon="hammer-outline" />
           )}
-          <InfoRow label="Franchise" value={`${sinistre.mtFranchise || 0} DH`} icon="remove-circle-outline" valueColor="error" />
-          <InfoRow label="Montant Remboursé" value={`${sinistre.mtRembourse || 0} DH`} icon="checkmark-circle-outline" valueColor="success" isLast={true} />
+          <InfoRow label="Franchise" value={`${sinistre.mtFranchise || 0}`} icon="remove-circle-outline" valueColor="error" />
+          <InfoRow label="Montant Remboursé" value={`${sinistre.mtRembourse || 0}`} icon="checkmark-circle-outline" valueColor="success" isLast={true} />
         </Section>
 
         {/* Observations */}

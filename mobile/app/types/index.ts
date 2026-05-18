@@ -11,6 +11,7 @@ export interface User {
   mobile: string;
   role: string;
   extranet: string;
+  reclamation?: string;
   is_verified?: boolean;
   created_at?: string;
 }

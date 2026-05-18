@@ -51,7 +51,7 @@ const handleDownload = (doc: any) => {
                   <FileText class="w-5 h-5" />
                 </div>
                 <div>
-                  <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-none mb-1">Document</p>
+                  <p class="text-[14px] text-slate-400 font-bold uppercase tracking-widest leading-none mb-1">Document</p>
                   <p class="text-sm font-bold text-slate-900">{{ doc.libelle }}</p>
                 </div>
               </div>
@@ -75,3 +75,5 @@ const handleDownload = (doc: any) => {
     </CardContent>
   </div>
 </template>
+
+

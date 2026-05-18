@@ -110,9 +110,11 @@ BEGIN
             ELSE ISNULL(r.Libelle, '-')
         END AS objet,
         CASE 
-            WHEN p.Branche = 'Santé' THEN a.NumAdhesion
+            WHEN p.Branche = 'Santé' THEN CAST(a.NumAdhesion AS VARCHAR(50))
             ELSE r.Identifiant
         END AS identifiant,
+        p.Id AS policeId,
+        p.Police AS police,
         p.Branche AS branche
     FROM dbo.Sinistres s
     INNER JOIN dbo.Polices p ON s.FK_Police_Id = p.Id
@@ -120,7 +122,7 @@ BEGIN
     LEFT JOIN dbo.Risques r ON s.FK_Risque_Id = r.Id
     LEFT JOIN dbo.Adherents a ON s.FK_Adherent_Id = a.Id
     LEFT JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id AND uxc.FK_User_Id = @FK_User_Id AND uxc.Actif = 'O'
-    WHERE s.FK_Police_Id = @FK_Police_Id
+    WHERE (@FK_Police_Id IS NULL OR s.FK_Police_Id = @FK_Police_Id)
       AND
       (
           (@Source = 'A' AND @UserNature = 'A')
@@ -129,7 +131,7 @@ BEGIN
           OR
           (@Source = 'M' AND @UserNature = 'C' AND c.Particulier = 'O' AND uxc.FK_User_Id IS NOT NULL)
           OR
-          EXISTS (SELECT 1 FROM dbo.Adherents WHERE FK_Police_Id = p.Id AND FK_User_Id = @FK_User_Id AND Actif = 'O')
+          (s.FK_Adherent_Id IN (SELECT Id FROM dbo.Adherents WHERE FK_User_Id = @FK_User_Id AND Actif = 'O'))
       );
 
     RETURN;
@@ -170,9 +172,11 @@ BEGIN
             ELSE ISNULL(r.Libelle, '-')
         END AS objet,
         CASE 
-            WHEN p.Branche = 'Santé' THEN a.NumAdhesion
+            WHEN p.Branche = 'Santé' THEN CAST(a.NumAdhesion AS VARCHAR(50))
             ELSE r.Identifiant
         END AS identifiant,
+        p.Id AS policeId,
+        p.Police AS police,
         p.Branche AS branche
     FROM dbo.Sinistres s
     INNER JOIN dbo.Polices p ON s.FK_Police_Id = p.Id
@@ -181,15 +185,15 @@ BEGIN
     LEFT JOIN dbo.Adherents a ON s.FK_Adherent_Id = a.Id
     LEFT JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id AND uxc.FK_User_Id = @FK_User_Id AND uxc.Actif = 'O'
     WHERE s.Statut = 'E'
+        AND (@FK_Police_Id IS NULL OR s.FK_Police_Id = @FK_Police_Id)
         AND (
-            (p.Id = @FK_Police_Id
-                AND (
-                    (@Source = 'A' AND @UserNature = 'A')
-                    OR (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
-                )
-            )
-            OR (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
-            OR (s.FK_Adherent_Id IN (SELECT Id FROM dbo.Adherents WHERE FK_User_Id = @FK_User_Id AND Actif = 'O'))
+            (@Source = 'A' AND @UserNature = 'A')
+            OR
+            (@Source = 'E' AND @UserNature = 'C' AND c.Particulier = 'N' AND uxc.FK_User_Id IS NOT NULL)
+            OR
+            (@Source = 'M' AND @UserNature = 'C' AND c.Particulier = 'O' AND uxc.FK_User_Id IS NOT NULL)
+            OR
+            (s.FK_Adherent_Id IN (SELECT Id FROM dbo.Adherents WHERE FK_User_Id = @FK_User_Id AND Actif = 'O'))
         );
     
     RETURN;
@@ -826,6 +830,8 @@ BEGIN
             c.Particulier AS particulier,
             c.Email AS email,
             c.Adresse AS adresse,
+            c.recClt AS recClt,
+            c.recAdh AS recAdh,
             cParent.RaisonSociale AS parentClient,
             STRING_AGG(u.Nom, ', ') AS userNom,
             STRING_AGG(CAST(x.FK_User_Id AS VARCHAR), ', ') AS fkUserId
@@ -833,7 +839,7 @@ BEGIN
         LEFT JOIN dbo.Clients cParent ON c.Fk_Client_Id = cParent.Id
         LEFT JOIN UsersXClients x ON x.FK_Client_Id = c.id
         LEFT JOIN dbo.sysUser u ON x.FK_User_Id = u.Id
-        GROUP BY c.Id, c.RaisonSociale, c.Particulier, c.Email, c.Adresse, cParent.RaisonSociale
+        GROUP BY c.Id, c.RaisonSociale, c.Particulier, c.Email, c.Adresse, c.recClt, c.recAdh, cParent.RaisonSociale
         ORDER BY c.RaisonSociale;
     END
     ELSE
@@ -1214,6 +1220,44 @@ CREATE OR ALTER PROCEDURE dbo.sp_GetUserInfoByAuthId
     @IdAuth VARCHAR(255)
 AS
 BEGIN
+    DECLARE @FK_User_Id INT;
+    DECLARE @UserNature CHAR(1);
+    DECLARE @canReclaim CHAR(1) = 'N';
+    
+    SELECT @FK_User_Id = Id, @UserNature = Nature 
+    FROM dbo.sysUser 
+    WHERE Id_Auth = @IdAuth;
+
+    IF @UserNature = 'A'
+    BEGIN
+        SET @canReclaim = 'O';
+    END
+    ELSE IF EXISTS (SELECT 1 FROM dbo.Adherents WHERE FK_User_Id = @FK_User_Id AND Actif = 'O')
+    BEGIN
+        IF EXISTS (
+            SELECT 1 
+            FROM dbo.Adherents a
+            INNER JOIN dbo.Polices p ON a.FK_Police_Id = p.Id
+            INNER JOIN dbo.Clients c ON p.FK_Client_Id = c.Id
+            WHERE a.FK_User_Id = @FK_User_Id AND a.Actif = 'O' AND c.recAdh = 'O'
+        )
+        BEGIN
+            SET @canReclaim = 'O';
+        END
+    END
+    ELSE IF EXISTS (SELECT 1 FROM dbo.UsersXClients WHERE FK_User_Id = @FK_User_Id AND Actif = 'O')
+    BEGIN
+        IF EXISTS (
+            SELECT 1 
+            FROM dbo.UsersXClients uxc
+            INNER JOIN dbo.Clients c ON uxc.FK_Client_Id = c.Id
+            WHERE uxc.FK_User_Id = @FK_User_Id AND uxc.Actif = 'O' AND c.recClt = 'O'
+        )
+        BEGIN
+            SET @canReclaim = 'O';
+        END
+    END
+
     SELECT 
         Id AS id, 
         Nom AS nom, 
@@ -1223,7 +1267,8 @@ BEGIN
             ELSE Email 
         END AS email, 
         Mobile AS mobile, 
-        Extranet AS extranet 
+        Extranet AS extranet,
+        @canReclaim AS reclamation
     FROM dbo.sysUser 
     WHERE Id_Auth = @IdAuth;
 END
@@ -1438,6 +1483,41 @@ BEGIN
     INSERT INTO dbo.Roles (FK_User_Id, Role)
     SELECT @Target_User_Id, value
     FROM STRING_SPLIT(@RolesCSV, ',');
+
+    SELECT 1 as success;
+END
+GO
+
+CREATE OR ALTER PROCEDURE dbo.ps_UpdateClientOptions
+    @FK_User_Id    INT,
+    @Token         VARCHAR(MAX),
+    @Source        VARCHAR(50),
+    @FK_Client_Id  INT,
+    @recClt        CHAR(1),
+    @recAdh        CHAR(1)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    DECLARE @UserNature CHAR(1);
+    SELECT @UserNature = Nature FROM dbo.sysUser WHERE Id = @FK_User_Id;
+
+    IF NOT (@Source = 'A' AND @UserNature = 'A')
+    BEGIN
+        RAISERROR('Action non autorisée', 16, 1);
+        RETURN;
+    END
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.Clients WHERE Id = @FK_Client_Id)
+    BEGIN
+        RAISERROR('Client introuvable', 16, 1);
+        RETURN;
+    END
+
+    UPDATE dbo.Clients
+    SET recClt = @recClt,
+        recAdh = @recAdh
+    WHERE Id = @FK_Client_Id;
 
     SELECT 1 as success;
 END

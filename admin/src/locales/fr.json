@@ -15,10 +15,15 @@
     "subtitle": "Administrez les comptes et les permissions d'accès.",
     "add_button": "Nouvel Utilisateur",
     "search_placeholder": "Rechercher un utilisateur...",
+    "search_placeholder_link": "Rechercher un utilisateur par nom ou email...",
+    "link_dialog_title": "Lier un utilisateur",
+    "link_dialog_desc_adherent": "Sélectionnez l'utilisateur à lier à cet adhérent.",
+    "link_dialog_desc_client": "Sélectionnez l'utilisateur à lier à ce client.",
     "table": {
       "name": "Nom complet",
       "email": "Email",
       "nature": "Nature",
+      "roles": "Rôles",
       "status": "Statut",
       "actions": "Actions"
     },
@@ -59,7 +64,9 @@
     "type": {
       "individual": "Particulier",
       "company": "Entreprise"
-    }
+    },
+    "unlink_confirm_title": "Délier l'utilisateur",
+    "unlink_confirm_desc": "Voulez-vous délier cet utilisateur ?"
   },
   "adherents": {
     "title": "Gestion des Adhérents",
@@ -68,6 +75,7 @@
     "table": {
       "id": "Matricule",
       "name": "Nom Complet",
+      "membership_date": "Date Adhésion",
       "linked_user": "Utilisateur lié",
       "actions": "Actions"
     },
@@ -85,8 +93,8 @@
     "confirm": "Confirmer",
     "sync": "Synchroniser",
     "link": "Lier",
-    "link": "Lier",
-    "unlink": "Délier"
+    "unlink": "Délier",
+    "select": "Sélectionner"
   },
   "reclamations": {
     "all_natures": "Toutes les natures",

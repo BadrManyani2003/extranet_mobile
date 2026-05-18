@@ -53,21 +53,21 @@ const quittancesFiltrees = computed(() => {
                   <FileText class="w-4 h-4" />
                 </div>
                 <div>
-                  <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-none mb-1">{{ $t('quittances.num') }}</p>
+                  <p class="text-[14px] text-slate-400 font-bold uppercase tracking-widest leading-none mb-1">{{ $t('quittances.num') }}</p>
                   <p class="text-sm font-black text-slate-900">{{ quit.numero }}</p>
                 </div>
               </div>
 
               <div class="md:col-span-2 grid grid-cols-2 gap-4">
                 <div>
-                  <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-none mb-1">{{ $t('quittances.from') }}</p>
+                  <p class="text-[14px] text-slate-400 font-bold uppercase tracking-widest leading-none mb-1">{{ $t('quittances.from') }}</p>
                   <div class="flex items-center gap-2 text-sm font-bold text-slate-700">
                     <Calendar class="w-3.5 h-3.5 text-slate-300" />
                     {{ formatDate(quit.dateDebut) }}
                   </div>
                 </div>
                 <div>
-                  <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-none mb-1">{{ $t('quittances.to') }}</p>
+                  <p class="text-[14px] text-slate-400 font-bold uppercase tracking-widest leading-none mb-1">{{ $t('quittances.to') }}</p>
                   <div class="flex items-center gap-2 text-sm font-bold text-slate-700">
                     <ArrowRight class="w-3.5 h-3.5 text-slate-300" />
                     {{ formatDate(quit.dateFin) }}
@@ -76,13 +76,13 @@ const quittancesFiltrees = computed(() => {
               </div>
 
               <div class="md:text-right">
-                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-none mb-1">{{ $t('quittances.total') }}</p>
+                <p class="text-[14px] text-slate-400 font-bold uppercase tracking-widest leading-none mb-1">{{ $t('quittances.total') }}</p>
                 <p class="text-sm font-black text-slate-900">{{ formatCurrency(quit.montantTotal) }}</p>
               </div>
 
               <div class="flex items-center justify-end gap-4">
                 <div class="text-right">
-                  <p class="text-[10px] font-bold uppercase tracking-widest leading-none mb-1 text-slate-400">{{ $t('quittances.unpaid') }}</p>
+                  <p class="text-[14px] font-bold uppercase tracking-widest leading-none mb-1 text-slate-400">{{ $t('quittances.unpaid') }}</p>
                   <p class="text-sm font-black" :class="quit.montantImpaye > 0 ? 'text-slate-900 underline' : 'text-slate-900'">
                     {{ formatCurrency(quit.montantImpaye) }}
                   </p>
@@ -102,3 +102,4 @@ const quittancesFiltrees = computed(() => {
     </CardContent>
   </div>
 </template>
+

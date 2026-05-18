@@ -20,5 +20,8 @@ export const ReclamationService = {
     request<any>('/reclamations/update-statut', { method: 'POST', body: JSON.stringify({ reclamationId, statut }) }),
 
   deleteMessage: (messageId: number, reclamationId: number) => 
-    request<any>('/reclamations/delete-message', { method: 'POST', body: JSON.stringify({ messageId, reclamationId }) })
+    request<any>('/reclamations/delete-message', { method: 'POST', body: JSON.stringify({ messageId, reclamationId }) }),
+  
+  deleteReclamation: (reclamationId: number | string) =>
+    request<any>('/reclamations/delete', { method: 'POST', body: JSON.stringify({ reclamationId }) })
 }

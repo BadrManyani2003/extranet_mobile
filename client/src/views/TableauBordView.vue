@@ -13,7 +13,7 @@ import { Bar, Doughnut, Line } from 'vue-chartjs'
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, PointElement, LineElement, ArcElement, Filler)
 
-const { locale } = useI18n()
+const { t, locale } = useI18n()
 const { data: statistiques, loading: loadingStats, execute: fetchStats } = useFetch(api.data.getStats)
 const { loading: loadingContrats, execute: fetchContrats } = useFetch(api.data.getPolices)
 
@@ -40,10 +40,10 @@ const chartOptions = {
 const statsCards = computed(() => {
   const s = (statistiques.value as any)?.[0]?.[0] || {}
   return [
-    { title: (locale.value === 'fr' ? 'Nombre de contrats' : 'Number of contracts'), value: formatNumber(s.totalPolices || 0), icon: ShieldCheck, color: 'text-slate-900' },
-    { title: (locale.value === 'fr' ? 'Sinistres en cours' : 'Ongoing claims'), value: formatNumber(s.sinistresEnCours || 0), icon: AlertCircle, color: 'text-orange-600' },
-    { title: (locale.value === 'fr' ? 'Prime annuelle' : 'Annual premium'), value: formatCurrency(s.primeAnnuelle || 0), icon: Activity, color: 'text-emerald-600' },
-    { title: (locale.value === 'fr' ? 'Primes impayées' : 'Unpaid premiums'), value: formatCurrency(s.totalImpayes || 0), icon: CreditCard, color: 'text-red-600' }
+    { title: t('tableau_bord.policies_count'), value: formatNumber(s.totalPolices || 0), icon: ShieldCheck, color: 'text-slate-900' },
+    { title: t('tableau_bord.ongoing_claims'), value: formatNumber(s.sinistresEnCours || 0), icon: AlertCircle, color: 'text-orange-600' },
+    { title: t('tableau_bord.annual_premium'), value: formatCurrency(s.primeAnnuelle || 0), icon: Activity, color: 'text-emerald-600' },
+    { title: t('tableau_bord.unpaid_premiums'), value: formatCurrency(s.totalImpayes || 0), icon: CreditCard, color: 'text-red-600' }
   ]
 })
 
@@ -65,7 +65,7 @@ const evolutionData = computed(() => {
     labels: months,
     datasets: [
       {
-        label: (locale.value === 'fr' ? 'Primes réglées' : 'Settled premiums'),
+        label: t('tableau_bord.paid_premiums'),
         data: totals,
         borderColor: '#10b981', // Emerald 500
         backgroundColor: 'rgba(16, 185, 129, 0.05)',
@@ -73,7 +73,7 @@ const evolutionData = computed(() => {
         tension: 0.4
       },
       {
-        label: (locale.value === 'fr' ? 'Impayés' : 'Unpaid'),
+        label: t('tableau_bord.unpaid'),
         data: impayes,
         borderColor: '#ef4444', // Red 500
         backgroundColor: 'rgba(239, 68, 68, 0.05)',
@@ -102,13 +102,13 @@ const brancheData = computed(() => {
     labels: items.map((i: any) => i.branche),
     datasets: [
       {
-        label: (locale.value === 'fr' ? 'Primes' : 'Premiums'),
+        label: t('tableau_bord.annual_premium'),
         data: items.map((i: any) => i.totalPrime),
         backgroundColor: '#10b981',
         borderRadius: 6
       },
       {
-        label: (locale.value === 'fr' ? 'Impayés' : 'Unpaid'),
+        label: t('tableau_bord.unpaid'),
         data: items.map((i: any) => i.totalImpaye),
         backgroundColor: '#ef4444',
         borderRadius: 6
@@ -139,7 +139,7 @@ onMounted(() => {
             <component :is="stat.icon" class="w-6 h-6" />
           </div>
           <div class="flex-1 sm:flex-none text-left sm:text-center">
-            <p class="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5 sm:mb-1">{{ stat.title }}</p>
+            <p class="text-[14px] sm:text-[14px] font-black text-slate-400 uppercase tracking-widest mb-0.5 sm:mb-1">{{ stat.title }}</p>
             <h3 class="text-base sm:text-lg md:text-xl font-black text-slate-900 tracking-tight leading-tight">{{ stat.value }}</h3>
           </div>
         </CardContent>
@@ -149,7 +149,7 @@ onMounted(() => {
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
       <Card class="lg:col-span-2 glass-card p-8 md:p-10 border-none">
         <div class="flex items-center justify-between mb-8">
-          <CardTitle class="text-xl font-black text-slate-900 tracking-tight uppercase tracking-widest text-[10px]">{{ $t('tableau_bord.premium_evolution') }} & {{ $t('tableau_bord.unpaid_evolution') }}</CardTitle>
+          <CardTitle class="text-xl font-black text-slate-900 tracking-tight uppercase tracking-widest text-[14px]">{{ $t('tableau_bord.premium_evolution') }} & {{ $t('tableau_bord.unpaid_evolution') }}</CardTitle>
           <TrendingUp class="w-5 h-5 text-slate-400" />
         </div>
         <div class="h-[250px] sm:h-[300px] w-full">
@@ -159,14 +159,14 @@ onMounted(() => {
 
       <Card class="lg:col-span-1 glass-card p-8 md:p-10 border-none">
         <div class="flex items-center justify-between mb-8">
-          <CardTitle class="text-xl font-black text-slate-900 tracking-tight uppercase tracking-widest text-[10px]">{{ $t('tableau_bord.coverage_distribution') }}</CardTitle>
+          <CardTitle class="text-xl font-black text-slate-900 tracking-tight uppercase tracking-widest text-[14px]">{{ $t('tableau_bord.coverage_distribution') }}</CardTitle>
           <PieChart class="w-5 h-5 text-slate-400" />
         </div>
         <div class="h-[250px] sm:h-[300px] w-full relative">
           <Doughnut :data="distributionData" :options="{ ...chartOptions, cutout: '75%' }" />
           <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-[-10px]">
             <span class="text-3xl font-black text-slate-900 leading-none">{{ (statistiques?.[0]?.[0]?.totalPolices) || 0 }}</span>
-            <span class="text-[9px] text-slate-400 font-black uppercase tracking-widest">{{ $t('tableau_bord.total_policies') }}</span>
+            <span class="text-[14px] text-slate-400 font-black uppercase tracking-widest">{{ $t('tableau_bord.total_policies') }}</span>
           </div>
         </div>
       </Card>
@@ -174,7 +174,7 @@ onMounted(() => {
 
     <Card class="glass-card p-8 md:p-10 border-none">
       <div class="flex items-center justify-between mb-8">
-        <CardTitle class="text-xl font-black text-slate-900 tracking-tight uppercase tracking-widest text-[10px]">{{ $t('tableau_bord.expert_analysis') }}</CardTitle>
+        <CardTitle class="text-xl font-black text-slate-900 tracking-tight uppercase tracking-widest text-[14px]">{{ $t('tableau_bord.expert_analysis') }}</CardTitle>
         <BarChart class="w-5 h-5 text-slate-400" />
       </div>
       <div class="h-[300px] sm:h-[400px] w-full">
@@ -183,3 +183,4 @@ onMounted(() => {
     </Card>
   </PageContainer>
 </template>
+

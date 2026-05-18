@@ -33,6 +33,7 @@ const qry = {
     linkUserToClient:      "exec dbo.ps_LinkUserToClient       @0, @1, @2, @3, @4",
     unlinkUserFromClient:    "exec dbo.ps_UnlinkUserFromClient     @0, @1, @2, @3, @4",
     linkUserToAdherent:    "exec dbo.ps_LinkUserToAdherent     @0, @1, @2, @3, @4",
+    updateClientOptions:   "exec dbo.ps_UpdateClientOptions    @0, @1, @2, @3, @4, @5",
 
     updateToken:         "exec dbo.sp_UpdateToken @0, @1",
     getUserInfoByAuthId: "exec dbo.sp_GetUserInfoByAuthId @0",

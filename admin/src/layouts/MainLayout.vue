@@ -39,7 +39,7 @@ const navItems = [
       />
 
       <div class="flex-1 overflow-y-auto bg-slate-50/30">
-        <div class="mx-auto py-6 px-4 sm:px-8 w-full">
+        <div class="mx-auto py-10 px-6 sm:px-12 w-full">
           <router-view />
         </div>
       </div>

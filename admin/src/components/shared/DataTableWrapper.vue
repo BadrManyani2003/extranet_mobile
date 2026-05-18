@@ -16,7 +16,7 @@ const emit = defineEmits(['add', 'search'])
 
 const searchQuery = ref('')
 const currentPage = ref(1)
-const itemsPerPage = 10
+const itemsPerPage = 5
 
 const filteredItems = computed(() => {
   if (!searchQuery.value) return props.items
@@ -71,7 +71,9 @@ const handleSearch = () => {
         <Loader2 class="w-8 h-8 animate-spin text-slate-900" />
       </div>
       <template v-else>
-        <slot :items="paginatedItems"></slot>
+        <div class="overflow-x-auto w-full">
+          <slot :items="paginatedItems"></slot>
+        </div>
 
         <div class="border-t border-slate-100 p-6 flex items-center justify-between bg-slate-50/30">
           <p class="text-xs text-slate-400 font-black uppercase tracking-widest">

@@ -39,7 +39,7 @@ const HomeScreen: React.FC = () => {
   const roles = user?.roles?.map(r => r.toUpperCase()) || [];
   const isAdherent = roles.includes('ADHERENT');
   const isClient = roles.includes('CLIENT');
-  const isExpert = roles.includes('EXPERT');
+  const canReclaim = String(user?.reclamation).trim().toUpperCase() === 'O';
 
   const fetchStats = async (useCache = true) => {
     try {
@@ -54,7 +54,9 @@ const HomeScreen: React.FC = () => {
       }
 
       const res = await dataAPI.getStats();
-      const data = (res && res[0] && res[0][0]) ? res[0][0] : (res && res[0] ? res[0] : null);
+      const data = (res && Array.isArray(res))
+        ? ((res[0] && Array.isArray(res[0])) ? res[0][0] : res[0])
+        : res;
 
       setStats(data);
       await cacheService.set('stats', data);
@@ -149,36 +151,36 @@ const HomeScreen: React.FC = () => {
         {/* Quick Stats Grid */}
         <Box marginTop="xxxl" paddingHorizontal="m" style={{ marginTop: -40 }}>
           <Box gap="m">
-            {(isClient || isExpert) && (
+            {isClient && (
               <>
                 <TouchableOpacity activeOpacity={0.9} onPress={() => navigation.navigate('Contrats')}>
                   <SummaryCard
-                    title={isExpert ? "Gestion Polices" : "Mes Contrats"}
-                    subtitle={isExpert ? "Toutes les polices" : "Gestion des polices"}
+                    title={t("Mes Contrats")}
+                    subtitle={t("Gérez vos polices d'assurance")}
                     icon={ShieldCheck}
                     amount={getVal(['totalPolices'])}
-                    amountLabel="Actifs"
+                    amountLabel={t("ACTIFS")}
                     variant="primary"
                   />
                 </TouchableOpacity>
                 <TouchableOpacity activeOpacity={0.9} onPress={() => navigation.navigate('Quittances')}>
                   <SummaryCard
-                    title={isExpert ? "Gestion Impayés" : "Mes Factures"}
-                    subtitle={isExpert ? "Balance globale" : "Suivi des paiements"}
+                    title={t("Mes Quittances")}
+                    subtitle={t("Consultation de vos polices")}
                     icon={ReceiptText}
                     amount={getVal(['totalImpayes'])}
-                    amountLabel="Total Impayés (DH)"
+                    amountLabel={t("Solde Impayé")}
                     variant="success"
                   />
                 </TouchableOpacity>
               </>
             )}
 
-            {(isAdherent || isClient || isExpert) && (
+            {(isAdherent || isClient) && (
               <TouchableOpacity activeOpacity={0.9} onPress={() => navigation.navigate('Sinistres')}>
                 <SummaryCard
-                  title={isExpert ? "Gestion Sinistres" : "Mes Sinistres"}
-                  subtitle={isExpert ? "Dossiers à traiter" : "Dossiers en cours"}
+                  title="Mes Sinistres"
+                  subtitle="Dossiers en cours"
                   icon={AlertCircle}
                   amount={getVal(['sinistresEnCours'])}
                   amountLabel="En cours"
@@ -192,43 +194,8 @@ const HomeScreen: React.FC = () => {
         {/* Extra Actions Section */}
         <Box paddingHorizontal="m" marginTop="xl">
           <Text variant="premiumLabel" marginBottom="m" marginLeft="s">Actions Rapides</Text>
-          <Box flexDirection="row" flexWrap="wrap" gap="m">
-            {(isClient || isExpert) && (
-              <>
-                <TouchableOpacity
-                  onPress={() => navigation.navigate('Contrats')}
-                  style={styles.quickAction}
-                >
-                  <Box backgroundColor="primaryBg" padding="s" borderRadius="m" marginBottom="xs">
-                    <FileText size={22} color={theme.colors.primary} />
-                  </Box>
-                  <Text variant="bodySmall" fontWeight="700">Contrats</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => navigation.navigate('Quittances')}
-                  style={styles.quickAction}
-                >
-                  <Box backgroundColor="primaryBg" padding="s" borderRadius="m" marginBottom="xs">
-                    <ReceiptText size={22} color={theme.colors.primary} />
-                  </Box>
-                  <Text variant="bodySmall" fontWeight="700">Factures</Text>
-                </TouchableOpacity>
-              </>
-            )}
-
-            {(isClient || isAdherent || isExpert) && (
-              <TouchableOpacity
-                onPress={() => navigation.navigate('Sinistres')}
-                style={styles.quickAction}
-              >
-                <Box backgroundColor="primaryBg" padding="s" borderRadius="m" marginBottom="xs">
-                  <BadgeAlert size={22} color={theme.colors.primary} />
-                </Box>
-                <Text variant="bodySmall" fontWeight="700">Sinistres</Text>
-              </TouchableOpacity>
-            )}
-
-            {(isClient || isAdherent || isExpert) && (
+          <Box flexDirection="row" flexWrap="wrap" gap="m" justifyContent="center">
+            {(isClient || isAdherent) && canReclaim && (
               <TouchableOpacity
                 onPress={() => navigation.navigate('Reclamations')}
                 style={styles.quickAction}
@@ -240,7 +207,7 @@ const HomeScreen: React.FC = () => {
               </TouchableOpacity>
             )}
 
-            {(isAdherent || isExpert) && (
+            {isAdherent && (
               <TouchableOpacity
                 onPress={() => navigation.navigate('PersACharge')}
                 style={styles.quickAction}
@@ -260,7 +227,7 @@ const HomeScreen: React.FC = () => {
 
 const styles = StyleSheet.create({
   quickAction: {
-    width: (width - 48) / 3, // 3 columns with gaps
+    width: (width - 48) / 2, // 2 columns with gaps
     backgroundColor: 'white',
     padding: 16,
     borderRadius: 20,

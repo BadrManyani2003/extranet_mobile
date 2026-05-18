@@ -55,7 +55,7 @@ const buttonVariants: Record<string, "default" | "destructive" | "outline" | "se
 
         <div class="flex gap-4 pt-4">
           <Button variant="ghost" class="flex-1 rounded-xl h-12 font-bold text-slate-500 hover:bg-slate-100" @click="emit('close')">
-            {{ cancelText || 'Annuler' }}
+            {{ cancelText || $t('commun.cancel') }}
           </Button>
           <Button 
             :variant="buttonVariants[variant || 'info']" 
@@ -64,7 +64,7 @@ const buttonVariants: Record<string, "default" | "destructive" | "outline" | "se
             @click="emit('confirm')"
           >
             <span v-if="loading" class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></span>
-            {{ confirmText || 'Confirmer' }}
+            {{ confirmText || $t('commun.confirm') }}
           </Button>
         </div>
       </div>

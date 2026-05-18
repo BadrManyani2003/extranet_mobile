@@ -15,10 +15,15 @@
     "subtitle": "Manage accounts and access permissions.",
     "add_button": "New User",
     "search_placeholder": "Search for a user...",
+    "search_placeholder_link": "Search for a user by name or email...",
+    "link_dialog_title": "Link a User",
+    "link_dialog_desc_adherent": "Select the user to link to this member.",
+    "link_dialog_desc_client": "Select the user to link to this client.",
     "table": {
       "name": "Full Name",
       "email": "Email",
       "nature": "Nature",
+      "roles": "Roles",
       "status": "Status",
       "actions": "Actions"
     },
@@ -59,7 +64,9 @@
     "type": {
       "individual": "Individual",
       "company": "Corporate"
-    }
+    },
+    "unlink_confirm_title": "Unlink User",
+    "unlink_confirm_desc": "Do you want to unlink this user?"
   },
   "adherents": {
     "title": "Member Management",
@@ -68,6 +75,7 @@
     "table": {
       "id": "ID Number",
       "name": "Full Name",
+      "membership_date": "Membership Date",
       "linked_user": "Linked User",
       "actions": "Actions"
     },
@@ -85,7 +93,8 @@
     "confirm": "Confirm",
     "sync": "Sync",
     "link": "Link",
-    "unlink": "Unlink"
+    "unlink": "Unlink",
+    "select": "Select"
   },
   "reclamations": {
     "all_natures": "All Natures",

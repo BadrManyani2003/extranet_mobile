@@ -77,6 +77,7 @@
 @layer base {
   html {
     font-family: 'Outfit', sans-serif;
+    font-size: 112%;
   }
 }
 
@@ -92,11 +93,11 @@
 /* Custom Utilities for Project Consistency */
 @layer utilities {
   .table-header-text {
-    @apply font-black text-slate-900 uppercase tracking-widest text-[10px];
+    @apply font-black text-slate-900 uppercase tracking-widest text-[12px];
   }
   
   .status-badge {
-    @apply rounded-lg text-[9px] font-black uppercase tracking-widest px-2 py-1 shadow-none border-none;
+    @apply rounded-lg text-[11px] font-black uppercase tracking-widest px-2 py-1 shadow-none border-none;
   }
   
   .glass-card {
@@ -104,6 +105,6 @@
   }
 
   .premium-button {
-    @apply rounded-xl font-black uppercase tracking-widest text-[10px] transition-all duration-200;
+    @apply rounded-xl font-black uppercase tracking-widest text-[12px] transition-all duration-200;
   }
 }

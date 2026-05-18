@@ -22,17 +22,17 @@ const InfoRow: React.FC<InfoRowProps> = ({
   <Box 
     flexDirection="row" 
     alignItems="center" 
-    paddingVertical="m" 
-    paddingHorizontal="m" 
+    paddingVertical="l" 
+    paddingHorizontal="l" 
     borderBottomWidth={isLast ? 0 : 1} 
     borderBottomColor="borderLight"
   >
     <Box flex={1} flexDirection="row" alignItems="center">
       {icon && (
         <Box 
-          width={36} 
-          height={36} 
-          borderRadius="m" 
+          width={32} 
+          height={32} 
+          borderRadius="s" 
           backgroundColor="primaryBg" 
           alignItems="center" 
           justifyContent="center" 
@@ -40,15 +40,16 @@ const InfoRow: React.FC<InfoRowProps> = ({
         >
           <Icon 
             name={icon as any} 
-            size={18} 
-            color="#075985" 
+            size={16} 
+            color="#0ea5e9" 
           />
         </Box>
       )}
       <Text 
         variant="bodySmall" 
-        color="textSecondary" 
+        color="textTertiary" 
         fontWeight="600"
+        fontSize={rsp.normalize(13)}
       >
         {label}
       </Text>
@@ -56,8 +57,9 @@ const InfoRow: React.FC<InfoRowProps> = ({
     <Text 
       variant="bodyMedium" 
       color={valueColor as any} 
-      fontWeight="800" 
+      fontWeight="700" 
       textAlign="right"
+      fontSize={rsp.normalize(14)}
     >
       {value ?? '-'}
     </Text>

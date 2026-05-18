@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FlatList, RefreshControl, Platform, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Box, Text } from '../theme/restyle';
+import { useTranslation } from '../utils/i18n';
 import AppHeader from '../components/layout/AppHeader';
 import { quittancesAPI } from '../api';
 import { StatusBadge, LoadingSpinner, EmptyView } from '../components/common';
@@ -12,6 +13,7 @@ import { cacheService } from '../services/cacheService';
 
 const QuittanceScreen = () => {
   const theme = useTheme<Theme>();
+  const { t } = useTranslation();
   const navigation = useNavigation<any>();
   const [quittances, setQuittances] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -64,7 +66,7 @@ const QuittanceScreen = () => {
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'MAD' }).format(amount);
+    return new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
   };
 
   const renderItem = ({ item }: { item: any }) => (
@@ -95,7 +97,7 @@ const QuittanceScreen = () => {
           </Box>
           <StatusBadge label={item.statut || 'Payée'} variant={item.statut_variant || 'success'} />
         </Box>
-
+        
         {/* Quittance Number & Amount */}
         <Box flexDirection="row" justifyContent="space-between" alignItems="flex-end" marginBottom="m">
           <Box flex={1}>
@@ -106,7 +108,7 @@ const QuittanceScreen = () => {
           </Box>
           <Box alignItems="flex-end">
             <Text variant="title" fontWeight="900" fontSize={22} color="primary">
-              {item.montantTotal || item.montant ? formatCurrency(item.montantTotal || item.montant) : '0,00 MAD'}
+              {item.montantTotal || item.montant ? formatCurrency(item.montantTotal || item.montant) : '0,00'}
             </Text>
           </Box>
         </Box>
@@ -141,7 +143,7 @@ const QuittanceScreen = () => {
 
   return (
     <Box flex={1} backgroundColor="background">
-      <AppHeader title="Mes Quittances" showBackButton={false} />
+      <AppHeader title={t("Mes Quittances")} showBackButton={false} />
 
       {loading && !refreshing ? (
         <LoadingSpinner />

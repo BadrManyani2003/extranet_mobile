@@ -99,6 +99,17 @@ const updateUserRoles = asyncHandler(async (req, res) => {
     success(res, null, 'Rôles mis à jour');
 });
 
+const updateClientOptions = asyncHandler(async (req, res) => {
+    const { userId, source, token } = getContext(req);
+    const { clientId, recClt, recAdh } = req.body;
+    
+    if (!clientId) throw new Error('ID client manquant.');
+    if (!recClt || !recAdh) throw new Error('Options de réclamation manquantes.');
+
+    await adminService.updateClientOptions(userId, token, source, clientId, recClt, recAdh);
+    success(res, null, 'Options client mises à jour');
+});
+
 module.exports = {
     getUsers,
     saveUser,
@@ -112,5 +123,6 @@ module.exports = {
     unlinkUserFromClient,
     linkUserToAdherent,
     getAvailableRoles,
-    updateUserRoles
+    updateUserRoles,
+    updateClientOptions
 };

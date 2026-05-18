@@ -44,7 +44,8 @@ module.exports = async (req, res, next) => {
     try {
         // Verification of the token with validation of issuer and audience (optional based on config)
         const decoded = await verifyToken(token, getKey, { 
-            algorithms: ['RS256'] 
+            algorithms: ['RS256'],
+            clockTolerance: 86400 // 24 hours leeway to solve Docker WSL2 clock drift / desynchronization issues
         });
 
         // 1. Get source from headers (M for Mobile, E for Extranet)
@@ -65,9 +66,11 @@ module.exports = async (req, res, next) => {
 
         // 4. Update token in database if necessary
         if (dbUser && dbUser.token !== token) {
-            authService.updateToken(token, decoded.sub).catch(err => {
-                // Non-blocking error
-            });
+            try {
+                await authService.updateToken(token, decoded.sub);
+            } catch (err) {
+                console.error('❌ Failed to update token in DB:', err.message);
+            }
         }
         
         next();

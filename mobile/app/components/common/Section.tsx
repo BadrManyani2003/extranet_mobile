@@ -12,13 +12,20 @@ interface SectionProps {
 }
 
 const Section: React.FC<SectionProps> = ({ title, icon, children, padding = false }) => (
-  <Box marginBottom="l">
+  <Box marginBottom="xl">
     {title && (
-      <Box marginHorizontal="l" marginBottom="s" flexDirection="row" alignItems="center">
+      <Box marginHorizontal="xl" marginBottom="m" flexDirection="row" alignItems="center">
         {icon && (
-          <Icon name={icon as any} size={16} color="#075985" style={{ marginRight: 8 }} />
+          <Box backgroundColor="primaryBg" padding="xs" borderRadius="s" marginRight="s">
+            <Icon name={icon as any} size={14} color="#0369a1" />
+          </Box>
         )}
-        <Text variant="premiumLabel" color="textSecondary" fontSize={rsp.normalize(11)}>
+        <Text 
+          variant="premiumLabel" 
+          color="textTertiary" 
+          fontSize={rsp.normalize(10)} 
+          style={{ letterSpacing: 1.2, textTransform: 'uppercase', fontWeight: '800' }}
+        >
           {title}
         </Text>
       </Box>
@@ -27,14 +34,19 @@ const Section: React.FC<SectionProps> = ({ title, icon, children, padding = fals
       backgroundColor="cardBackground" 
       marginHorizontal={Platform.OS === 'web' ? 'none' : 'l'} 
       borderRadius="xl" 
-      padding={padding ? "m" : "none"} 
+      padding={padding ? "l" : "none"} 
       borderWidth={1}
       borderColor="borderLight"
       overflow="hidden"
       style={Platform.select({
-        ios: { shadowColor: '#075985', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 10 },
-        android: { elevation: 3 },
-        web: { boxShadow: '0 4px 12px rgba(7, 89, 133, 0.05)' }
+        ios: { 
+          shadowColor: '#075985', 
+          shadowOffset: { width: 0, height: 8 }, 
+          shadowOpacity: 0.08, 
+          shadowRadius: 15 
+        },
+        android: { elevation: 4 },
+        web: { boxShadow: '0 8px 24px rgba(7, 89, 133, 0.08)' }
       })}
     >
       {children}

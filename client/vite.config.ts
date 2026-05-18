@@ -16,6 +16,10 @@ export default defineConfig(({ mode }) => {
       viteCompression({ algorithm: 'gzip' }),
       visualizer({ open: false, gzipSize: true, brotliSize: true })
     ],
+    define: {
+      'process.env': {},
+      'global': 'window',
+    },
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "./src"),

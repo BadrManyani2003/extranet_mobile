@@ -69,7 +69,7 @@ const obtenirElementsGrille = (p: any) => [
   { id: 'numero', title: t('contrats.num'), type: 'static', value: p.police, icon: FileText, colorClass: 'bg-slate-100 text-slate-500' },
   { id: 'branche', title: t('contrats.branche'), type: 'static', value: p.branche, icon: Tag, colorClass: 'bg-slate-100 text-slate-900' },
   { id: 'echeance', title: t('contrats.echeance'), type: 'static', value: formatDate(p.dateEcheance), icon: CalendarDays, colorClass: 'bg-slate-50 text-slate-600' },
-  { id: 'risque', title: p.branche === 'Automobile' ? (t('risques.vehicle') + 's') : (p.branche === 'Santé' ? (t('risques.adherent') + 's') : t('contrats.risques')), type: 'action', value: formatNumber(risques.value.length), icon: Shield, defaultColor: 'bg-slate-100 text-slate-800' },  
+  { id: 'risque', title: p.branche === 'Santé' ? (t('risques.adherent') + 's') : (p.branche === 'Automobile' ? (t('risques.vehicle') + 's') : t('contrats.risques')), type: 'action', value: formatNumber(risques.value.length), icon: Shield, defaultColor: 'bg-slate-100 text-slate-800' },  
   { id: 'sinistres', title: t('contrats.sinistres'), type: 'action', value: formatNumber(sinistres.value.length), icon: LifeBuoy, defaultColor: 'bg-slate-100 text-slate-800' },
   { id: 'sinistres-encours', title: t('contrats.sinistres_encours'), type: 'action', value: formatNumber(sinistres.value.filter((s: any) => s.statut === 'En cours' || s.statut === 'E').length), icon: Clock, defaultColor: 'bg-slate-100 text-slate-800' },
   { id: 'prime', title: t('contrats.prime_annuelle'), type: 'action', value: formatCurrency(stats.value.primeAnnuelle || 0), icon: Wallet, defaultColor: 'bg-slate-200 text-slate-900' },
@@ -121,7 +121,7 @@ const gererMiseAJourRecherche = (onglet: string, requete: string) => {
                   <component :is="item.icon" class="w-4.5 h-4.5" />
                 </div>
                 <div>
-                  <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-none mb-1">{{ item.title }}</p>
+                  <p class="text-[14px] text-slate-400 font-bold uppercase tracking-widest leading-none mb-1">{{ item.title }}</p>
                   <StatusBadge v-if="item.type === 'badge'" :status="item.value" />
                   <p v-else class="text-sm font-bold text-slate-800">{{ item.value }}</p>
                 </div>
@@ -137,7 +137,7 @@ const gererMiseAJourRecherche = (onglet: string, requete: string) => {
                   <component :is="item.icon" class="w-4.5 h-4.5" />
                 </div>
                 <div class="flex-1">
-                  <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-none mb-1">{{ item.title }}</p>
+                  <p class="text-[14px] text-slate-400 font-bold uppercase tracking-widest leading-none mb-1">{{ item.title }}</p>
                   <p class="text-sm font-bold transition-colors" :class="ongletActif === item.id ? (item.id === 'impayes' ? 'text-slate-600' : 'text-slate-900') : (item.isRedAlert ? 'text-slate-900' : 'text-slate-800')">{{ item.value }}</p>
                 </div>
               </button>
@@ -198,3 +198,4 @@ const gererMiseAJourRecherche = (onglet: string, requete: string) => {
     </AccordionContent>
   </AccordionItem>
 </template>
+

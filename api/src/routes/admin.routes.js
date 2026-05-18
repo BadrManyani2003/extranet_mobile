@@ -17,6 +17,7 @@ router.post('/clients',                 ctrl.getClients);
 router.post('/clients/create-user',     ctrl.createUserFromClient);
 router.post('/clients/link-user',       ctrl.linkUserToClient);
 router.post('/clients/unlink-user',     ctrl.unlinkUserFromClient);
+router.post('/clients/options',         ctrl.updateClientOptions);
 
 router.post('/adherents',               ctrl.getAdherents);
 router.post('/adherents/create-user',   ctrl.createUserFromAdherent);

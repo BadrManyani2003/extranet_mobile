@@ -19,13 +19,17 @@ const filteredContrats = computed(() => {
   if (!search.value) return contrats.value
   const q = search.value.toLowerCase()
   return (contrats.value as any[]).filter((c: any) => 
-    (c.police || '').toLowerCase().includes(q) || 
-    (c.branche || '').toLowerCase().includes(q)
+    String(c.police || '').toLowerCase().includes(q) || 
+    String(c.branche || '').toLowerCase().includes(q)
   )
 })
 
 const getStatusBadge = (statut: string) => {
   return statut === 'Actif' ? 'default' : 'outline'
+}
+
+const handleDetailedSearch = ({ policeId, onglet, requete }: any) => {
+  detailedSearchQueries.value[`${policeId}-${onglet}`] = requete
 }
 
 onMounted(fetchContrats)
@@ -55,6 +59,7 @@ onMounted(fetchContrats)
           :police="contrat"
           :getStatusBadge="getStatusBadge"
           :detailedSearchQueries="detailedSearchQueries"
+          @update:searchQuery="handleDetailedSearch"
         />
       </Accordion>
 

@@ -20,15 +20,19 @@ export interface User {
   telephone?: string;
   role?: string;
   roles?: string[];
+  particulier?: string;
+  Particulier?: string;
+  Nature?: string;
+  reclamation?: string;
 }
 
 interface AuthContextType {
   user: User | null;
   token: string | null;
-  source: 'ADHERENT' | 'CLIENT' | 'EXPERT' | null;
+  source: 'ADHERENT' | 'CLIENT' | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  signin: (userData: User, userToken: string, userSource: 'ADHERENT' | 'CLIENT' | 'EXPERT') => Promise<void>;
+  signin: (userData: User, userToken: string, userSource: 'ADHERENT' | 'CLIENT') => Promise<any>;
   logout: (shouldRedirect?: boolean) => Promise<void>;
 }
 
@@ -46,42 +50,55 @@ export const useAuth = (): AuthContextType => {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
-  const [source, setSource] = useState<'ADHERENT' | 'CLIENT' | 'EXPERT' | null>(null);
+  const [source, setSource] = useState<'ADHERENT' | 'CLIENT' | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   // ── Appelé après une authentification Keycloak réussie ───────
   const signin = useCallback(async (
     userData: User,
     userToken: string,
-    userSource: 'ADHERENT' | 'CLIENT' | 'EXPERT'
+    userSource: 'ADHERENT' | 'CLIENT'
   ) => {
-    console.log("[AuthContext] Signin initiated for:", userData.email);
-    // Stockage du token : SecureStore sur mobile, AsyncStorage sur Web
+    // 1. Stocker le token immédiatement pour que les appels API suivants puissent l'utiliser
     if (Platform.OS === 'web') {
       await AsyncStorage.setItem('token', userToken);
     } else {
       await SecureStore.setItemAsync('token', userToken);
     }
 
-    // Les infos non sensibles restent dans AsyncStorage
+    // 2. Stocker les infos de base
     await Promise.all([
       AsyncStorage.setItem('user', JSON.stringify(userData)),
       AsyncStorage.setItem('user_source', userSource),
     ]);
 
-    setUser(userData);
-    setToken(userToken);
-    setSource(userSource);
-    console.log("[AuthContext] Signin complete. State updated.");
-
-    // Récupérer immédiatement les données de la base de données
+    // 3. Récupérer le profil complet de la DB avant d'activer la session
+    let fullUser = userData;
     try {
       const freshUser = await authAPI.me();
-      setUser(prev => prev ? ({ ...prev, ...freshUser }) : null);
+      fullUser = { ...userData, ...freshUser };
       console.log("[AuthContext] Database profile loaded.");
     } catch (err) {
-      console.warn("[AuthContext] Failed to load database profile:", err);
+      console.warn("[AuthContext] Failed to load database profile during signin:", err);
     }
+
+    // 4. Contrôle d'accès (Mobile uniquement)
+    const isAdherent = (fullUser.roles || []).some(r => r.toUpperCase() === 'ADHERENT');
+    const particulierValue = fullUser.particulier || fullUser.Particulier; 
+    const isParticulier = particulierValue?.toString().trim().toUpperCase() === 'O';
+
+    if (!isAdherent && !isParticulier) {
+      console.warn("[AuthContext] Access denied for user:", fullUser);
+      throw new Error("Accès refusé : Seuls les clients particuliers ou les adhérents sont autorisés sur l'application mobile.");
+    }
+
+    // 5. Activer la session (ceci déclenchera la navigation car isAuthenticated deviendra vrai)
+    setToken(userToken);
+    setSource(userSource);
+    setUser(fullUser);
+    
+    console.log("[AuthContext] Signin complete. isAuthenticated is now true.");
+    return fullUser;
   }, []);
 
   const logout = useCallback(async (shouldRedirect: boolean = true) => {
@@ -127,7 +144,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         if (savedToken && savedUser) {
           const user = JSON.parse(savedUser);
-          const source = savedSource as 'ADHERENT' | 'CLIENT' | 'EXPERT';
+          const source = savedSource as 'ADHERENT' | 'CLIENT';
 
           setToken(savedToken);
           setUser(user);

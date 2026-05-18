@@ -4,6 +4,7 @@ const asyncHandler = require('../middleware/asyncHandler');
 
 const getMe = asyncHandler(async (req, res) => {
     const authId = req.user.sub;
+    const source = req.headers['x-source'] || 'E';
     const result = await authService.getUserInfoByAuthId(authId);
     
     if (!result[0] || result[0].length === 0) {
@@ -11,6 +12,7 @@ const getMe = asyncHandler(async (req, res) => {
     }
 
     const user = result[0][0];
+
     success(res, {
         ...user,
         roles: req.user.roles || []

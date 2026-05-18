@@ -22,7 +22,7 @@ const QuittanceDetailScreen = () => {
   const onShare = async () => {
     try {
       await Share.share({
-        message: `Quittance N° ${quittance.numero} - Montant: ${quittance.montantTotal} DH - Statut: ${quittance.statut}`,
+        message: `Quittance N° ${quittance.numero} - Montant: ${quittance.montantTotal} - Statut: ${quittance.statut}`,
       });
     } catch (error) {
       console.error(error);
@@ -31,10 +31,10 @@ const QuittanceDetailScreen = () => {
 
   return (
     <Box flex={1} backgroundColor="background">
-      <AppHeader title={`Quittance ${quittance.numero}`} showBackButton={true} />
+      <AppHeader title={quittance.numero} showBackButton={true} />
 
-      <ScrollView contentContainerStyle={{ paddingBottom: 40, paddingTop: 10 }}>
-        <Box height={10} />
+      <ScrollView contentContainerStyle={{ paddingBottom: 60, paddingTop: 10 }}>
+        <Box height={20} />
 
         {/* Informations de la Quittance */}
         <Section title="Détails de la Quittance" icon="receipt-outline">
@@ -46,8 +46,8 @@ const QuittanceDetailScreen = () => {
 
         {/* Situation Financière */}
         <Section title="Situation Financière" icon="wallet-outline">
-          <InfoRow label="Montant Total" value={`${quittance.montantTotal} DH`} icon="cash-outline" />
-          <InfoRow label="Reste à Payer" value={`${quittance.montantImpaye || 0} DH`} icon="alert-circle-outline" valueColor={quittance.montantImpaye > 0 ? "error" : "success"} isLast={true} />
+          <InfoRow label="Montant Total" value={`${quittance.montantTotal}`} icon="cash-outline" />
+          <InfoRow label="Reste à Payer" value={`${quittance.montantImpaye || 0}`} icon="alert-circle-outline" valueColor={quittance.montantImpaye > 0 ? "error" : "success"} isLast={true} />
         </Section>
       </ScrollView>
     </Box>

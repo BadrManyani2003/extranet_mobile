@@ -55,7 +55,7 @@ const ouvrirDetails = async (risque: any) => {
 
 const nettoyerValeur = (val: any) => {
   if (typeof val === 'string') {
-    return val.replace(/MAD/gi, '').trim()
+    return val.replace(/MAD|DH/gi, '').trim()
   }
   return val
 }
@@ -84,7 +84,7 @@ const iconeBranche = computed(() => {
 <template>
   <div>
     <SectionHeader 
-      :title="$t('risques.title')" 
+      :title="branche === 'Santé' ? ($t('risques.adherent') + 's') : (branche === 'Automobile' ? ($t('risques.vehicle') + 's') : $t('risques.title'))" 
       :description="$t('risques.subtitle')" 
       :icon="iconeBranche"
       iconClass="text-slate-900" 
@@ -100,15 +100,20 @@ const iconeBranche = computed(() => {
           <thead class="sticky top-0 bg-slate-50 z-10 shadow-sm">
             <tr class="border-b border-slate-200">
               <template v-if="branche === 'Santé'">
-                <th class="px-6 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">{{ $t('risques.adherent') }}</th>
-                <th class="px-6 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">{{ $t('risques.membership_num') }}</th>
-                <th class="px-6 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">{{ $t('risques.birth_date') }}</th>
+                <th class="px-6 py-3 text-[14px] font-bold text-slate-500 uppercase tracking-wider">{{ $t('risques.adherent') }}</th>
+                <th class="px-6 py-3 text-[14px] font-bold text-slate-500 uppercase tracking-wider">{{ $t('risques.membership_num') }}</th>
+                <th class="px-6 py-3 text-[14px] font-bold text-slate-500 uppercase tracking-wider">{{ $t('risques.membership_date') }}</th>
+              </template>
+              <template v-else-if="branche === 'Automobile'">
+                <th class="px-6 py-3 text-[14px] font-bold text-slate-500 uppercase tracking-wider">{{ $t('risques.brand') }}</th>
+                <th class="px-6 py-3 text-[14px] font-bold text-slate-500 uppercase tracking-wider">{{ $t('sinistres.matricule') }}</th>
+                <th class="px-6 py-3 text-[14px] font-bold text-slate-500 uppercase tracking-wider">{{ $t('risques.insured_name') }}</th>
               </template>
               <template v-else>
-                <th class="px-6 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">{{ $t('risques.designation') }}</th>
-                <th class="px-6 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">{{ $t('risques.id') }}</th>
+                <th class="px-6 py-3 text-[14px] font-bold text-slate-500 uppercase tracking-wider">{{ $t('risques.guarantee') }}</th>
+                <th class="px-6 py-3 text-[14px] font-bold text-slate-500 uppercase tracking-wider">{{ $t('risques.id') }}</th>
               </template>
-              <th class="px-6 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-right w-24">
+              <th class="px-6 py-3 text-[14px] font-bold text-slate-500 uppercase tracking-wider text-right w-24">
                 {{ $t('commun.actions') }}
               </th>
             </tr>
@@ -120,14 +125,20 @@ const iconeBranche = computed(() => {
               <template v-if="branche === 'Santé'">
                 <td class="px-6 py-3 text-sm font-bold text-slate-800 truncate">{{ risque.nom }}</td>
                 <td class="px-6 py-3 text-sm font-medium text-slate-600 truncate">{{ risque.numAdhesion || '-' }}</td>
-                <td class="px-6 py-3 text-sm text-slate-500">{{ formatDate(risque.dateNaissance) }}</td>
+                <td class="px-6 py-3 text-sm text-slate-500">{{ formatDate(risque.dateAdhesion) }}</td>
               </template>
 
+              <template v-else-if="branche === 'Automobile'">
+                <td class="px-6 py-3 text-sm font-bold text-slate-800 truncate">{{ risque.marque || '-' }}</td>
+                <td class="px-6 py-3 text-sm font-medium text-slate-600 truncate">{{ risque.identifiant || '-' }}</td>
+                <td class="px-6 py-3 text-sm text-slate-500 truncate">{{ risque.assure || '-' }}</td>
+              </template>
+              
               <template v-else>
                 <td class="px-6 py-3 text-sm font-bold text-slate-800 truncate">
                   <div class="flex flex-col">
                     <span>{{ risque.nom }} {{ risque.marque && risque.marque !== risque.nom ? ' - ' + risque.marque : '' }}</span>
-                    <span v-if="risque.description && risque.description !== 'Risque'" class="text-[10px] text-slate-400 font-medium italic">{{ risque.description }}</span>
+                    <span v-if="risque.description && risque.description !== 'Risque'" class="text-[14px] text-slate-400 font-medium italic">{{ risque.description }}</span>
                   </div>
                 </td>
                 <td class="px-6 py-3 text-sm font-medium text-slate-600 truncate">
@@ -136,7 +147,7 @@ const iconeBranche = computed(() => {
               </template>
 
               <td class="px-6 py-3 text-right">
-                <Button @click="ouvrirDetails(risque)" variant="outline" size="sm" class="font-bold h-7 text-[10px] px-2">
+                <Button @click="ouvrirDetails(risque)" variant="outline" size="sm" class="font-bold h-7 text-[14px] px-2">
                   {{ branche === 'Santé' ? $t('risques.beneficiaries') : $t('contrats.detail_button') }}
                 </Button>
               </td>
@@ -162,7 +173,7 @@ const iconeBranche = computed(() => {
           <div v-if="chargementDetails" class="py-12 flex flex-col items-center justify-center gap-4">
             <Loader2 class="w-8 h-8 animate-spin text-slate-400" />
             <p class="text-xs text-slate-500 font-medium tracking-widest uppercase italic">
-              {{ branche === 'Santé' ? 'Chargement des membres...' : 'Chargement des garanties...' }}
+              {{ branche === 'Santé' ? $t('risques.loading_members') : $t('risques.loading_details') }}
             </p>
           </div>
 
@@ -170,16 +181,16 @@ const iconeBranche = computed(() => {
             <table class="w-full text-left">
               <thead>
                 <tr class="border-b border-slate-100">
-                  <th class="py-2 text-[10px] font-bold text-slate-400 uppercase">{{ $t('risques.guarantee') }}</th>
-                  <th class="py-2 text-[10px] font-bold text-slate-400 uppercase text-right">{{ $t('risques.capital') }}</th>
-                  <th class="py-2 text-[10px] font-bold text-slate-400 uppercase text-right">{{ $t('risques.deductible') }}</th>
+                  <th class="py-2 text-[14px] font-bold text-slate-400 uppercase">{{ $t('risques.guarantee') }}</th>
+                  <th class="py-2 text-[14px] font-bold text-slate-400 uppercase text-right">{{ $t('risques.capital') }}</th>
+                  <th class="py-2 text-[14px] font-bold text-slate-400 uppercase text-right">{{ $t('risques.deductible') }}</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-50">
                 <tr v-for="g in risqueSelectionne.garanties" :key="g.nom">
                   <td class="py-3 text-sm text-slate-700">{{ g.nom }}</td>
                   <td class="py-3 text-sm font-bold text-slate-900 text-right">{{ formatNumber(g.capital) }}</td>
-                  <td class="py-3 text-sm text-slate-500 text-right">{{ (g.franchise && g.franchise !== 0) ? formatNumber(g.franchise) : '-' }}</td>
+                  <td class="py-3 text-sm text-slate-500 text-right">{{ (g.franchise && g.franchise != '0' && g.franchise != 0) ? formatNumber(g.franchise) : '-' }}</td>
                 </tr>
               </tbody>
             </table>
@@ -189,9 +200,9 @@ const iconeBranche = computed(() => {
             <table class="w-full text-left">
               <thead>
                 <tr class="border-b border-slate-100">
-                  <th class="py-2 text-[10px] font-bold text-slate-400 uppercase">{{ $t('risques.name') }}</th>
-                  <th class="py-2 text-[10px] font-bold text-slate-400 uppercase">{{ $t('risques.relationship') }}</th>
-                  <th class="py-2 text-[10px] font-bold text-slate-400 uppercase text-right">{{ $t('risques.birth_date') }}</th>
+                  <th class="py-2 text-[14px] font-bold text-slate-400 uppercase">{{ $t('risques.name') }}</th>
+                  <th class="py-2 text-[14px] font-bold text-slate-400 uppercase">{{ $t('risques.relationship') }}</th>
+                  <th class="py-2 text-[14px] font-bold text-slate-400 uppercase text-right">{{ $t('risques.birth_date') }}</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-50">
@@ -216,3 +227,4 @@ const iconeBranche = computed(() => {
     </Dialog>
   </div>
 </template>
+

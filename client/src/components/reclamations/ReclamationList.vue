@@ -34,7 +34,7 @@ const emit = defineEmits(['select'])
         >
           <div class="flex items-center gap-4 min-w-0 flex-1">
             <Badge :class="(rec.statut === 'En cours' || rec.statut === 'E') ? 'bg-orange-50 text-orange-600 border-orange-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'" 
-              class="rounded-lg px-2.5 py-1 text-[10px] font-black uppercase tracking-widest border shrink-0">
+              class="rounded-lg px-2.5 py-1 text-[14px] font-black uppercase tracking-widest border shrink-0">
               {{ (rec.statut === 'E' || rec.statut === 'En cours') ? 'En cours' : 'Clôturé' }}
             </Badge>
             
@@ -44,7 +44,7 @@ const emit = defineEmits(['select'])
           </div>
 
           <div class="flex items-center gap-6 shrink-0 ml-4">
-            <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+            <span class="text-[14px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
               <Calendar class="w-3.5 h-3.5" /> 
               {{ new Date(rec.dateReclamation).toLocaleDateString() }}
             </span>
@@ -58,3 +58,4 @@ const emit = defineEmits(['select'])
 <style scoped>
 /* No animations used */
 </style>
+

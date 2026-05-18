@@ -103,22 +103,22 @@ onMounted(() => {
         :disabled="!quittances.length"
       >
         <FileDown class="w-5 h-5 text-slate-900" />
-        {{ $t('commun.print', 'Exporter') }}
+        {{ $t('commun.download', 'Télécharger') }}
       </Button>
     </template>
 
     <template #default="{ items }">
       <div class="border border-slate-100 rounded-2xl overflow-hidden bg-white shadow-sm">
-        <Table>
+        <Table class="w-full min-w-[1000px]">
           <TableHeader class="bg-slate-50/50">
             <TableRow>
-              <TableHead class="font-black text-slate-900 uppercase tracking-widest text-[10px] py-4 px-6">{{ $t('quittances.num') }}</TableHead>
-              <TableHead class="font-black text-slate-900 uppercase tracking-widest text-[10px] py-4">{{ $t('contrats.num') }}</TableHead>
-              <TableHead class="font-black text-slate-900 uppercase tracking-widest text-[10px] py-4">{{ $t('contrats.branche') }}</TableHead>
-              <TableHead class="font-black text-slate-900 uppercase tracking-widest text-[10px] py-4">{{ $t('quittances.from') }}</TableHead>
-              <TableHead class="font-black text-slate-900 uppercase tracking-widest text-[10px] py-4">{{ $t('quittances.to') }}</TableHead>
-              <TableHead class="text-right font-black text-slate-900 uppercase tracking-widest text-[10px] py-4">{{ $t('quittances.total') }}</TableHead>
-              <TableHead class="text-right font-black text-slate-900 uppercase tracking-widest text-[10px] py-4 px-6">{{ $t('quittances.unpaid') }}</TableHead>
+              <TableHead class="font-black text-slate-900 uppercase tracking-widest text-[14px] py-4 px-6">{{ $t('quittances.num') }}</TableHead>
+              <TableHead class="font-black text-slate-900 uppercase tracking-widest text-[14px] py-4">{{ $t('contrats.num') }}</TableHead>
+              <TableHead class="font-black text-slate-900 uppercase tracking-widest text-[14px] py-4">{{ $t('contrats.branche') }}</TableHead>
+              <TableHead class="font-black text-slate-900 uppercase tracking-widest text-[14px] py-4">{{ $t('quittances.from') }}</TableHead>
+              <TableHead class="font-black text-slate-900 uppercase tracking-widest text-[14px] py-4">{{ $t('quittances.to') }}</TableHead>
+              <TableHead class="text-right font-black text-slate-900 uppercase tracking-widest text-[14px] py-4">{{ $t('quittances.total') }}</TableHead>
+              <TableHead class="text-right font-black text-slate-900 uppercase tracking-widest text-[14px] py-4 px-6">{{ $t('quittances.unpaid') }}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -159,3 +159,5 @@ onMounted(() => {
     </template>
   </DataTableWrapper>
 </template>
+
+

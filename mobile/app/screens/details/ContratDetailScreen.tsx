@@ -7,7 +7,7 @@ import { InfoRow, StatusBadge, LoadingSpinner, Section } from '../../components/
 import { Ionicons as Icon } from '@expo/vector-icons';
 import { Theme } from '../../theme/theme';
 import { useTheme } from '@shopify/restyle';
-import { dataAPI, quittancesAPI, adherentsAPI } from '../../api';
+import { dataAPI, quittancesAPI } from '../../api';
 import { rsp } from '../../utils/responsive';
 
 const ContratDetailScreen = () => {
@@ -21,24 +21,21 @@ const ContratDetailScreen = () => {
   const [stats, setStats] = useState<any>(null);
   const [risques, setRisques] = useState<any[]>([]);
   const [quittances, setQuittances] = useState<any[]>([]);
-  const [adherents, setAdherents] = useState<any[]>([]);
   const [expandedRisqueId, setExpandedRisqueId] = useState<number | null>(null);
   const [garantiesMap, setGarantiesMap] = useState<Record<number, any[]>>({});
   const [garantiesLoading, setGarantiesLoading] = useState<Record<number, boolean>>({});
 
   const fetchData = async () => {
     try {
-      const [statsRes, risquesRes, quittancesRes, adherentsRes] = await Promise.all([
+      const [statsRes, risquesRes, quittancesRes] = await Promise.all([
         dataAPI.getStatsByPolice(police.id),
         dataAPI.getRisques(police.id),
-        quittancesAPI.getAll(police.id),
-        adherentsAPI.getAll(police.id)
+        quittancesAPI.getAll(police.id)
       ]);
 
       setStats(statsRes);
       setRisques(risquesRes);
       setQuittances(quittancesRes);
-      setAdherents(adherentsRes);
     } catch (error) {
       console.error("Erreur chargement détails contrat:", error);
     } finally {
@@ -88,13 +85,13 @@ const ContratDetailScreen = () => {
 
   return (
     <Box flex={1} backgroundColor="background">
-      <AppHeader title={`Police ${police.police}`} showBackButton={true} />
+      <AppHeader title={police.police} showBackButton={true} />
       
       <ScrollView 
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-        contentContainerStyle={{ paddingBottom: 40, paddingTop: 10 }}
+        contentContainerStyle={{ paddingBottom: 60, paddingTop: 10 }}
       >
-        <Box height={10} />
+        <Box height={20} />
         {/* Informations Générales */}
         <Section title="Informations du Contrat" icon="information-circle-outline">
           <InfoRow label="Branche" value={police.branche} icon="shield-checkmark-outline" />
@@ -113,7 +110,7 @@ const ContratDetailScreen = () => {
               </Box>
               <Box alignItems="center">
                 <Text variant="caption" color="textTertiary">Impayés</Text>
-                <Text variant="title" color="error" fontSize={20}>{stats.impayes || 0} DH</Text>
+                <Text variant="title" color="error" fontSize={20}>{stats.impayes || 0}</Text>
               </Box>
               <Box alignItems="center">
                 <Text variant="caption" color="textTertiary">Sinistres</Text>
@@ -125,7 +122,7 @@ const ContratDetailScreen = () => {
 
         {/* Risques Section */}
         {risques.length > 0 && (
-          <Section title="Objets Assurés (Risques)" icon="car-sport-outline">
+          <Section title="Objets Assurés (Risques)" icon="shield-outline">
             {risques.map((risque, index) => {
               const isExpanded = expandedRisqueId === risque.id;
               const gList = garantiesMap[risque.id] || [];
@@ -138,7 +135,7 @@ const ContratDetailScreen = () => {
                   borderColor="borderLight"
                 >
                   <TouchableOpacity activeOpacity={0.7} onPress={() => toggleRisque(risque.id)}>
-                    <Box padding="m" flexDirection="row" justifyContent="space-between" alignItems="center">
+                    <Box padding="l" flexDirection="row" justifyContent="space-between" alignItems="center">
                       <Box flex={1}>
                         <Text variant="body" fontWeight="700">{risque.nom}</Text>
                         <Text variant="caption" color="textTertiary">{risque.identifiant} • {risque.description}</Text>
@@ -169,8 +166,8 @@ const ContratDetailScreen = () => {
                                 <Text variant="bodySmall" fontWeight="600">{g.nom}</Text>
                               </Box>
                               <Box flex={1} alignItems="flex-end">
-                                <Text variant="caption" color="primary" fontWeight="700">{g.capital > 0 ? `${g.capital} DH` : '-'}</Text>
-                                {g.franchise > 0 && <Text variant="caption" color="textTertiary" fontSize={9}>Franchise: {g.franchise}</Text>}
+                                <Text variant="caption" color="primary" fontWeight="700">{g.capital > 0 ? `${g.capital}` : '-'}</Text>
+                                {(g.franchise && g.franchise != '0' && g.franchise != 0) && <Text variant="caption" color="textTertiary" fontSize={9}>Franchise: {g.franchise}</Text>}
                               </Box>
                             </Box>
                           ))}
@@ -186,27 +183,7 @@ const ContratDetailScreen = () => {
           </Section>
         )}
 
-        {/* Adhérents Section */}
-        {adherents.length > 0 && (
-          <Section title="Bénéficiaires (Adhérents)" icon="people-outline">
-            {adherents.map((adherent, index) => (
-              <Box 
-                key={adherent.id} 
-                padding="m" 
-                borderBottomWidth={index === adherents.length - 1 ? 0 : 1}
-                borderColor="borderLight"
-              >
-                <Box flexDirection="row" justifyContent="space-between" alignItems="center">
-                  <Box flex={1}>
-                    <Text variant="body" fontWeight="700">{adherent.nom}</Text>
-                    <Text variant="caption" color="textTertiary">N° Adhésion: {adherent.numAdhesion}</Text>
-                  </Box>
-                  <StatusBadge label={adherent.actif === 'O' ? 'Actif' : 'Inactif'} variant={adherent.actif === 'O' ? 'success' : 'neutral'} />
-                </Box>
-              </Box>
-            ))}
-          </Section>
-        )}
+
 
         {/* Dernières Quittances */}
         {quittances.length > 0 && (
@@ -217,19 +194,19 @@ const ContratDetailScreen = () => {
                 onPress={() => navigation.navigate('QuittanceDetail', { quittance: q })}
               >
                 <Box 
-                  padding="m" 
+                  padding="l" 
                   borderBottomWidth={index === Math.min(quittances.length, 3) - 1 ? 0 : 1}
                   borderColor="borderLight"
                   flexDirection="row"
                   justifyContent="space-between"
                   alignItems="center"
                 >
-                  <Box>
+                  <Box gap="xxs">
                     <Text variant="bodySmall" fontWeight="700">N° {q.numero}</Text>
                     <Text variant="caption" color="textTertiary">{formatDate(q.dateDebut)} - {formatDate(q.dateFin)}</Text>
                   </Box>
-                  <Box alignItems="flex-end">
-                    <Text variant="bodySmall" fontWeight="700" color="primary">{q.montantTotal} DH</Text>
+                  <Box alignItems="flex-end" gap="xxs">
+                    <Text variant="bodySmall" fontWeight="900" color="primary" fontSize={rsp.normalize(15)}>{q.montantTotal}</Text>
                     <StatusBadge label={q.statut} variant={q.statut_variant || 'neutral'} size="small" />
                   </Box>
                 </Box>

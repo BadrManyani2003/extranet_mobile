@@ -16,7 +16,7 @@ const SinistreScreen = () => {
   const [sinistres, setSinistres] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  
+
   // Filter States
   const [selectedBranche, setSelectedBranche] = useState<string | null>(null);
   const [selectedStatut, setSelectedStatut] = useState<string | null>(null);
@@ -88,7 +88,7 @@ const SinistreScreen = () => {
   }, [sinistres, selectedBranche, selectedStatut]);
 
   const FilterChip = ({ label, isSelected, onPress, icon }: any) => (
-    <TouchableOpacity 
+    <TouchableOpacity
       onPress={onPress}
       activeOpacity={0.7}
       style={{
@@ -104,9 +104,9 @@ const SinistreScreen = () => {
       }}
     >
       {icon && <Icon name={icon} size={14} color={isSelected ? 'white' : theme.colors.primary} style={{ marginRight: 4 }} />}
-      <Text 
-        fontSize={12} 
-        fontWeight={isSelected ? '800' : '600'} 
+      <Text
+        fontSize={12}
+        fontWeight={isSelected ? '800' : '600'}
         color={isSelected ? 'white' : 'primary'}
       >
         {label}
@@ -116,10 +116,10 @@ const SinistreScreen = () => {
 
   const renderItem = ({ item }: { item: any }) => (
     <TouchableOpacity activeOpacity={0.8} onPress={() => navigation.navigate('SinistreDetail', { sinistre: item })}>
-      <Box 
-        backgroundColor="cardBackground" 
-        marginHorizontal="m" 
-        marginVertical="s" 
+      <Box
+        backgroundColor="cardBackground"
+        marginHorizontal="m"
+        marginVertical="s"
         borderRadius="l"
         padding="l"
         borderWidth={1}
@@ -147,7 +147,7 @@ const SinistreScreen = () => {
         <Box marginBottom="m">
           <Text variant="caption" color="textTertiary" marginBottom="xxs">N° de sinistre</Text>
           <Text variant="title" fontWeight="900" fontSize={20} color="text">
-            {item.numero || item.num_sinistre || item.sinistre || 'N/A'}
+            {item.numero || item.num_sinistre || item.sinistre || '-'}
           </Text>
         </Box>
 
@@ -161,7 +161,7 @@ const SinistreScreen = () => {
               <Text variant="caption" color="textTertiary">Police liée</Text>
             </Box>
             <Text variant="bodySmall" fontWeight="700" color="text">
-               {item.police || 'N/A'}
+              {item.police || '-'}
             </Text>
           </Box>
 
@@ -182,22 +182,22 @@ const SinistreScreen = () => {
   return (
     <Box flex={1} backgroundColor="background">
       <AppHeader title="Mes Sinistres" showBackButton={false} />
-      
+
       {/* Filters Section */}
       <Box paddingVertical="s" borderBottomWidth={1} borderBottomColor="borderLight">
         {/* Branch Filters */}
         <Box marginBottom="s">
-          <ScrollView 
-            horizontal 
-            showsHorizontalScrollIndicator={false} 
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
             contentContainerStyle={{ paddingHorizontal: 16 }}
           >
             {uniqueBranches.map((b) => (
-              <FilterChip 
-                key={`branche-${b}`} 
-                label={b} 
-                isSelected={selectedBranche === b || (!selectedBranche && b === 'Toutes')} 
-                onPress={() => setSelectedBranche(b)} 
+              <FilterChip
+                key={`branche-${b}`}
+                label={b}
+                isSelected={selectedBranche === b || (!selectedBranche && b === 'Toutes')}
+                onPress={() => setSelectedBranche(b)}
                 icon={b === 'Toutes' ? 'options-outline' : 'business-outline'}
               />
             ))}
@@ -206,17 +206,17 @@ const SinistreScreen = () => {
 
         {/* Status Filters */}
         <Box>
-          <ScrollView 
-            horizontal 
-            showsHorizontalScrollIndicator={false} 
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
             contentContainerStyle={{ paddingHorizontal: 16 }}
           >
             {uniqueStatuses.map((s) => (
-              <FilterChip 
-                key={`statut-${s}`} 
-                label={s} 
-                isSelected={selectedStatut === s || (!selectedStatut && s === 'Tous')} 
-                onPress={() => setSelectedStatut(s)} 
+              <FilterChip
+                key={`statut-${s}`}
+                label={s}
+                isSelected={selectedStatut === s || (!selectedStatut && s === 'Tous')}
+                onPress={() => setSelectedStatut(s)}
                 icon={s === 'Tous' ? 'layers-outline' : 'stats-chart-outline'}
               />
             ))}
@@ -236,12 +236,12 @@ const SinistreScreen = () => {
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
           ListEmptyComponent={
-            <EmptyView 
-              icon="warning-outline" 
-              message={(selectedBranche || selectedStatut) 
-                ? "Aucun sinistre ne correspond à ces filtres." 
+            <EmptyView
+              icon="warning-outline"
+              message={(selectedBranche || selectedStatut)
+                ? "Aucun sinistre ne correspond à ces filtres."
                 : "Aucun sinistre déclaré pour le moment."
-              } 
+              }
             />
           }
         />

@@ -19,6 +19,7 @@ const searchQuery = ref('')
 const natureFilter = ref('all')
 const currentUser = ref<any>(null)
 const isDeleteDialogOpen = ref(false)
+const isDeleteRecDialogOpen = ref(false)
 const messageToDeleteId = ref<number | null>(null)
 
 let pollingInterval: any = null
@@ -145,6 +146,19 @@ const confirmDelete = async () => {
   }
 }
 
+const confirmDeleteReclamation = async () => {
+  if (!selectedTicket.value) return
+  try {
+    await api.admin.deleteReclamation(selectedTicket.value.id)
+    toast.success("Réclamation supprimée")
+    isDeleteRecDialogOpen.value = false
+    selectedTicket.value = null
+    await fetchReclamations()
+  } catch (e: any) {
+    toast.error(e.message)
+  }
+}
+
 onMounted(() => {
   fetchReclamations()
   fetchUserInfo()
@@ -197,7 +211,7 @@ onMounted(() => {
           <div class="flex items-center gap-3">
             <h2 class="text-xl font-black text-slate-900 line-clamp-1">{{ selectedTicket.sujet }}</h2>
             <Badge :class="selectedTicket.statut === 'En cours' ? 'bg-orange-50 text-orange-600' : 'bg-emerald-50 text-emerald-600'" 
-              class="rounded-lg text-[10px] font-black uppercase tracking-widest px-2 py-0.5 border-none shadow-none">
+              class="rounded-lg text-[14px] font-black uppercase tracking-widest px-2 py-0.5 border-none shadow-none">
               {{ selectedTicket.statut }}
             </Badge>
           </div>
@@ -205,9 +219,12 @@ onMounted(() => {
             Client: {{ selectedTicket.client }} • {{ $t('reclamations.ticket_num') }} #{{ selectedTicket.id }} • {{ $t('reclamations.opened_on') }} {{ new Date(selectedTicket.dateReclamation).toLocaleDateString() }}
           </p>
         </div>
-        <div class="flex gap-2">
-          <Button v-if="selectedTicket.statut !== 'En cours' && selectedTicket.statut !== 'E'" size="sm" variant="outline" @click="handleStatusUpdate('E')" class="rounded-xl border-orange-200 text-orange-600 hover:bg-orange-50 font-bold text-[10px] uppercase tracking-wider">{{ $t('statuts.en_cours', 'En cours') }}</Button>
-          <Button v-if="selectedTicket.statut !== 'Clôturé' && selectedTicket.statut !== 'C'" size="sm" variant="outline" @click="handleStatusUpdate('C')" class="rounded-xl border-slate-200 text-slate-600 hover:bg-slate-50 font-bold text-[10px] uppercase tracking-wider">{{ $t('reclamations.close_ticket', 'Clôturer') }}</Button>
+        <div class="flex gap-2 items-center">
+          <Button v-if="selectedTicket.statut !== 'En cours' && selectedTicket.statut !== 'E'" size="sm" variant="outline" @click="handleStatusUpdate('E')" class="rounded-xl border-orange-200 text-orange-600 hover:bg-orange-50 font-bold text-[14px] uppercase tracking-wider">{{ $t('statuts.en_cours', 'En cours') }}</Button>
+          <Button v-if="selectedTicket.statut !== 'Clôturé' && selectedTicket.statut !== 'C'" size="sm" variant="outline" @click="handleStatusUpdate('C')" class="rounded-xl border-slate-200 text-slate-600 hover:bg-slate-50 font-bold text-[14px] uppercase tracking-wider">{{ $t('reclamations.close_ticket', 'Clôturer') }}</Button>
+          <Button size="icon" variant="ghost" @click="isDeleteRecDialogOpen = true" class="rounded-xl h-10 w-10 text-slate-400 hover:text-red-500 hover:bg-red-50 shrink-0 transition-colors">
+            <Trash2 class="w-5 h-5" />
+          </Button>
         </div>
       </div>
 
@@ -245,5 +262,30 @@ onMounted(() => {
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+    <!-- Modal Confirmation Suppression Réclamation -->
+    <Dialog v-model:open="isDeleteRecDialogOpen">
+      <DialogContent class="sm:max-w-[400px] rounded-[2rem] shadow-2xl p-0 overflow-hidden border-none font-['Outfit']">
+        <DialogHeader class="p-8 bg-white text-center">
+          <div class="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Trash2 class="w-8 h-8" />
+          </div>
+          <DialogTitle class="text-xl font-black text-slate-900 tracking-tight">{{ $t('commun.delete') }} ?</DialogTitle>
+          <DialogDescription class="text-slate-500 font-medium mt-2">
+            Voulez-vous vraiment supprimer cette réclamation et tous ses messages ?
+          </DialogDescription>
+        </DialogHeader>
+
+        <DialogFooter class="p-8 bg-slate-50/50 flex gap-3 sm:justify-center">
+          <Button variant="ghost" @click="isDeleteRecDialogOpen = false" class="flex-1 h-12 rounded-xl font-bold text-slate-500 hover:bg-white">
+            {{ $t('commun.cancel') }}
+          </Button>
+          <Button @click="confirmDeleteReclamation" class="flex-1 h-12 rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold shadow-lg shadow-red-100">
+            {{ $t('commun.delete') }}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   </div>
 </template>
+

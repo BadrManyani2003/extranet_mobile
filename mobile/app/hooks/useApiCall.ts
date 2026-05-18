@@ -43,12 +43,12 @@ export function useApiCall<T>() {
 // Formatter les montants en format marocain
 // ============================================================
 export function formatMontant(montant: any): string {
-  if (montant === null || montant === undefined) return '0,00 DH';
+  if (montant === null || montant === undefined) return '0,00';
   
   const num = typeof montant === 'number' ? montant : parseFloat(String(montant));
-  if (isNaN(num)) return '0,00 DH';
+  if (isNaN(num)) return '0,00';
   
-  return `${num.toFixed(2).replace('.', ',')} DH`;
+  return `${num.toFixed(2).replace('.', ',')}`;
 }
 
 // ============================================================

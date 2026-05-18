@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { AlertCircle, Calendar, Clock, Info, Shield, Car, User, Wallet, FileText } from 'lucide-vue-next'
 import { CardContent } from '@/components/ui/card'
 import {
@@ -43,9 +44,16 @@ const sinistresFiltres = computed(() => {
   if (!requete) return donnees
   
   return donnees.filter((s: any) => 
-    s.numero.toLowerCase().includes(requete) || 
-    s.objet.toLowerCase().includes(requete)
+    String(s.numero || '').toLowerCase().includes(requete) || 
+    String(s.objet || '').toLowerCase().includes(requete)
   )
+})
+const { t } = useI18n()
+
+const libelleRisque = computed(() => {
+  if (props.branche === 'Automobile') return t('risques.vehicle')
+  if (props.branche === 'Santé') return t('risques.adherent')
+  return t('sinistres.object')
 })
 </script>
 
@@ -80,7 +88,7 @@ const sinistresFiltres = computed(() => {
                     <div class="text-sm font-black text-slate-900 flex items-center gap-2">
                       {{ sin.numero }}
                     </div>
-                    <div class="text-[11px] text-slate-400 font-medium mt-0.5 flex items-center gap-1.5">
+                    <div class="text-[14px] text-slate-400 font-medium mt-0.5 flex items-center gap-1.5">
                       <Calendar class="w-3 h-3" />
                       {{ $t('sinistres.declared_on') }} {{ formatDate(sin.date) }}
                     </div>
@@ -89,9 +97,9 @@ const sinistresFiltres = computed(() => {
 
                 <div class="flex items-center gap-8 pr-4">
                   <div class="flex flex-col items-end">
-                    <span class="text-[10px] text-slate-400 uppercase font-bold tracking-widest leading-none mb-1">{{ $t('sinistres.object') }}</span>
+                    <span class="text-[14px] text-slate-400 uppercase font-bold tracking-widest leading-none mb-1">{{ libelleRisque }}</span>
                     <span class="text-xs font-black text-slate-900 truncate max-w-[150px]">{{ sin.objet }}</span>
-                    <span v-if="sin.identifiant" class="text-[10px] text-slate-500 font-bold mt-0.5">{{ sin.identifiant }}</span>
+                    <span v-if="sin.identifiant" class="text-[14px] text-slate-500 font-bold mt-0.5">{{ sin.identifiant }}</span>
                   </div>
                 </div>
               </div>
@@ -101,23 +109,23 @@ const sinistresFiltres = computed(() => {
               <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
                 
                 <div class="bg-white/60 p-4 rounded-2xl border border-slate-200/60 flex flex-col gap-3">
-                   <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                   <h4 class="text-[14px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                      <Info class="w-3.5 h-3.5 text-slate-900" /> {{ $t('sinistres.status_title') }}
                    </h4>
                    <div class="space-y-4">
                      <div>
-                       <p class="text-[10px] font-bold text-slate-400 uppercase">{{ $t('contrats.statut') }}</p>
+                       <p class="text-[14px] font-bold text-slate-400 uppercase">{{ $t('contrats.statut') }}</p>
                        <StatusBadge :status="sin.statut" class="mt-1" />
                      </div>
                       <div>
-                        <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">{{ $t('sinistres.identified_risk') }}</p>
+                        <p class="text-[14px] font-bold text-slate-400 uppercase mb-1">{{ libelleRisque }}</p>
                         <div class="flex items-center gap-2 mt-1">
                           <div class="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400">
                             <component :is="branche === 'Santé' ? User : Shield" class="w-4 h-4" />
                           </div>
                           <div>
                             <p class="text-xs font-black text-slate-800">{{ sin.objet }}</p>
-                            <p v-if="sin.identifiant" class="text-[10px] text-slate-400 font-bold">{{ sin.identifiant }}</p>
+                            <p v-if="sin.identifiant" class="text-[14px] text-slate-400 font-bold">{{ sin.identifiant }}</p>
                           </div>
                         </div>
                       </div>
@@ -125,14 +133,14 @@ const sinistresFiltres = computed(() => {
                 </div>
 
                 <div class="bg-white/60 p-4 rounded-2xl border border-slate-200/60 flex flex-col gap-3">
-                   <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                   <h4 class="text-[14px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                      <Wallet class="w-3.5 h-3.5 text-slate-900" /> {{ $t('sinistres.financial_title') }}
                    </h4>
 
                    <div class="space-y-4">
                      <div class="grid grid-cols-2 gap-4">
                        <div>
-                         <p class="text-[10px] font-bold text-slate-400 uppercase">
+                         <p class="text-[14px] font-bold text-slate-400 uppercase">
                            {{ branche === 'Santé' ? $t('sinistres.costs') : $t('sinistres.damages') }}
                          </p>
                          <p class="text-sm font-black text-slate-800">
@@ -140,19 +148,19 @@ const sinistresFiltres = computed(() => {
                          </p>
                        </div>
                        <div>
-                         <p class="text-[10px] font-bold text-slate-400 uppercase">{{ $t('sinistres.franchise') }}</p>
+                         <p class="text-[14px] font-bold text-slate-400 uppercase">{{ $t('sinistres.franchise') }}</p>
                          <p class="text-sm font-black text-slate-800">{{ formatCurrency(sin.mtFranchise) }}</p>
                        </div>
                      </div>
                      <div class="pt-3 border-t border-slate-100 flex justify-between items-center">
-                       <p class="text-[10px] font-black text-slate-900 uppercase">{{ $t('sinistres.indemnite') }}</p>
+                       <p class="text-[14px] font-black text-slate-900 uppercase">{{ $t('sinistres.indemnite') }}</p>
                        <p class="text-lg font-black text-slate-900">{{ formatCurrency(sin.mtRembourse) }}</p>
                      </div>
                    </div>
                 </div>
 
                 <div class="bg-white/60 p-4 rounded-2xl border border-slate-200/60 flex flex-col gap-2">
-                   <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                   <h4 class="text-[14px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                      <FileText class="w-3.5 h-3.5 text-slate-400" /> {{ $t('sinistres.expert_notes') }}
                    </h4>
                    <p class="text-xs text-slate-600 italic leading-relaxed border-l-2 border-slate-200 pl-3 py-1">
@@ -173,3 +181,4 @@ const sinistresFiltres = computed(() => {
     </CardContent>
   </div>
 </template>
+

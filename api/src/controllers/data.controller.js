@@ -73,7 +73,11 @@ const getPersACharge = asyncHandler(async (req, res) => {
 const getStats = asyncHandler(async (req, res) => {
     const { userId, source, token } = getContext(req);
     const result = await dataService.getStats(userId, source, token);
-    success(res, result || []);
+    if (source === 'M') {
+        success(res, result[0]?.[0] || {});
+    } else {
+        success(res, result || []);
+    }
 });
 
 const getStatsByPolice = asyncHandler(async (req, res) => {

@@ -72,7 +72,7 @@ const formatDate = (date: string) => {
       <div class="p-6 md:p-10 min-h-full flex flex-col justify-end">
         <div v-if="loading && messages.length === 0" class="flex flex-col items-center justify-center h-64 gap-4">
           <div class="w-10 h-10 border-4 border-slate-200 border-t-slate-900 rounded-full animate-spin"></div>
-          <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Chargement...</p>
+          <p class="text-[14px] font-black uppercase tracking-widest text-slate-400">Chargement...</p>
         </div>
 
         <div v-else-if="messages.length === 0" class="flex flex-col items-center justify-center h-64 gap-6 opacity-40">
@@ -129,7 +129,7 @@ const formatDate = (date: string) => {
 
                 <!-- Footer info -->
                 <div v-if="!isSameGroup(msg, messages[index+1])" 
-                  class="flex items-center gap-1.5 text-[9px] font-black text-slate-300 mt-2 uppercase tracking-widest px-1">
+                  class="flex items-center gap-1.5 text-[9px] sm:text-[10px] font-black text-slate-300 mt-2 uppercase tracking-widest px-1">
                   <span v-if="isSelf(msg)" class="text-slate-400">VOUS</span>
                   <span v-else class="text-slate-900">{{ msg.envoyeur || 'Client' }}</span>
                   <span class="w-1 h-1 rounded-full bg-slate-200"></span>
@@ -150,7 +150,7 @@ const formatDate = (date: string) => {
         <div v-if="selectedTicket?.statut === 'Clôturé' || selectedTicket?.statut === 'C'" 
           class="flex items-center justify-center gap-3 p-4 bg-slate-100 text-slate-400 rounded-2xl border border-dashed border-slate-200">
           <ShieldCheck class="w-4 h-4" />
-          <p class="text-[10px] font-black uppercase tracking-[0.2em] text-center">Discussion clôturée</p>
+          <p class="text-[14px] font-black uppercase tracking-[0.2em] text-center">Discussion clôturée</p>
         </div>
         
         <div v-else class="relative group">
@@ -188,3 +188,4 @@ const formatDate = (date: string) => {
   border-radius: 10px;
 }
 </style>
+

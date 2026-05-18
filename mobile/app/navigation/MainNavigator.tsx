@@ -293,7 +293,7 @@ const BottomTabs: React.FC = () => {
   const roles = user?.roles?.map(r => r.toUpperCase()) || [];
   const isAdherent = roles.includes('ADHERENT');
   const isClient = roles.includes('CLIENT');
-  const isExpert = roles.includes('EXPERT');
+  const canReclaim = String(user?.reclamation).trim().toUpperCase() === 'O';
   
   return (
     <View style={{ flex: 1, backgroundColor: c.background }}>
@@ -305,18 +305,18 @@ const BottomTabs: React.FC = () => {
         <Tab.Screen name="Accueil" component={HomeScreen} />
 
         {/* Autres onglets selon rôle */}
-        {(isClient || isExpert) && (
+        {isClient && (
           <>
             <Tab.Screen name="Contrats" component={ContratScreen} />
             <Tab.Screen name="Quittances" component={QuittanceScreen} />
           </>
         )}
 
-        {(isAdherent || isClient || isExpert) && (
+        {(isAdherent || isClient) && (
           <Tab.Screen name="Sinistres" component={SinistreScreen} />
         )}
 
-        {(isAdherent || isClient || isExpert) && (
+        {(isAdherent || isClient) && canReclaim && (
           <Tab.Screen name="Reclamations" component={ReclamationScreen} />
         )}
 

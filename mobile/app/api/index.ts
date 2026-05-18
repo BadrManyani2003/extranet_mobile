@@ -29,6 +29,7 @@ export const reclamationsAPI = {
   getDetails: (reclamationId: number) => apiRequest<any[]>('/reclamations/detail', 'POST', { reclamationId }),
   create: (sujet: string, nature: string, message: string) => apiRequest<any>('/reclamations/create', 'POST', { sujet, nature, message }),
   addMessage: (reclamationId: number, message: string, nature: string = 'C') => apiRequest<void>('/reclamations/add-message', 'POST', { reclamationId, message, nature }),
+  deleteMessage: (messageId: number, reclamationId: number) => apiRequest<void>('/reclamations/delete-message', 'POST', { messageId, reclamationId }),
 };
 
 export const dataAPI = {

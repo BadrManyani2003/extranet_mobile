@@ -32,7 +32,6 @@ const ProfileScreen: React.FC = () => {
 
   const roles = user?.roles?.map(r => r.toUpperCase()) || [];
   const isAdherent = roles.includes('ADHERENT');
-  const isExpert = roles.includes('EXPERT');
 
   return (
     <Box flex={1} backgroundColor="background">
@@ -116,23 +115,6 @@ const ProfileScreen: React.FC = () => {
             </Section>
           )}
 
-          {/* Expert Specific Section */}
-          {isExpert && (
-            <Section title="Espace Expert" icon="briefcase-outline">
-              <TouchableOpacity 
-                activeOpacity={0.7} 
-                style={{ padding: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
-              >
-                <Box flexDirection="row" alignItems="center">
-                   <Box width={40} height={40} borderRadius="m" backgroundColor="successBg" alignItems="center" justifyContent="center" marginRight="m">
-                      <Icon name="analytics-outline" size={22} color={theme.colors.success} />
-                   </Box>
-                   <Text variant="bodyMedium">Rapports d'expertise</Text>
-                </Box>
-                <Icon name="chevron-forward" size={20} color={theme.colors.textTertiary} />
-              </TouchableOpacity>
-            </Section>
-          )}
 
           {/* Settings Section */}
           <Section title="Paramètres de Sécurité" icon="shield-checkmark-outline">

@@ -7,6 +7,7 @@ import DataTableWrapper from '@/components/shared/DataTableWrapper.vue'
 import UserLinkDialog from '@/components/shared/UserLinkDialog.vue'
 import { api } from '@/lib/api'
 import { toast } from '@/components/ui/sonner'
+import { formatDate } from '@/lib/utils'
 
 const adherents = ref<any[]>([])
 const loading = ref(true)
@@ -55,11 +56,12 @@ onMounted(fetchAdherents)
     :search-placeholder="$t('adherents.search_placeholder')"
   >
     <template #default="{ items }">
-      <Table class="border-t border-slate-100">
+      <Table class="border-t border-slate-100 w-full min-w-[1000px]">
         <TableHeader class="bg-slate-50/50">
           <TableRow>
             <TableHead class="table-header-text py-6">{{ $t('adherents.table.id') }}</TableHead>
             <TableHead class="table-header-text">{{ $t('adherents.table.name') }}</TableHead>
+            <TableHead class="table-header-text">{{ $t('adherents.table.membership_date') }}</TableHead>
             <TableHead class="table-header-text">{{ $t('adherents.table.linked_user') }}</TableHead>
             <TableHead class="text-right table-header-text">{{ $t('adherents.table.actions') }}</TableHead>
           </TableRow>
@@ -76,11 +78,14 @@ onMounted(fetchAdherents)
               </div>
             </TableCell>
             <TableCell>
-              <div v-if="adherent.fkUserId" class="flex items-center gap-2 text-emerald-600 font-bold text-[10px] uppercase tracking-widest bg-emerald-50 px-3 py-1.5 rounded-lg w-fit">
+              <span class="text-sm font-medium text-slate-600">{{ formatDate(adherent.dateAdhesion) }}</span>
+            </TableCell>
+            <TableCell>
+              <div v-if="adherent.fkUserId" class="flex items-center gap-2 text-emerald-600 font-bold text-[14px] uppercase tracking-widest bg-emerald-50 px-3 py-1.5 rounded-lg w-fit">
                 <CheckCircle2 class="w-3.5 h-3.5" />
                 {{ adherent.userNom }}
               </div>
-              <span v-else class="text-slate-300 font-black text-[10px] uppercase tracking-widest italic">{{ $t('commun.no_results') }}</span>
+              <span v-else class="text-slate-300 font-black text-[14px] uppercase tracking-widest italic">{{ $t('commun.no_results') }}</span>
             </TableCell>
             <TableCell class="text-right">
               <div v-if="!adherent.fkUserId" class="flex justify-end gap-1">
@@ -103,9 +108,10 @@ onMounted(fetchAdherents)
 
   <UserLinkDialog 
     :open="linkDialogOpen"
-    title="Lier un utilisateur"
-    description="Sélectionnez l'utilisateur à lier à cet adhérent."
+    :title="$t('users.link_dialog_title')"
+    :description="$t('users.link_dialog_desc_adherent')"
     @close="linkDialogOpen = false"
     @select="handleLinkUser"
   />
 </template>
+

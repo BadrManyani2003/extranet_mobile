@@ -67,7 +67,7 @@ watch(() => props.open, (isOpen) => {
         <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
         <Input 
           v-model="searchQuery" 
-          placeholder="Rechercher un utilisateur par nom ou email..." 
+          :placeholder="$t('users.search_placeholder_link')" 
           class="pl-10 h-11 bg-slate-50 border-slate-200 rounded-xl focus-visible:ring-emerald-500"
         />
       </div>
@@ -76,9 +76,9 @@ watch(() => props.open, (isOpen) => {
         <Table>
           <TableHeader class="bg-slate-50 sticky top-0 z-10">
             <TableRow>
-              <TableHead class="font-black text-slate-900 uppercase tracking-widest text-[10px]">Utilisateur</TableHead>
-              <TableHead class="font-black text-slate-900 uppercase tracking-widest text-[10px]">Email</TableHead>
-              <TableHead class="text-right font-black text-slate-900 uppercase tracking-widest text-[10px]">Action</TableHead>
+              <TableHead class="font-black text-slate-900 uppercase tracking-widest text-[14px]">{{ $t('users.table.name') }}</TableHead>
+              <TableHead class="font-black text-slate-900 uppercase tracking-widest text-[14px]">{{ $t('users.table.email') }}</TableHead>
+              <TableHead class="text-right font-black text-slate-900 uppercase tracking-widest text-[14px]">{{ $t('users.table.actions') }}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -96,14 +96,14 @@ watch(() => props.open, (isOpen) => {
               </TableCell>
               <TableCell class="text-sm font-medium text-slate-500">{{ user.email }}</TableCell>
               <TableCell class="text-right">
-                <Button variant="outline" size="sm" class="rounded-lg h-8 font-bold text-[10px] uppercase tracking-widest border-slate-200 hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200" @click="handleSelect(user)">
-                  Sélectionner
+                <Button variant="outline" size="sm" class="rounded-lg h-8 font-bold text-[14px] uppercase tracking-widest border-slate-200 hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200" @click="handleSelect(user)">
+                  {{ $t('commun.select') }}
                 </Button>
               </TableCell>
             </TableRow>
             <TableRow v-if="!loading && filteredUsers().length === 0">
               <TableCell colspan="3" class="h-32 text-center text-slate-400 font-medium italic">
-                Aucun utilisateur trouvé
+                {{ $t('commun.no_results') }}
               </TableCell>
             </TableRow>
           </TableBody>
@@ -111,8 +111,10 @@ watch(() => props.open, (isOpen) => {
       </div>
 
       <DialogFooter class="mt-4">
-        <Button variant="ghost" class="rounded-xl font-bold" @click="emit('close')">Annuler</Button>
+        <Button variant="ghost" class="rounded-xl font-bold" @click="emit('close')">{{ $t('commun.cancel') }}</Button>
       </DialogFooter>
     </DialogContent>
   </Dialog>
 </template>
+
+

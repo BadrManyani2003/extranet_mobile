@@ -99,12 +99,11 @@ const LoginScreen: React.FC<Props> = () => {
 
       const isAdherent = hasRole('ADHERENT');
       const isClient = hasRole('CLIENT');
-      const isExpert = hasRole('EXPERT');
 
       console.log("[Login] User roles:", roles);
 
-      // 🛑 Restriction : Seuls les Adhérents, Clients et Experts peuvent se connecter
-      if (!isAdherent && !isClient && !isExpert) {
+      // 🛑 Restriction : Seuls les Adhérents et Clients peuvent se connecter (Le contrôle fin se fait dans signin)
+      if (!isAdherent && !isClient && !hasRole('ADMIN') && !hasRole('ADMIN_CABINET') && !hasRole('COMMERCIAL_CABINET')) {
         console.warn("[Login] Access denied: User lacks required roles.");
         setErrorMsg("non autoriser");
         setLoading(false);
@@ -113,9 +112,8 @@ const LoginScreen: React.FC<Props> = () => {
       }
 
       // Détermination de la source pour les futures requêtes API
-      let userSource: 'ADHERENT' | 'CLIENT' | 'EXPERT' = 'ADHERENT';
-      if (isExpert) userSource = 'EXPERT';
-      else if (isClient) userSource = 'CLIENT';
+      let userSource: 'ADHERENT' | 'CLIENT' = 'ADHERENT';
+      if (isClient) userSource = 'CLIENT';
 
       const user = {
         id:     decoded.sub       || '',
@@ -127,11 +125,9 @@ const LoginScreen: React.FC<Props> = () => {
       };
 
       await signin(user, accessToken, userSource); 
-
-
-    } catch (error) {
-      console.error("[Login] Error exchanging code for token:", error);
-      setErrorMsg("Erreur lors de la récupération du token. Réessayez.");
+    } catch (error: any) {
+      console.error("[Login] Error:", error.message);
+      setErrorMsg(error.message || "Erreur de connexion.");
     } finally {
       setLoading(false);
     }

@@ -13,13 +13,15 @@ export const api = {
     getReclamations: ReclamationService.getReclamations,
     getMessages: ReclamationService.getMessages,
     createReclamation: ReclamationService.createReclamation,
-    sendMessage: ReclamationService.sendMessage
+    sendMessage: ReclamationService.sendMessage,
+    deleteReclamation: ReclamationService.deleteReclamation
   },
   admin: {
     ...AdminService,
     getReclamations: ReclamationService.getReclamations,
     replyToReclamation: ReclamationService.replyToReclamation,
     updateStatus: ReclamationService.updateStatus,
-    deleteMessage: ReclamationService.deleteMessage
+    deleteMessage: ReclamationService.deleteMessage,
+    deleteReclamation: ReclamationService.deleteReclamation
   }
 }

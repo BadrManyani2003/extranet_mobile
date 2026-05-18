@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { FileText, AlertCircle, BarChart3, LifeBuoy, Shield } from 'lucide-vue-next'
 import Sidebar from './Sidebar.vue'
 import Header from './Header.vue'
 import { useUserStore } from '../store/user'
+import keycloak from '@/services/keycloak'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -33,13 +34,26 @@ onMounted(async () => {
   }
 })
 
-const navItems = [
-  { section: 'navigation.client' },
-  { nom: 'navigation.policies', chemin: '/contrats', icone: Shield },
-  { nom: 'navigation.global_statement', chemin: '/releve-global', icone: FileText },
-  { nom: 'navigation.dashboard', chemin: '/statistiques', icone: BarChart3 },
-  { nom: 'navigation.reclamation', chemin: '/reclamations', icone: LifeBuoy },
-]
+const navItems = computed(() => {
+  const items: any[] = [
+    { section: 'navigation.client' },
+    { nom: 'navigation.policies', chemin: '/contrats', icone: Shield }
+  ]
+
+  // Relevé Global is only visible for Client and Expert
+  if (keycloak.hasRole('client') || keycloak.hasRole('expert')) {
+    items.push({ nom: 'navigation.global_statement', chemin: '/releve-global', icone: FileText })
+  }
+
+  // Dashboard and Reclamations are visible to all authorized roles
+  items.push({ nom: 'navigation.dashboard', chemin: '/statistiques', icone: BarChart3 })
+  
+  if (String(userStore.user?.reclamation).trim().toUpperCase() === 'O') {
+    items.push({ nom: 'navigation.reclamation', chemin: '/reclamations', icone: LifeBuoy })
+  }
+
+  return items
+})
 </script>
 
 <template>
@@ -67,7 +81,7 @@ const navItems = [
       />
 
       <div class="flex-1 overflow-y-auto bg-slate-50/30">
-        <div class="mx-auto py-6 px-4 sm:px-8 w-full">
+        <div class="mx-auto py-10 px-6 sm:px-12 w-full">
           <router-view />
         </div>
       </div>
