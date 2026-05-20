@@ -112,9 +112,82 @@ const removeUserRoles = async (userIdAuth, roles) => {
     });
 };
 
+/**
+ * Recherche un utilisateur par son adresse e-mail.
+ */
+const findUserByEmail = async (email) => {
+    const token = await getAdminToken();
+    const url = `${authServerUrl}/admin/realms/${realm}/users?email=${encodeURIComponent(email)}`;
+    const response = await axios.get(url, {
+        headers: { Authorization: `Bearer ${token}` }
+    });
+    return response.data;
+};
+
+/**
+ * Récupère un utilisateur par son identifiant Keycloak.
+ */
+const getUserById = async (userIdAuth) => {
+    const token = await getAdminToken();
+    const url = `${authServerUrl}/admin/realms/${realm}/users/${userIdAuth}`;
+    const response = await axios.get(url, {
+        headers: { Authorization: `Bearer ${token}` }
+    });
+    return response.data;
+};
+
+/**
+ * Crée un utilisateur dans Keycloak.
+ */
+const createUser = async (userData) => {
+    const token = await getAdminToken();
+    const url = `${authServerUrl}/admin/realms/${realm}/users`;
+    const response = await axios.post(url, {
+        username: userData.username || userData.email,
+        email: userData.email,
+        firstName: userData.firstName || '',
+        lastName: userData.lastName || '',
+        enabled: true,
+        emailVerified: true
+    }, {
+        headers: { 
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    });
+
+    if (response.headers.location) {
+        return response.headers.location.split('/').pop();
+    } else {
+        const users = await findUserByEmail(userData.email);
+        if (users && users.length > 0) {
+            return users[0].id;
+        }
+        throw new Error("Impossible de récupérer l'ID de l'utilisateur Keycloak créé.");
+    }
+};
+
+/**
+ * Envoie un e-mail à l'utilisateur pour définir ou réinitialiser son mot de passe.
+ */
+const sendResetPasswordEmail = async (userIdAuth) => {
+    const token = await getAdminToken();
+    const url = `${authServerUrl}/admin/realms/${realm}/users/${userIdAuth}/execute-actions-email`;
+    await axios.put(url, ['UPDATE_PASSWORD'], {
+        headers: { 
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    });
+};
+
 module.exports = {
     getAvailableRoles,
     getUserRoles,
     assignUserRoles,
-    removeUserRoles
+    removeUserRoles,
+    findUserByEmail,
+    getUserById,
+    createUser,
+    sendResetPasswordEmail
 };

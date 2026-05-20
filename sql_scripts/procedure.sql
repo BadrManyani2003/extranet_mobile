@@ -1409,7 +1409,8 @@ CREATE OR ALTER PROCEDURE dbo.ps_SyncKeycloak
     @FK_User_Id    INT,
     @Token         VARCHAR(MAX),
     @Source        VARCHAR(50),
-    @IdToSync      INT
+    @IdToSync      INT,
+    @IdAuth        VARCHAR(255)
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -1424,7 +1425,7 @@ BEGIN
     END
 
     UPDATE dbo.sysUser 
-    SET UpdatedAt = GETDATE()
+    SET Id_Auth = @IdAuth, UpdatedAt = GETDATE()
     WHERE Id = @IdToSync;
 
     SELECT 1 as success;

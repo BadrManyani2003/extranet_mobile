@@ -29,7 +29,7 @@ const qry = {
     createUserFromClient:  "exec dbo.ps_CreateUserFromClient  @0, @1, @2, @3",
     getAdherentsAdmin:     "exec dbo.sp_GetAdherents          @0, @1, @2, @3",
     createUserFromAdherent:"exec dbo.ps_CreateUserFromAdherent @0, @1, @2, @3",
-    syncKeycloak:          "exec dbo.ps_SyncKeycloak           @0, @1, @2, @3",
+    syncKeycloak:          "exec dbo.ps_SyncKeycloak           @0, @1, @2, @3, @4",
     linkUserToClient:      "exec dbo.ps_LinkUserToClient       @0, @1, @2, @3, @4",
     unlinkUserFromClient:    "exec dbo.ps_UnlinkUserFromClient     @0, @1, @2, @3, @4",
     linkUserToAdherent:    "exec dbo.ps_LinkUserToAdherent     @0, @1, @2, @3, @4",
