@@ -833,13 +833,19 @@ BEGIN
             c.recClt AS recClt,
             c.recAdh AS recAdh,
             cParent.RaisonSociale AS parentClient,
-            STRING_AGG(u.Nom, ', ') AS userNom,
-            STRING_AGG(CAST(x.FK_User_Id AS VARCHAR), ', ') AS fkUserId
+            STUFF((
+                SELECT ', ' + u.Nom
+                FROM dbo.UsersXClients x
+                INNER JOIN dbo.sysUser u ON x.FK_User_Id = u.Id
+                WHERE x.FK_Client_Id = c.Id
+                FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 2, '') AS userNom,
+            STUFF((
+                SELECT ', ' + CAST(x.FK_User_Id AS VARCHAR)
+                FROM dbo.UsersXClients x
+                WHERE x.FK_Client_Id = c.Id
+                FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 2, '') AS fkUserId
         FROM dbo.Clients c
         LEFT JOIN dbo.Clients cParent ON c.Fk_Client_Id = cParent.Id
-        LEFT JOIN UsersXClients x ON x.FK_Client_Id = c.id
-        LEFT JOIN dbo.sysUser u ON x.FK_User_Id = u.Id
-        GROUP BY c.Id, c.RaisonSociale, c.Particulier, c.Email, c.Adresse, c.recClt, c.recAdh, cParent.RaisonSociale
         ORDER BY c.RaisonSociale;
     END
     ELSE
@@ -992,7 +998,11 @@ BEGIN
             u.Mobile AS mobile,
             u.CreatedAt AS createdAt,
             u.UpdatedAt AS updatedAt,
-            (SELECT STRING_AGG(Role, ', ') FROM dbo.Roles WHERE FK_User_Id = u.Id) AS roles
+            STUFF((
+                SELECT ', ' + r.Role
+                FROM dbo.Roles r
+                WHERE r.FK_User_Id = u.Id
+                FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 2, '') AS roles
         FROM dbo.sysUser u ORDER BY u.Nom;
     END
     ELSE

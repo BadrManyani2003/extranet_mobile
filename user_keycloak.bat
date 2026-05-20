@@ -20,14 +20,9 @@ if %ERRORLEVEL% neq 0 (
 echo [2/3] Creation des utilisateurs avec attribution des roles...
 
 call :create_user "admin_cabinet@ibs.ma" "Admin Cabinet" "admin_cabinet"
-call :create_user "commercial_cabinet@ibs.ma" "Commercial Cabinet" "commercial_cabinet"
-call :create_user "client1@test.ma" "Client Alpha" "client"
-call :create_user "client2@test.ma" "Client Beta" "client"
-call :create_user "adherent1@test.ma" "Adherent Solo" "adherent"
-call :create_user "adherent2@test.ma" "Adherent Famille" "adherent"
 
 echo.
-echo [3/3] Termine. Copiez les ID_AUTH ci-dessus dans votre fichier donnee_test.sql.
+echo [3/3] Termine.
 pause
 goto :eof
 
