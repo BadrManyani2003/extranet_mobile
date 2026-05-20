@@ -35,6 +35,7 @@ class KeycloakService {
         onLoad: 'login-required', // Redirige proprement vers Keycloak si non connecté
         pkceMethod: 'S256',
         enableLogging: true,
+        checkLoginIframe: false,
       });
 
       if (authenticated) {
