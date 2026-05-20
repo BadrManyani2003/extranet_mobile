@@ -32,6 +32,20 @@ set "NAME=%~2"
 set "ROLE=%~3"
 
 echo.
+echo Verification de l'existence de %NAME% (%EMAIL%)...
+
+set "USER_ID="
+for /f "skip=1 usebackq tokens=*" %%I in (`call %KC_PATH% get users -r %KC_REALM% -q email=%EMAIL% --fields id --format csv --noquotes 2^>nul`) do (
+    set "USER_ID=%%I"
+)
+
+if not "!USER_ID!"=="" (
+    set "USER_ID=!USER_ID:"=!"
+    echo L'utilisateur %EMAIL% existe deja.
+    echo [SUCCESS] ID_AUTH pour %EMAIL% : !USER_ID!
+    goto :eof
+)
+
 echo Creation de %NAME% (%EMAIL%) avec le role [%ROLE%]...
 
 REM Creation de l'utilisateur
@@ -50,8 +64,8 @@ if not "%ROLE%"=="" (
     )
 )
 
-REM Recuperer l'ID (sub)
-for /f "usebackq tokens=*" %%I in (`call %KC_PATH% get users -r %KC_REALM% -q email=%EMAIL% --fields id --format csv --no-header`) do (
+REM Recuperer l'ID (sub) de l'utilisateur nouvellement cree
+for /f "skip=1 usebackq tokens=*" %%I in (`call %KC_PATH% get users -r %KC_REALM% -q email=%EMAIL% --fields id --format csv --noquotes`) do (
     set "USER_ID=%%I"
     set "USER_ID=!USER_ID:"=!"
     echo [SUCCESS] ID_AUTH pour %EMAIL% : !USER_ID!

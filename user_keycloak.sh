@@ -31,6 +31,18 @@ create_user() {
     local ROLE="$3"
 
     echo ""
+    echo "Verification de l'existence de $NAME ($EMAIL)..."
+
+    # Recuperer l'ID si l'utilisateur existe deja
+    USER_ID=$("$KC_PATH" get users -r "$KC_REALM" -q email="$EMAIL" --fields id --format csv --noquotes 2>/dev/null | tail -n +2)
+    USER_ID=$(echo "$USER_ID" | tr -d '"\r\n')
+
+    if [ -n "$USER_ID" ]; then
+        echo "L'utilisateur $EMAIL existe deja."
+        echo "[SUCCESS] ID_AUTH pour $EMAIL : $USER_ID"
+        return 0
+    fi
+
     echo "Creation de $NAME ($EMAIL) avec le role [$ROLE]..."
 
     # Creation de l'utilisateur
@@ -49,8 +61,8 @@ create_user() {
         fi
     fi
 
-    # Recuperer l'ID (sub)
-    USER_ID=$("$KC_PATH" get users -r "$KC_REALM" -q email="$EMAIL" --fields id --format csv --no-header)
+    # Recuperer l'ID (sub) de l'utilisateur nouvellement cree
+    USER_ID=$("$KC_PATH" get users -r "$KC_REALM" -q email="$EMAIL" --fields id --format csv --noquotes | tail -n +2)
     USER_ID=$(echo "$USER_ID" | tr -d '"\r\n')
     if [ -n "$USER_ID" ]; then
         echo "[SUCCESS] ID_AUTH pour $EMAIL : $USER_ID"
