@@ -4,16 +4,13 @@ const BASE_URL = import.meta.env.VITE_API_URL
 let logoutPending = false;
 
 export async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  if (!BASE_URL) {
-    console.error('❌ VITE_API_URL is not defined.');
-    throw new Error('Configuration API manquante.');
-  }
+  if (!BASE_URL) throw new Error('Configuration API manquante.');
 
-  const method = options.method || 'POST'
+  const method  = options.method || 'POST'
   const headers = new Headers(options.headers)
-  
+
   if (!headers.has('Content-Type')) headers.set('Content-Type', 'application/json')
-  headers.set('x-source', 'E') // E pour Extranet (Client)
+  headers.set('x-source', 'E')
 
   if (keycloakService.getAuthenticated()) {
     await keycloakService.updateToken(70)
@@ -27,7 +24,7 @@ export async function request<T>(endpoint: string, options: RequestInit = {}): P
   if (method === 'GET' && options.body) {
     try {
       const bodyObj = JSON.parse(options.body as string)
-      const params = new URLSearchParams()
+      const params  = new URLSearchParams()
       Object.keys(bodyObj).forEach(key => {
         if (bodyObj[key] !== undefined && bodyObj[key] !== null && bodyObj[key] !== '') {
           params.append(key, bodyObj[key].toString())
@@ -57,7 +54,8 @@ export async function request<T>(endpoint: string, options: RequestInit = {}): P
 
   const contentType = response.headers.get('content-type')
   let result: any
-  if (contentType && contentType.includes('application/json')) {
+
+  if (contentType?.includes('application/json')) {
     result = await response.json().catch(() => ({ success: false, message: 'Erreur de lecture JSON' }))
   } else {
     const text = await response.text()
@@ -69,7 +67,7 @@ export async function request<T>(endpoint: string, options: RequestInit = {}): P
   }
 
   if (result && typeof result === 'object' && 'success' in result && 'data' in result) {
-      return result.data as T;
+    return result.data as T;
   }
 
   return result as T;

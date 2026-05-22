@@ -13,12 +13,6 @@ const getPool = async () => {
     return poolPromise;
 };
 
-/**
- * Executes a stored procedure call or a query.
- * @param {string} query - The SQL query (e.g., "exec sp_Name @0, @1")
- * @param {Array} params - The parameters to pass
- * @returns {Promise<any[]>} - The first recordset
- */
 const execute = async (query, params = []) => {
     const pool    = await getPool();
     const request = pool.request();
@@ -27,9 +21,6 @@ const execute = async (query, params = []) => {
     return result.recordsets;
 };
 
-/**
- * Checks if the database is reachable
- */
 const checkConnection = async () => {
     try {
         await getPool();
@@ -40,8 +31,4 @@ const checkConnection = async () => {
     }
 };
 
-module.exports = {
-    execute,
-    checkConnection
-};
-
+module.exports = { execute, checkConnection };

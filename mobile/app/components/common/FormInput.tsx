@@ -71,7 +71,7 @@ const FormInput: React.FC<FormInputProps> = ({
           />
         )}
         <TextInput
-          placeholderTextColor={c.placeholderText}
+          placeholderTextColor={c.textMuted}
           secureTextEntry={secureTextEntry}
           style={[
             { 

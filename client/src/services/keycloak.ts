@@ -1,9 +1,5 @@
 import Keycloak from 'keycloak-js';
 
-/**
- * Configuration & Service Keycloak Expert pour le Frontend Client
- * Gère l'authentification, le rafraîchissement des tokens et les profils utilisateurs.
- */
 class KeycloakService {
   private static instance: KeycloakService;
   private keycloak: Keycloak;
@@ -11,8 +7,8 @@ class KeycloakService {
 
   private constructor() {
     this.keycloak = new Keycloak({
-      url: import.meta.env.VITE_KEYCLOAK_URL,
-      realm: import.meta.env.VITE_KEYCLOAK_REALM,
+      url:      import.meta.env.VITE_KEYCLOAK_URL,
+      realm:    import.meta.env.VITE_KEYCLOAK_REALM,
       clientId: import.meta.env.VITE_KEYCLOAK_CLIENT_ID,
     });
   }
@@ -24,17 +20,13 @@ class KeycloakService {
     return KeycloakService.instance;
   }
 
-   /**
-   * Initialise Keycloak et configure le minuteur de rafraîchissement du token
-   */
   public async init(onAuthenticated: () => void): Promise<void> {
     if (this.isInitialized) return;
 
     try {
       const authenticated = await this.keycloak.init({
-        onLoad: 'login-required', // Redirige proprement vers Keycloak si non connecté
-        pkceMethod: 'S256',
-        enableLogging: true,
+        onLoad:           'login-required',
+        pkceMethod:       'S256',
         checkLoginIframe: false,
       });
 
@@ -52,18 +44,14 @@ class KeycloakService {
   }
 
   private setupTokenRefresh(): void {
-    // Rafraîchir le token 30 secondes avant son expiration
     setInterval(async () => {
       try {
-        const refreshed = await this.keycloak.updateToken(30);
-        if (refreshed) {
-          console.log('✅ Client token refreshed successfully');
-        }
+        await this.keycloak.updateToken(30);
       } catch (error) {
-        console.error('❌ Failed to refresh client token:', error);
-        this.login(); // Forcer la connexion si le rafraîchissement échoue
+        console.error('❌ Failed to refresh token:', error);
+        this.login();
       }
-    }, 10000); // Vérifier toutes les 10s
+    }, 10000);
   }
 
   private cleanUrl(): void {
@@ -77,9 +65,7 @@ class KeycloakService {
   }
 
   public async logout(): Promise<void> {
-    await this.keycloak.logout({
-      redirectUri: window.location.origin,
-    });
+    await this.keycloak.logout({ redirectUri: window.location.origin });
   }
 
   public getToken(): string | undefined {

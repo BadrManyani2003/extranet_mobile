@@ -111,6 +111,7 @@ export default {
     "restricted_description": "Restricted access",
     "restricted_logout": "Quit",
     "restricted_back": "Back",
+    "Actions Rapides": "Quick Actions",
     "En ligne": "Online",
     "Ticket #": "Ticket #",
     "Cette discussion est sécurisée et confidentielle.": "This discussion is secured and confidential.",

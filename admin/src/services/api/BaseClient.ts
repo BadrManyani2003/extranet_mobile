@@ -12,13 +12,12 @@ export interface ApiResponse<T = any> {
 
 export async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   if (!BASE_URL) {
-    console.error('❌ VITE_API_URL is not defined in environment variables.');
     throw new Error('Configuration API manquante.');
   }
 
   const headers = new Headers(options.headers)
   if (!headers.has('Content-Type')) headers.set('Content-Type', 'application/json')
-  headers.set('x-source', 'A') // A pour Admin
+  headers.set('x-source', 'A')
 
   if (keycloak.getAuthenticated()) {
     await keycloak.updateToken(70)
@@ -27,15 +26,15 @@ export async function request<T>(endpoint: string, options: RequestInit = {}): P
   }
 
   let url = `${BASE_URL.replace(/\/$/, '')}${endpoint}`
-  
+
   if (options.method === 'GET' && options.body) {
     try {
       const params = JSON.parse(options.body as string)
-      const filteredParams: any = {};
+      const filtered: Record<string, any> = {};
       Object.entries(params).forEach(([k, v]) => {
-          if (v !== undefined && v !== null && v !== '') filteredParams[k] = v;
+        if (v !== undefined && v !== null && v !== '') filtered[k] = v;
       });
-      const queryString = new URLSearchParams(filteredParams).toString()
+      const queryString = new URLSearchParams(filtered).toString()
       if (queryString) url += `?${queryString}`
       delete options.body
     } catch (e) {
@@ -44,7 +43,7 @@ export async function request<T>(endpoint: string, options: RequestInit = {}): P
   }
 
   const response = await fetch(url, { ...options, headers })
-  
+
   if (response.status === 429) {
     throw new Error('Trop de requêtes. Veuillez patienter quelques minutes.')
   }
@@ -52,10 +51,9 @@ export async function request<T>(endpoint: string, options: RequestInit = {}): P
   if (response.status === 401 || response.status === 403) {
     const errorData = await response.json().catch(() => ({}));
     const serverMessage = errorData.message || 'Session expirée ou accès refusé.';
-    
+
     if (!logoutPending) {
       logoutPending = true;
-      console.warn('🔒 401/403 Error from server:', serverMessage);
       setTimeout(() => keycloak.logout(), 5000)
     }
     throw new Error(serverMessage)
@@ -63,8 +61,8 @@ export async function request<T>(endpoint: string, options: RequestInit = {}): P
 
   const contentType = response.headers.get('content-type')
   let result: any
-  
-  if (contentType && contentType.includes('application/json')) {
+
+  if (contentType?.includes('application/json')) {
     result = await response.json().catch(() => ({ success: false, message: 'Erreur de lecture JSON' }))
   } else {
     const text = await response.text()
@@ -75,11 +73,9 @@ export async function request<T>(endpoint: string, options: RequestInit = {}): P
     throw new Error(result?.message || 'Erreur serveur inconnue')
   }
 
-  // Si le serveur renvoie notre nouveau format { success: true, data: ... }
   if (result && typeof result === 'object' && 'success' in result && 'data' in result) {
-      return result.data as T;
+    return result.data as T;
   }
 
-  // Solution de repli pour les anciennes réponses de type tableau
   return result as T;
 }

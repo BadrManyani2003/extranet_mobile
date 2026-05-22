@@ -51,7 +51,7 @@
     "delete_desc": "This action is permanent and will remove the user from the database."
   },
   "clients": {
-    "title": "Client Portfolio",
+    "title": "Client Management",
     "subtitle": "Manage corporate and individual accounts.",
     "search_placeholder": "Search for a client...",
     "table": {

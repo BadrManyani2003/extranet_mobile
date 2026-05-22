@@ -1,25 +1,24 @@
-const express = require('express');
-const router  = express.Router();
-const ctrl    = require('../controllers/data.controller');
-const auth    = require('../middleware/auth');
+const router = require('express').Router();
+const auth   = require('../middleware/auth');
+const ctrl   = require('../controllers/data.controller');
+
+const allRoles = auth.checkRole(['admin_cabinet', 'commercial_cabinet', 'client', 'adherent', 'expert']);
+const staffRoles = auth.checkRole(['admin_cabinet', 'commercial_cabinet', 'client', 'expert']);
 
 router.use(auth);
-router.use(auth.checkRole(['admin_cabinet', 'commercial_cabinet', 'client', 'adherent', 'expert']));
+router.use(allRoles);
 
-// --- Routes de base ---
-router.get('/polices',              auth.checkRole(['admin_cabinet', 'commercial_cabinet', 'client', 'adherent', 'expert']), ctrl.getPolices);
-router.get('/stats',                auth.checkRole(['admin_cabinet', 'commercial_cabinet', 'client', 'adherent', 'expert']), ctrl.getStats);
-router.get('/stats/police',         auth.checkRole(['admin_cabinet', 'commercial_cabinet', 'client', 'adherent', 'expert']), ctrl.getStatsByPolice);
-
-// --- Contrats & Risques ---
-router.get('/risques',              auth.checkRole(['admin_cabinet', 'commercial_cabinet', 'client', 'adherent', 'expert']), ctrl.getRisques);
-router.get('/garanties',            auth.checkRole(['admin_cabinet', 'commercial_cabinet', 'client', 'adherent', 'expert']), ctrl.getGaranties);
-router.get('/quittances',           auth.checkRole(['admin_cabinet', 'commercial_cabinet', 'client', 'expert']), ctrl.getQuittances);
-router.get('/quittances/impayes',   auth.checkRole(['admin_cabinet', 'commercial_cabinet', 'client', 'expert']), ctrl.getImpayes);
-router.get('/adherents',            auth.checkRole(['admin_cabinet', 'commercial_cabinet', 'client', 'adherent', 'expert']), ctrl.getAdherents);
-router.get('/adherents/famille',    auth.checkRole(['admin_cabinet', 'commercial_cabinet', 'client', 'adherent', 'expert']), ctrl.getPersACharge);
-router.get('/sinistres',            auth.checkRole(['admin_cabinet', 'commercial_cabinet', 'client', 'adherent', 'expert']), ctrl.getSinistres);
-router.get('/sinistres/en-cours',   auth.checkRole(['admin_cabinet', 'commercial_cabinet', 'client', 'adherent', 'expert']), ctrl.getSinistresEnCours);
-router.get('/documents',            auth.checkRole(['admin_cabinet', 'commercial_cabinet', 'client', 'adherent', 'expert']), ctrl.getDocumentsByPolice);
+router.get('/polices',            ctrl.getPolices);
+router.get('/stats',              ctrl.getStats);
+router.get('/stats/police',       ctrl.getStatsByPolice);
+router.get('/risques',            ctrl.getRisques);
+router.get('/garanties',          ctrl.getGaranties);
+router.get('/adherents',          ctrl.getAdherents);
+router.get('/adherents/famille',  ctrl.getPersACharge);
+router.get('/sinistres',          ctrl.getSinistres);
+router.get('/sinistres/en-cours', ctrl.getSinistresEnCours);
+router.get('/documents',          ctrl.getDocumentsByPolice);
+router.get('/quittances',         staffRoles, ctrl.getQuittances);
+router.get('/quittances/impayes', staffRoles, ctrl.getImpayes);
 
 module.exports = router;

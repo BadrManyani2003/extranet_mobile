@@ -58,7 +58,7 @@ const getImpayes = asyncHandler(async (req, res) => {
 
 const getAdherents = asyncHandler(async (req, res) => {
     const { userId, source, token } = getContext(req);
-    const { policeId } = req.query || null;
+    const { policeId } = req.query;
     const result = await dataService.getAdherents(userId, source, token, policeId);
     success(res, result[0] || []);
 });

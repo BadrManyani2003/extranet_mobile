@@ -1,9 +1,5 @@
 import { useState, useCallback } from 'react';
 
-// ============================================================
-// Hook générique pour les appels API
-// Gère automatiquement : loading, erreur, données
-// ============================================================
 interface ApiCallState<T> {
   data: T | null;
   loading: boolean;
@@ -39,38 +35,26 @@ export function useApiCall<T>() {
   return { ...state, execute, reset };
 }
 
-// ============================================================
-// Formatter les montants en format marocain
-// ============================================================
 export function formatMontant(montant: any): string {
   if (montant === null || montant === undefined) return '0,00';
-  
   const num = typeof montant === 'number' ? montant : parseFloat(String(montant));
   if (isNaN(num)) return '0,00';
-  
   return `${num.toFixed(2).replace('.', ',')}`;
 }
 
-// ============================================================
-// Formatter les dates
-// ============================================================
 export function formatDate(dateStr: string | null | undefined): string {
   if (!dateStr) return '-';
   try {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('fr-FR', {
-      day: '2-digit',
+    return new Date(dateStr).toLocaleDateString('fr-FR', {
+      day:   '2-digit',
       month: '2-digit',
-      year: 'numeric',
+      year:  'numeric',
     });
   } catch {
     return dateStr;
   }
 }
 
-// ============================================================
-// Obtenir les initiales d'un nom
-// ============================================================
 export function getInitials(name: string): string {
   return name
     .split(' ')

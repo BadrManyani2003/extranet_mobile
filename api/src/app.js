@@ -31,7 +31,7 @@ app.use(cors({
     credentials: true
 }));
 
-app.use(helmet()); // Protection standard par défaut
+app.use(helmet());
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(compression());
 app.use(limiter);

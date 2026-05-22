@@ -1,9 +1,8 @@
 const router = require('express').Router();
-const auth = require('../middleware/auth');
-const ctrl = require('../controllers/reclamation.controller');
+const auth   = require('../middleware/auth');
+const ctrl   = require('../controllers/reclamation.controller');
 
 router.use(auth);
-// Tous les utilisateurs authentifiés peuvent accéder aux réclamations
 router.use(auth.checkRole(['admin_cabinet', 'commercial_cabinet', 'client', 'adherent']));
 
 router.post('/list',           ctrl.getReclamations);

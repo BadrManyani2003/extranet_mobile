@@ -51,7 +51,7 @@
     "delete_desc": "Cette action est définitive et supprimera l'utilisateur de la base."
   },
   "clients": {
-    "title": "Portefeuille Clients",
+    "title": "Gestion des Clients",
     "subtitle": "Gestion des comptes entreprises et particuliers.",
     "search_placeholder": "Rechercher un client...",
     "table": {
