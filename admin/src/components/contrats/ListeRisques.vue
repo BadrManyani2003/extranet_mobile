@@ -140,7 +140,7 @@ const iconeBranche = computed(() => {
     </CardContent>
 
     <Dialog v-model:open="estDialogueOuvert">
-      <DialogContent class="sm:max-w-[700px] bg-white p-6 shadow-xl border border-slate-200 font-['Outfit']">
+      <DialogContent class="w-[92%] sm:max-w-[700px] bg-white p-6 shadow-xl border border-slate-200 font-['Outfit']">
         <DialogHeader class="border-b border-slate-100 pb-4 mb-4">
           <DialogTitle class="text-lg font-bold text-slate-900">
             {{ branche === 'Santé' ? $t('risques.beneficiaries') : $t('contrats.detail_button') }}

@@ -160,7 +160,14 @@
     "closed_notice": "Ticket clôturé.",
     "closed_error": "Action impossible.",
     "close_ticket": "Clôturer",
-    "reopen_ticket": "Rouvrir"
+    "reopen_ticket": "Rouvrir",
+    "toast_fetch_error": "Erreur lors de la récupération",
+    "toast_create_success": "Demande envoyée",
+    "toast_status_success": "Statut mis à jour",
+    "toast_delete_msg_success": "Message supprimé",
+    "toast_delete_rec_success": "Réclamation supprimée",
+    "not_authorized": "Votre profil n'est pas autorisé à émettre de nouvelles réclamations. Veuillez contacter votre conseiller.",
+    "delete_rec_confirm": "Voulez-vous vraiment supprimer cette réclamation et tous ses messages ?"
   },
   "commun": {
     "search": "Recherche",
@@ -196,5 +203,14 @@
   "restricted": {
     "title": "Accès restreint à cet espace",
     "logout": "Déconnexion"
+  },
+  "admin_users": {
+    "connected_as": "Connecté en tant que",
+    "logout": "Déconnexion",
+    "title": "Utilisateurs",
+    "subtitle": "Sélectionnez un utilisateur pour simuler sa session.",
+    "search_placeholder": "Rechercher par nom ou email...",
+    "simulate": "Simuler",
+    "no_users": "Aucun utilisateur trouvé"
   }
 }

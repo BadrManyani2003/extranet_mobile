@@ -16,7 +16,7 @@ BEGIN
     
     IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
     BEGIN
-        RAISERROR('Session expirée', 16, 1);
+        RAISERROR('Session expiree', 16, 1);
         RETURN;
     END
 
@@ -75,7 +75,7 @@ BEGIN
 
     IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
     BEGIN
-        RAISERROR('Session expirée', 16, 1);
+        RAISERROR('Session expiree', 16, 1);
         RETURN;
     END
 
@@ -106,11 +106,11 @@ BEGIN
         ISNULL(s.MT_Franchise, 0) AS mtFranchise,
         ISNULL(s.Observations, '') AS observation,
         CASE 
-            WHEN p.Branche = 'Santé' THEN a.NomComplet
+            WHEN p.Branche LIKE '%Sant%' THEN a.NomComplet
             ELSE ISNULL(r.Libelle, '-')
         END AS objet,
         CASE 
-            WHEN p.Branche = 'Santé' THEN CAST(a.NumAdhesion AS VARCHAR(50))
+            WHEN p.Branche LIKE '%Sant%' THEN CAST(a.NumAdhesion AS VARCHAR(50))
             ELSE r.Identifiant
         END AS identifiant,
         p.Id AS policeId,
@@ -149,7 +149,7 @@ BEGIN
     
     IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
     BEGIN
-        RAISERROR('Session expirée', 16, 1);
+        RAISERROR('Session expiree', 16, 1);
         RETURN;
     END
 
@@ -168,11 +168,11 @@ BEGIN
         ISNULL(s.MT_Franchise, 0) AS mtFranchise,
         ISNULL(s.Observations, '') AS observation,
         CASE 
-            WHEN p.Branche = 'Santé' THEN a.NomComplet
+            WHEN p.Branche LIKE '%Sant%' THEN a.NomComplet
             ELSE ISNULL(r.Libelle, '-')
         END AS objet,
         CASE 
-            WHEN p.Branche = 'Santé' THEN CAST(a.NumAdhesion AS VARCHAR(50))
+            WHEN p.Branche LIKE '%Sant%' THEN CAST(a.NumAdhesion AS VARCHAR(50))
             ELSE r.Identifiant
         END AS identifiant,
         p.Id AS policeId,
@@ -211,7 +211,7 @@ BEGIN
     
     IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
     BEGIN
-        RAISERROR('Session expirée', 16, 1);
+        RAISERROR('Session expiree', 16, 1);
         RETURN;
     END
 
@@ -232,15 +232,13 @@ BEGIN
     INNER JOIN dbo.Clients c ON p.Fk_Client_Id = c.Id
     LEFT JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id AND uxc.FK_User_Id = @FK_User_Id AND uxc.Actif = 'O'
     WHERE (
-            (p.Id = @FK_Police_Id
-                AND (
-                    (@Source = 'A' AND @UserNature = 'A')
-                    OR (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
-                )
-            )
+        (@FK_Police_Id IS NULL OR p.Id = @FK_Police_Id)
+        AND (
+            (@Source = 'A' AND @UserNature = 'A')
             OR (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
             OR EXISTS (SELECT 1 FROM dbo.Adherents WHERE FK_Police_Id = p.Id AND FK_User_Id = @FK_User_Id AND Actif = 'O')
-        );
+        )
+    );
     
     RETURN;
 END
@@ -257,7 +255,7 @@ BEGIN
     
     IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
     BEGIN
-        RAISERROR('Session expirée', 16, 1);
+        RAISERROR('Session expiree', 16, 1);
         RETURN;
     END
 
@@ -293,14 +291,12 @@ BEGIN
     INNER JOIN dbo.Clients c ON p.Fk_Client_Id = c.Id
     LEFT JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id AND uxc.FK_User_Id = @FK_User_Id AND uxc.Actif = 'O'
     WHERE (
-            (p.Id = @FK_Police_Id
-                AND (
-                    (@Source = 'A' AND @UserNature = 'A')
-                    OR (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
-                )
-            )
+        (@FK_Police_Id IS NULL OR p.Id = @FK_Police_Id)
+        AND (
+            (@Source = 'A' AND @UserNature = 'A')
             OR (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
-        );
+        )
+    );
     
     RETURN;
 END
@@ -318,7 +314,7 @@ BEGIN
     
     IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
     BEGIN
-        RAISERROR('Session expirée', 16, 1);
+        RAISERROR('Session expiree', 16, 1);
         RETURN;
     END
 
@@ -341,13 +337,9 @@ BEGIN
         INNER JOIN dbo.Clients c ON p.Fk_Client_Id = c.Id
         LEFT JOIN dbo.UsersXClients uxc ON c.Id = uxc.FK_Client_Id AND uxc.FK_User_Id = @FK_User_Id AND uxc.Actif = 'O'
         WHERE ((@Encour = 'O' AND q.Solde > 0) OR (@Encour = 'N'))
+            AND p.Id = @FK_Police_Id
             AND (
-                (p.Id = @FK_Police_Id
-                    AND (
-                        (@Source = 'A' AND @UserNature = 'A')
-                        OR (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
-                    )
-                )
+                (@Source = 'A' AND @UserNature = 'A')
                 OR (uxc.FK_User_Id IS NOT NULL AND ((@Source = 'M' AND c.Particulier = 'O') OR (@Source = 'E' AND c.Particulier = 'N')))
             );
     END
@@ -389,7 +381,7 @@ BEGIN
     
     IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
     BEGIN
-        RAISERROR('Session expirée', 16, 1);
+        RAISERROR('Session expiree', 16, 1);
         RETURN;
     END
 
@@ -439,7 +431,7 @@ BEGIN
     
     IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
     BEGIN
-        RAISERROR('Session expirée', 16, 1);
+        RAISERROR('Session expiree', 16, 1);
         RETURN;
     END
 
@@ -482,7 +474,7 @@ BEGIN
     
     IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
     BEGIN
-        RAISERROR('Session expirée', 16, 1);
+        RAISERROR('Session expiree', 16, 1);
         RETURN;
     END
 
@@ -522,7 +514,7 @@ BEGIN
     
     IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
     BEGIN
-        RAISERROR('Session expirée', 16, 1);
+        RAISERROR('Session expiree', 16, 1);
         RETURN;
     END
 
@@ -574,7 +566,7 @@ BEGIN
     
     IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
     BEGIN
-        RAISERROR('Session expirée', 16, 1);
+        RAISERROR('Session expiree', 16, 1);
         RETURN;
     END
 
@@ -625,7 +617,7 @@ BEGIN
     
     IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
     BEGIN
-        RAISERROR('Session expirée', 16, 1);
+        RAISERROR('Session expiree', 16, 1);
         RETURN;
     END
 
@@ -660,7 +652,7 @@ BEGIN
     
     IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
     BEGIN
-        RAISERROR('Session expirée', 16, 1);
+        RAISERROR('Session expiree', 16, 1);
         RETURN;
     END
 
@@ -705,7 +697,7 @@ BEGIN
     
     IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
     BEGIN
-        RAISERROR('Session expirée', 16, 1);
+        RAISERROR('Session expiree', 16, 1);
         RETURN;
     END
 
@@ -748,13 +740,13 @@ BEGIN
 
     IF NOT (@Source = 'A' AND @UserNature = 'A')
     BEGIN
-        RAISERROR('Action non autorisée', 16, 1);
+        RAISERROR('Action non autorisee', 16, 1);
         RETURN;
     END
 
     IF EXISTS (SELECT 1 FROM dbo.sysUser WHERE Email = @Email AND Id <> @FK_Target_Id)
     BEGIN
-        RAISERROR('Email déjà utilisé', 16, 1);
+        RAISERROR('Email deja utilise', 16, 1);
         RETURN;
     END
 
@@ -789,7 +781,7 @@ BEGIN
 
     IF NOT (@Source = 'A' AND @UserNature = 'A')
     BEGIN
-        RAISERROR('Action non autorisée', 16, 1);
+        RAISERROR('Action non autorisee', 16, 1);
         RETURN;
     END
 
@@ -850,7 +842,7 @@ BEGIN
     END
     ELSE
     BEGIN
-        RAISERROR('Action non autorisée', 16, 1);
+        RAISERROR('Action non autorisee', 16, 1);
     END
 END
 GO
@@ -869,7 +861,7 @@ BEGIN
 
     IF NOT (@Source = 'A' AND @UserNature = 'A')
     BEGIN
-        RAISERROR('Action non autorisée', 16, 1);
+        RAISERROR('Action non autorisee', 16, 1);
         RETURN;
     END
     
@@ -884,7 +876,7 @@ BEGIN
     
     IF EXISTS (SELECT 1 FROM dbo.sysUser WHERE Email = @Email)
     BEGIN
-        RAISERROR('Email déjà utilisé', 16, 1);
+        RAISERROR('Email deja utilise', 16, 1);
         RETURN;
     END
 
@@ -926,7 +918,7 @@ BEGIN
 
     IF NOT (@Source = 'A' AND @UserNature = 'A')
     BEGIN
-        RAISERROR('Action non autorisée', 16, 1);
+        RAISERROR('Action non autorisee', 16, 1);
         RETURN;
     END
     
@@ -935,13 +927,13 @@ BEGIN
     
     IF @Nom IS NULL
     BEGIN
-        RAISERROR('Adhérent introuvable', 16, 1);
+        RAISERROR('Adherent introuvable', 16, 1);
         RETURN;
     END
 
     IF EXISTS (SELECT 1 FROM dbo.sysUser WHERE Email = @Email)
     BEGIN
-        RAISERROR('Email déjà utilisé', 16, 1);
+        RAISERROR('Email deja utilise', 16, 1);
         RETURN;
     END
 
@@ -977,7 +969,7 @@ BEGIN
     
     IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
     BEGIN
-        RAISERROR('Session expirée', 16, 1);
+        RAISERROR('Session expiree', 16, 1);
         RETURN;
     END
     
@@ -1007,7 +999,7 @@ BEGIN
     END
     ELSE
     BEGIN
-        RAISERROR('Action non autorisée', 16, 1);
+        RAISERROR('Action non autorisee', 16, 1);
     END
 END
 GO
@@ -1134,7 +1126,7 @@ BEGIN
           )
     )
     BEGIN
-        RAISERROR('Accès refusé à cette police', 16, 1);
+        RAISERROR('Acces refuse a cette police', 16, 1);
         RETURN;
     END
 
@@ -1193,7 +1185,7 @@ BEGIN
     
     IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
     BEGIN
-        RAISERROR('Session expirée', 16, 1);
+        RAISERROR('Session expiree', 16, 1);
         RETURN;
     END
 
@@ -1304,13 +1296,13 @@ BEGIN
     
     IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
     BEGIN
-        RAISERROR('Session expirée', 16, 1);
+        RAISERROR('Session expiree', 16, 1);
         RETURN;
     END
 
     IF NOT EXISTS (SELECT 1 FROM dbo.ReclamationsDet WHERE Id = @MessageId AND FK_User_Id = @FK_User_Id)
     BEGIN
-        RAISERROR('Non autorisé à supprimer ce message', 16, 1);
+        RAISERROR('Non autorise a supprimer ce message', 16, 1);
         RETURN;
     END
 
@@ -1343,13 +1335,13 @@ BEGIN
 
     IF NOT (@Source = 'A' AND @UserNature = 'A')
     BEGIN
-        RAISERROR('Action non autorisée', 16, 1);
+        RAISERROR('Action non autorisee', 16, 1);
         RETURN;
     END
 
     IF EXISTS (SELECT 1 FROM dbo.UsersXClients WHERE FK_Client_Id = @FK_Client_Id AND FK_User_Id = @FK_Target_User_Id)
     BEGIN
-        RAISERROR('Cet utilisateur est déjà lié à ce client', 16, 1);
+        RAISERROR('Cet utilisateur est deja lie a ce client', 16, 1);
         RETURN;
     END
 
@@ -1373,7 +1365,7 @@ BEGIN
 
     IF NOT (@Source = 'A' AND @UserNature = 'A')
     BEGIN
-        RAISERROR('Action non autorisée', 16, 1);
+        RAISERROR('Action non autorisee', 16, 1);
         RETURN;
     END
 
@@ -1397,7 +1389,7 @@ BEGIN
 
     IF NOT (@Source = 'A' AND @UserNature = 'A')
     BEGIN
-        RAISERROR('Action non autorisée', 16, 1);
+        RAISERROR('Action non autorisee', 16, 1);
         RETURN;
     END
 
@@ -1420,7 +1412,7 @@ BEGIN
 
     IF NOT (@Source = 'A' AND @UserNature = 'A')
     BEGIN
-        RAISERROR('Action non autorisée', 16, 1);
+        RAISERROR('Action non autorisee', 16, 1);
         RETURN;
     END
 
@@ -1443,7 +1435,7 @@ BEGIN
     
     IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
     BEGIN
-        RAISERROR('Session expirée', 16, 1);
+        RAISERROR('Session expiree', 16, 1);
         RETURN;
     END
 
@@ -1485,7 +1477,7 @@ BEGIN
 
     IF NOT (@Source = 'A' AND @UserNature = 'A')
     BEGIN
-        RAISERROR('Action non autorisée', 16, 1);
+        RAISERROR('Action non autorisee', 16, 1);
         RETURN;
     END
 
@@ -1515,7 +1507,7 @@ BEGIN
 
     IF NOT (@Source = 'A' AND @UserNature = 'A')
     BEGIN
-        RAISERROR('Action non autorisée', 16, 1);
+        RAISERROR('Action non autorisee', 16, 1);
         RETURN;
     END
 
@@ -1531,5 +1523,159 @@ BEGIN
     WHERE Id = @FK_Client_Id;
 
     SELECT 1 as success;
+END
+GO
+
+CREATE OR ALTER PROCEDURE dbo.ps_GetSimulationList
+    @FK_User_Id INT,
+    @Token      VARCHAR(MAX),
+    @Source     VARCHAR(50)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    IF NOT EXISTS (SELECT 1 FROM dbo.sysUser WHERE Id = @FK_User_Id AND token = @Token)
+    BEGIN
+        RAISERROR('Session expiree', 16, 1);
+        RETURN;
+    END
+    
+    DECLARE @UserNature CHAR(1);
+    SELECT @UserNature = Nature FROM dbo.sysUser WHERE Id = @FK_User_Id;
+
+    IF NOT (@Source = 'A' AND (@UserNature = 'A' OR EXISTS (SELECT 1 FROM dbo.Roles WHERE FK_User_Id = @FK_User_Id AND Role = 'COMMERCIAL')))
+    BEGIN
+        RAISERROR('Action non autorisee', 16, 1);
+        RETURN;
+    END
+
+    -- Get all users associated with the clients mapped to the logged-in user
+    SELECT DISTINCT
+        u.Id AS id,
+        u.Id_Auth AS idAuth,
+        u.token,
+        u.Nom AS nom,
+        u.Telephone AS telephone,
+        u.Email AS email,
+        u.Nature AS nature,
+        u.Extranet AS extranet,
+        u.Mobile AS mobile,
+        u.CreatedAt AS createdAt,
+        u.UpdatedAt AS updatedAt,
+        STUFF((
+            SELECT ', ' + r.Role
+            FROM dbo.Roles r
+            WHERE r.FK_User_Id = u.Id
+            FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 2, '') AS roles
+    FROM dbo.sysUser u
+    INNER JOIN dbo.UsersXClients uxc ON u.Id = uxc.FK_User_Id
+    INNER JOIN dbo.Clients c ON uxc.FK_Client_Id = c.Id
+    INNER JOIN dbo.UserSimulationClients usc ON c.Id = usc.fk_client_id
+    WHERE usc.fk_user_id = @FK_User_Id
+      AND uxc.Actif = 'O'
+    
+    UNION
+    
+    SELECT DISTINCT
+        u.Id AS id,
+        u.Id_Auth AS idAuth,
+        u.token,
+        u.Nom AS nom,
+        u.Telephone AS telephone,
+        u.Email AS email,
+        u.Nature AS nature,
+        u.Extranet AS extranet,
+        u.Mobile AS mobile,
+        u.CreatedAt AS createdAt,
+        u.UpdatedAt AS updatedAt,
+        STUFF((
+            SELECT ', ' + r.Role
+            FROM dbo.Roles r
+            WHERE r.FK_User_Id = u.Id
+            FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 2, '') AS roles
+    FROM dbo.sysUser u
+    INNER JOIN dbo.Adherents a ON u.Id = a.FK_User_Id
+    INNER JOIN dbo.Polices p ON a.FK_Police_Id = p.Id
+    INNER JOIN dbo.Clients c ON p.Fk_Client_Id = c.Id
+    INNER JOIN dbo.UserSimulationClients usc ON c.Id = usc.fk_client_id
+    WHERE usc.fk_user_id = @FK_User_Id
+      AND a.Actif = 'O'
+      
+    ORDER BY nom;
+END
+GO
+
+CREATE OR ALTER PROCEDURE dbo.ps_GetUserSimulationClients
+    @FK_User_Id INT,
+    @Token      VARCHAR(MAX),
+    @Source     VARCHAR(50),
+    @Target_User_Id INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DECLARE @UserNature CHAR(1);
+    SELECT @UserNature = Nature FROM dbo.sysUser WHERE Id = @FK_User_Id;
+    IF @Source = 'A' AND @UserNature = 'A'
+    BEGIN
+        SELECT 
+            c.Id AS id,
+            c.RaisonSociale AS raisonSociale,
+            c.Email AS email
+        FROM dbo.UserSimulationClients usc
+        INNER JOIN dbo.Clients c ON usc.fk_client_id = c.Id
+        WHERE usc.fk_user_id = @Target_User_Id
+        ORDER BY c.RaisonSociale;
+    END
+    ELSE
+    BEGIN
+        RAISERROR('Action non autorisee', 16, 1);
+    END
+END
+GO
+
+CREATE OR ALTER PROCEDURE dbo.ps_AddUserSimulationClient
+    @FK_User_Id INT,
+    @Token      VARCHAR(MAX),
+    @Source     VARCHAR(50),
+    @Target_User_Id INT,
+    @FK_Client_Id INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DECLARE @UserNature CHAR(1);
+    SELECT @UserNature = Nature FROM dbo.sysUser WHERE Id = @FK_User_Id;
+    IF NOT (@Source = 'A' AND @UserNature = 'A')
+    BEGIN
+        RAISERROR('Action non autorisee', 16, 1);
+        RETURN;
+    END
+    IF EXISTS (SELECT 1 FROM dbo.UserSimulationClients WHERE fk_user_id = @Target_User_Id AND fk_client_id = @FK_Client_Id)
+    BEGIN
+        RAISERROR('Ce client est deja associe a cet utilisateur pour la simulation', 16, 1);
+        RETURN;
+    END
+    INSERT INTO dbo.UserSimulationClients (fk_user_id, fk_client_id)
+    VALUES (@Target_User_Id, @FK_Client_Id);
+END
+GO
+
+CREATE OR ALTER PROCEDURE dbo.ps_DeleteUserSimulationClient
+    @FK_User_Id INT,
+    @Token      VARCHAR(MAX),
+    @Source     VARCHAR(50),
+    @Target_User_Id INT,
+    @FK_Client_Id INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DECLARE @UserNature CHAR(1);
+    SELECT @UserNature = Nature FROM dbo.sysUser WHERE Id = @FK_User_Id;
+    IF NOT (@Source = 'A' AND @UserNature = 'A')
+    BEGIN
+        RAISERROR('Action non autorisee', 16, 1);
+        RETURN;
+    END
+    DELETE FROM dbo.UserSimulationClients
+    WHERE fk_user_id = @Target_User_Id AND fk_client_id = @FK_Client_Id;
 END
 GO

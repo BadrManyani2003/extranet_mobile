@@ -3,7 +3,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
 import { authEvents } from '../utils/events';
 
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5000/api';
+// Attention: Si vous testez sur un appareil physique, localhost fera référence au téléphone lui-même.
+// Utilisez l'adresse IP locale de votre machine (ex: http://192.168.1.X:5000/api) dans EXPO_PUBLIC_API_URL.
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
+if (!BASE_URL) {
+  throw new Error("La configuration de l'API (EXPO_PUBLIC_API_URL) est manquante dans l'environnement mobile.");
+}
 
 export async function apiRequest<T>(
   endpoint: string,

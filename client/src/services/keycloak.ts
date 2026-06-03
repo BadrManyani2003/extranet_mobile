@@ -6,11 +6,15 @@ class KeycloakService {
   private isInitialized: boolean = false;
 
   private constructor() {
-    this.keycloak = new Keycloak({
-      url:      import.meta.env.VITE_KEYCLOAK_URL,
-      realm:    import.meta.env.VITE_KEYCLOAK_REALM,
-      clientId: import.meta.env.VITE_KEYCLOAK_CLIENT_ID,
-    });
+    const url      = import.meta.env.VITE_KEYCLOAK_URL;
+    const realm    = import.meta.env.VITE_KEYCLOAK_REALM;
+    const clientId = import.meta.env.VITE_KEYCLOAK_CLIENT_ID;
+
+    if (!url || !realm || !clientId) {
+      throw new Error("La configuration Keycloak (VITE_KEYCLOAK_URL, VITE_KEYCLOAK_REALM, VITE_KEYCLOAK_CLIENT_ID) est manquante dans l'environnement.");
+    }
+
+    this.keycloak = new Keycloak({ url, realm, clientId });
   }
 
   public static getInstance(): KeycloakService {

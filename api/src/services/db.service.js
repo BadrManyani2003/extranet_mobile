@@ -26,7 +26,7 @@ const checkConnection = async () => {
         await getPool();
         return true;
     } catch (err) {
-        console.error('[DB] Connection check failed:', err.message);
+        console.error('[DB] Echec de la verification de la connexion:', err.message);
         return false;
     }
 };

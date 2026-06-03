@@ -10,6 +10,7 @@ GO
 
 IF OBJECT_ID('dbo.ReclamationsDet', 'U') IS NOT NULL DROP TABLE dbo.ReclamationsDet;
 IF OBJECT_ID('dbo.ReclamationsIdt', 'U') IS NOT NULL DROP TABLE dbo.ReclamationsIdt;
+IF OBJECT_ID('dbo.UserSimulationClients', 'U') IS NOT NULL DROP TABLE dbo.UserSimulationClients;
 IF OBJECT_ID('dbo.PolDocument', 'U') IS NOT NULL DROP TABLE dbo.PolDocument;
 IF OBJECT_ID('dbo.Garanties', 'U') IS NOT NULL DROP TABLE dbo.Garanties;
 IF OBJECT_ID('dbo.Sinistres', 'U') IS NOT NULL DROP TABLE dbo.Sinistres;
@@ -119,6 +120,16 @@ CREATE TABLE dbo.UsersXClients
     CONSTRAINT PK_UsersXClients PRIMARY KEY CLUSTERED (FK_User_Id, FK_Client_Id),
     CONSTRAINT FK_UXC_User FOREIGN KEY (FK_User_Id) REFERENCES dbo.sysUser(Id) ON DELETE CASCADE,
     CONSTRAINT FK_UXC_Client FOREIGN KEY (FK_Client_Id) REFERENCES dbo.Clients(Id) ON DELETE CASCADE
+);
+GO
+
+CREATE TABLE dbo.UserSimulationClients
+(
+    fk_user_id INT NOT NULL,
+    fk_client_id INT NOT NULL,
+    CONSTRAINT PK_UserSimulationClients PRIMARY KEY CLUSTERED (fk_user_id, fk_client_id),
+    CONSTRAINT FK_USC_User FOREIGN KEY (fk_user_id) REFERENCES dbo.sysUser(Id) ON DELETE CASCADE,
+    CONSTRAINT FK_USC_Client FOREIGN KEY (fk_client_id) REFERENCES dbo.Clients(Id) ON DELETE CASCADE
 );
 GO
 
@@ -302,6 +313,7 @@ CREATE NONCLUSTERED INDEX IX_userConnection_User ON dbo.userConnection(FK_User_I
 CREATE NONCLUSTERED INDEX IX_userConnection_Date ON dbo.userConnection(DateConnection);
 CREATE NONCLUSTERED INDEX IX_Roles_User ON dbo.Roles(FK_User_Id);
 CREATE NONCLUSTERED INDEX IX_UsersXClients_Client ON dbo.UsersXClients(FK_Client_Id);
+CREATE NONCLUSTERED INDEX IX_UserSimulationClients_Client ON dbo.UserSimulationClients(fk_client_id);
 CREATE NONCLUSTERED INDEX IX_Polices_Client ON dbo.Polices(Fk_Client_Id);
 CREATE NONCLUSTERED INDEX IX_Polices_Compagnie ON dbo.Polices(FK_Compagnie_Id);
 CREATE NONCLUSTERED INDEX IX_Polices_DateEcheance ON dbo.Polices(DateEcheance);

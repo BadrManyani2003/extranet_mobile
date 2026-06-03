@@ -23,7 +23,7 @@ onMounted(async () => {
       await userStore.fetchUser()
     }
     
-    if (String(userStore.user?.extranet).trim().toUpperCase() === 'N') {
+    if (!userStore.impersonatedUser && String(userStore.activeUser?.extranet).trim().toUpperCase() === 'N') {
       hasAccess.value = false
       router.push({ name: 'restricted' })
     }
@@ -40,15 +40,15 @@ const navItems = computed(() => {
     { nom: 'navigation.policies', chemin: '/contrats', icone: Shield }
   ]
 
-  // Relevé Global is only visible for Client and Expert
-  if (keycloak.hasRole('client') || keycloak.hasRole('expert')) {
+  // Relevé Global is only visible for Client and Expert, or in simulation mode
+  if (keycloak.hasRole('client') || keycloak.hasRole('expert') || userStore.impersonatedUser) {
     items.push({ nom: 'navigation.global_statement', chemin: '/releve-global', icone: FileText })
   }
 
   // Dashboard and Reclamations are visible to all authorized roles
   items.push({ nom: 'navigation.dashboard', chemin: '/statistiques', icone: BarChart3 })
   
-  if (String(userStore.user?.reclamation).trim().toUpperCase() === 'O') {
+  if (String(userStore.activeUser?.reclamation || '').trim().toUpperCase() === 'O') {
     items.push({ nom: 'navigation.reclamation', chemin: '/reclamations', icone: LifeBuoy })
   }
 
@@ -60,7 +60,14 @@ const navItems = computed(() => {
   <div v-if="isLoading" class="min-h-screen bg-slate-50 flex items-center justify-center">
     <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-900"></div>
   </div>
-  <div v-else-if="hasAccess" class="min-h-screen bg-slate-50 flex font-['Outfit']">
+  <div v-else-if="hasAccess" class="min-h-screen bg-slate-50 flex font-['Outfit'] flex-col">
+    <div v-if="userStore.impersonatedUser" class="bg-amber-500 text-amber-950 px-4 py-2 flex items-center justify-center gap-4 z-50 font-semibold shadow-md">
+      <span>Vous êtes actuellement en mode simulation : {{ userStore.activeUser?.nom || userStore.activeUser?.Nom || userStore.activeUser?.name || 'Utilisateur' }}</span>
+      <button @click="userStore.stopImpersonation()" class="px-3 py-1 bg-amber-950 text-amber-50 rounded-lg text-sm hover:bg-amber-900 transition-colors">
+        Quitter la simulation
+      </button>
+    </div>
+    <div class="flex flex-1 min-h-0">
     <div 
       v-if="isMenuOpen" 
       class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 lg:hidden transition-opacity duration-300"
@@ -86,5 +93,6 @@ const navItems = computed(() => {
         </div>
       </div>
     </main>
+    </div>
   </div>
 </template>

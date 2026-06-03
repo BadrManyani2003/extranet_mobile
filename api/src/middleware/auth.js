@@ -4,6 +4,7 @@ const { promisify } = require('util');
 const { error } = require('../common/response');
 const keycloakConfig = require('../config/keycloak');
 const authService = require('../services/auth.service');
+const keycloakService = require('../services/keycloak.service');
 
 const client = jwksClient({
     jwksUri: keycloakConfig.jwksUri,
@@ -35,7 +36,7 @@ module.exports = async (req, res, next) => {
     try {
         const decoded = await verifyToken(token, getKey, {
             algorithms: ['RS256'],
-            clockTolerance: 86400
+            clockTolerance: 30
         });
 
         const source = req.headers['x-source'] || 'E';
@@ -50,11 +51,56 @@ module.exports = async (req, res, next) => {
             source
         };
 
-        if (dbUser && dbUser.token !== token) {
+        const impersonation = req.headers['x-impersonation'] === 'true';
+        const impUserId = req.headers['x-impersonated-user-id'];
+
+        if (impersonation && impUserId) {
+            const isAdmin = req.user.roles.includes('admin_cabinet') || req.user.roles.includes('commercial_cabinet');
+            if (isAdmin) {
+                // Vérifier si l'admin/commercial est explicitement autorisé à simuler cet utilisateur
+                const isAuthorized = await authService.checkSimulationPermission(req.user.id, impUserId);
+                if (!isAuthorized) {
+                    console.warn(`[Impersonation Blocked] Admin/Commercial user "${req.user.id}" attempted unauthorized simulation of user "${impUserId}"`);
+                    return error(res, 'Non autorise a simuler cet utilisateur.', 403);
+                }
+
+                const impResult = await authService.getUserById(impUserId);
+                const impUser = impResult[0]?.[0];
+                
+                if (impUser) {
+                    req.adminUser = { ...req.user };
+                    req.user.id = impUser.Id || impUser.id;
+                    req.user.source = 'E'; 
+                    // Utiliser le token actif de l'admin pour passer les contrôles SQL
+                    req.user.token = req.adminUser.token; 
+                    
+                    if (impUser.Id_Auth && impUser.Id_Auth.trim()) {
+                        try {
+                            const roles = await keycloakService.getUserRoles(impUser.Id_Auth);
+                            req.user.roles = roles.map(r => r.name);
+                        } catch (e) {
+                            console.error('Echec de la recuperation des roles de l\'utilisateur simule:', e.message);
+                        }
+                    } else {
+                        // Rôles par défaut si le compte Keycloak n'est pas encore synchronisé
+                        req.user.roles = impUser.Mobile === 'O' || impUser.mobile === 'O' ? ['adherent'] : ['client'];
+                    }
+
+                    // Synchroniser le token BDD de l'utilisateur simulé avec le token admin actif par ID local
+                    try {
+                        await authService.updateTokenById(req.user.token, req.user.id);
+                    } catch (err) {
+                        console.error('❌ Echec de la mise a jour du token de l\'utilisateur simule en BDD:', err.message);
+                    }
+                }
+            }
+        }
+
+        if (dbUser && dbUser.token !== token && !impersonation) {
             try {
                 await authService.updateToken(token, decoded.sub);
             } catch (err) {
-                console.error('❌ Failed to update token in DB:', err.message);
+                console.error('❌ Echec de la mise a jour du token en BDD:', err.message);
             }
         }
 
@@ -62,7 +108,7 @@ module.exports = async (req, res, next) => {
 
     } catch (err) {
         let message = 'Token invalide.';
-        if (err.name === 'TokenExpiredError') message = 'Session expirée.';
+        if (err.name === 'TokenExpiredError') message = 'Session expiree.';
         if (err.name === 'JsonWebTokenError') message = `Erreur de signature: ${err.message}`;
         return error(res, message, 401);
     }
@@ -70,12 +116,20 @@ module.exports = async (req, res, next) => {
 
 module.exports.checkRole = (roles) => {
     return (req, res, next) => {
-        if (!req.user) return error(res, 'Utilisateur non authentifié.', 401);
+        if (!req.user) return error(res, 'Utilisateur non authentifie.', 401);
+
+        // Si c'est une simulation par un admin/commercial, on autorise l'accès
+        if (req.adminUser) {
+            const adminRoles = req.adminUser.roles || [];
+            if (adminRoles.includes('admin_cabinet') || adminRoles.includes('commercial_cabinet')) {
+                return next();
+            }
+        }
 
         const allowedRoles = Array.isArray(roles) ? roles : [roles];
         const hasRole = allowedRoles.some(role => (req.user.roles || []).includes(role));
 
-        if (!hasRole) return error(res, 'Accès refusé : permissions insuffisantes.', 403);
+        if (!hasRole) return error(res, 'Acces refuse : permissions insuffisantes.', 403);
         next();
     };
 };

@@ -40,7 +40,7 @@ const buttonVariants: Record<string, "default" | "destructive" | "outline" | "se
 
 <template>
   <Dialog :open="open" @update:open="emit('close')">
-    <DialogContent class="sm:max-w-[400px] rounded-[2rem] p-10 font-['Outfit'] border-none shadow-2xl">
+    <DialogContent class="w-[92%] sm:max-w-[400px] rounded-[2rem] p-10 font-['Outfit'] border-none shadow-2xl">
       <div class="text-center space-y-6">
         <div :class="['w-20 h-20 rounded-full flex items-center justify-center mx-auto', iconColors[variant || 'info']]">
           <component :is="icons[variant || 'info']" class="w-10 h-10" />

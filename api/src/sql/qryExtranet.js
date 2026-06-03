@@ -23,6 +23,10 @@ const qry = {
     getReclamationStatut:  "exec dbo.sp_GetReclamationStatut @0",
 
     getUsers:              "exec dbo.ps_GetUsers              @0, @1, @2",
+    getSimulationList:     "exec dbo.ps_GetSimulationList     @0, @1, @2",
+    getUserSimulationClients: "exec dbo.ps_GetUserSimulationClients @0, @1, @2, @3",
+    addUserSimulationClient:  "exec dbo.ps_AddUserSimulationClient  @0, @1, @2, @3, @4",
+    deleteUserSimulationClient: "exec dbo.ps_DeleteUserSimulationClient @0, @1, @2, @3, @4",
     saveUser:              "exec dbo.ps_SaveUser              @0, @1, @2, @3, @4, @5, @6, @7, @8, @9, @10",
     deleteUser:            "exec dbo.ps_DeleteUser            @0, @1, @2, @3",
     getClients:            "exec dbo.ps_GetClients            @0, @1, @2",

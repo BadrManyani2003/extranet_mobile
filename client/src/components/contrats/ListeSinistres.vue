@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { AlertCircle, Calendar, Clock, Info, Shield, Car, User, Wallet, FileText } from 'lucide-vue-next'
+import { AlertCircle, Calendar, Clock, Info, Shield, Car, User, Wallet, FileText, Users } from 'lucide-vue-next'
 import { CardContent } from '@/components/ui/card'
 import {
   Accordion,
@@ -50,11 +50,17 @@ const sinistresFiltres = computed(() => {
 })
 const { t } = useI18n()
 
-const libelleRisque = computed(() => {
-  if (props.branche === 'Automobile') return t('risques.vehicle')
-  if (props.branche === 'Santé') return t('risques.adherent')
+const checkIsSante = (sin: any) => {
+  return !!((sin && sin.branche && sin.branche.toLowerCase().includes('sant')) || 
+         (props.branche && props.branche.toLowerCase().includes('sant')))
+}
+
+const getLibelleRisque = (sin: any) => {
+  const b = (sin.branche || props.branche || '').toLowerCase()
+  if (b.includes('sant')) return t('risques.adherent')
+  if (b.includes('auto')) return t('risques.vehicle')
   return t('sinistres.object')
-})
+}
 </script>
 
 <template>
@@ -96,8 +102,16 @@ const libelleRisque = computed(() => {
                 </div>
 
                 <div class="flex items-center gap-8 pr-4">
-                  <div class="flex flex-col items-end">
-                    <span class="text-[14px] text-slate-400 uppercase font-bold tracking-widest leading-none mb-1">{{ libelleRisque }}</span>
+                  <div v-if="checkIsSante(sin)" class="flex flex-col items-end gap-1">
+                    <span class="text-xs font-bold text-slate-500">
+                      {{ $t('risques.adherent') }} : <span class="font-black text-slate-900">{{ sin.objet }}</span>
+                    </span>
+                    <span v-if="sin.identifiant" class="text-xs font-bold text-slate-500">
+                      N° d'adhésion : <span class="font-black text-slate-900">{{ sin.identifiant }}</span>
+                    </span>
+                  </div>
+                  <div v-else class="flex flex-col items-end">
+                    <span class="text-[14px] text-slate-400 uppercase font-bold tracking-widest leading-none mb-1">{{ getLibelleRisque(sin) }}</span>
                     <span class="text-xs font-black text-slate-900 truncate max-w-[150px]">{{ sin.objet }}</span>
                     <span v-if="sin.identifiant" class="text-[14px] text-slate-500 font-bold mt-0.5">{{ sin.identifiant }}</span>
                   </div>
@@ -118,10 +132,10 @@ const libelleRisque = computed(() => {
                        <StatusBadge :status="sin.statut" class="mt-1" />
                      </div>
                       <div>
-                        <p class="text-[14px] font-bold text-slate-400 uppercase mb-1">{{ libelleRisque }}</p>
+                        <p class="text-[14px] font-bold text-slate-400 uppercase mb-1">{{ getLibelleRisque(sin) }}</p>
                         <div class="flex items-center gap-2 mt-1">
                           <div class="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400">
-                            <component :is="branche === 'Santé' ? User : Shield" class="w-4 h-4" />
+                            <component :is="checkIsSante(sin) ? User : Shield" class="w-4 h-4" />
                           </div>
                           <div>
                             <p class="text-xs font-black text-slate-800">{{ sin.objet }}</p>
@@ -141,10 +155,10 @@ const libelleRisque = computed(() => {
                      <div class="grid grid-cols-2 gap-4">
                        <div>
                          <p class="text-[14px] font-bold text-slate-400 uppercase">
-                           {{ branche === 'Santé' ? $t('sinistres.costs') : $t('sinistres.damages') }}
+                           {{ checkIsSante(sin) ? $t('sinistres.costs') : $t('sinistres.damages') }}
                          </p>
                          <p class="text-sm font-black text-slate-800">
-                           {{ formatCurrency(branche === 'Santé' ? sin.mtFrais : sin.mtDommage) }}
+                           {{ formatCurrency(checkIsSante(sin) ? sin.mtFrais : sin.mtDommage) }}
                          </p>
                        </div>
                        <div>

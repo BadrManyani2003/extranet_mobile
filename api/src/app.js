@@ -9,25 +9,27 @@ const app = express();
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, 
     max: process.env.NODE_ENV === 'production' ? 100 : 1000, 
-    message: { success: false, message: 'Trop de requêtes. Veuillez réessayer plus tard.' },
+    message: { success: false, message: 'Trop de requetes. Veuillez reessayer plus tard.' },
     standardHeaders: true,
     legacyHeaders: false,
 });
 
-const allowedOrigins = process.env.ALLOWED_ORIGINS 
-    ? process.env.ALLOWED_ORIGINS.split(',') 
-    : ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:8081'];
+if (!process.env.ALLOWED_ORIGINS) {
+    throw new Error("La variable d'environnement 'ALLOWED_ORIGINS' est manquante dans .env.");
+}
+const allowedOrigins = process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim().replace(/^['"]|['"]$/g, ''));
 
 app.use(cors({
     origin: (origin, callback) => {
-        if (!origin || allowedOrigins.includes(origin)) {
+        if (!origin || allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
             callback(null, true);
         } else {
-            callback(new Error('Not allowed by CORS'));
+            console.warn(`[CORS Bloque] La requete depuis l'origine "${origin}" a ete bloquee. Origines autorisees:`, allowedOrigins);
+            callback(new Error('Non autorise par CORS'));
         }
     },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'x-source'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-source', 'x-impersonation', 'x-impersonated-user-id'],
     credentials: true
 }));
 

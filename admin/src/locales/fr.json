@@ -48,7 +48,20 @@
     "sync_desc": "Lier ce compte pour activer les accès aux services.",
     "permissions": "Permissions d'accès",
     "assign_roles": "Assignez des rôles pour",
-    "delete_desc": "Cette action est définitive et supprimera l'utilisateur de la base."
+    "delete_desc": "Cette action est définitive et supprimera l'utilisateur de la base.",
+    "simulation": {
+      "title": "Clients Simulables",
+      "desc": "Gérer la liste des clients que {name} est autorisé à simuler.",
+      "associate_title": "Associer un nouveau client",
+      "associate_desc": "Associer une nouvelle entreprise ou un particulier pour autoriser la simulation de sa session.",
+      "select_placeholder": "Sélectionner un client...",
+      "search_placeholder": "Rechercher un client...",
+      "no_client_found": "Aucun client trouvé.",
+      "associate_button": "Associer le client",
+      "authorized_clients": "Clients Actuellement Autorisés",
+      "client_count": "{count} client(s)",
+      "no_associated_client": "Aucun client associé. L'utilisateur ne peut simuler aucune session."
+    }
   },
   "clients": {
     "title": "Gestion des Clients",

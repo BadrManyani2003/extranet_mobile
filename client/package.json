@@ -6,10 +6,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc -b && vite build",
+    "build": "vue-tsc -b && vite build && node -e \"const fs = require('fs'); if (fs.existsSync('.env')) fs.copyFileSync('.env', 'dist/.env')\"",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fontsource/outfit": "^5.2.8",
     "@vueuse/core": "^14.2.1",
     "chart.js": "^4.5.1",
     "class-variance-authority": "^0.7.1",

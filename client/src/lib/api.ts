@@ -1,5 +1,6 @@
 import { DataService } from '../services/api/DataService'
 import { ReclamationService } from '../services/api/ReclamationService'
+import { AdminService } from '../services/api/AdminService'
 
 /**
  * API Facade
@@ -10,5 +11,6 @@ export const api = {
   data: {
     ...DataService,
     ...ReclamationService
-  }
+  },
+  admin: AdminService
 }

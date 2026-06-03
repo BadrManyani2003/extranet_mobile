@@ -6,6 +6,10 @@ router.use(auth);
 router.use(auth.checkRole(['admin_cabinet', 'commercial_cabinet']));
 
 router.post('/users',                ctrl.getUsers);
+router.post('/simulation-users',     ctrl.getSimulationUsers);
+router.post('/users/simulation-clients',         ctrl.getUserSimulationClients);
+router.post('/users/simulation-clients/add',     ctrl.addUserSimulationClient);
+router.post('/users/simulation-clients/delete',  ctrl.deleteUserSimulationClient);
 router.post('/users/save',           ctrl.saveUser);
 router.post('/users/delete',         ctrl.deleteUser);
 router.post('/users/sync-keycloak',  ctrl.syncKeycloak);

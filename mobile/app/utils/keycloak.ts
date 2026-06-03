@@ -3,9 +3,13 @@ import * as WebBrowser from 'expo-web-browser';
 
 WebBrowser.maybeCompleteAuthSession();
 
-const KEYCLOAK_URL = process.env.EXPO_PUBLIC_KEYCLOAK_URL || 'http://192.168.1.100:8080';
-const REALM        = process.env.EXPO_PUBLIC_KEYCLOAK_REALM || 'keyclock-app';
-const CLIENT_ID    = process.env.EXPO_PUBLIC_KEYCLOAK_CLIENT_ID || 'keyclock-app-frontend';
+const KEYCLOAK_URL = process.env.EXPO_PUBLIC_KEYCLOAK_URL;
+const REALM        = process.env.EXPO_PUBLIC_KEYCLOAK_REALM;
+const CLIENT_ID    = process.env.EXPO_PUBLIC_KEYCLOAK_CLIENT_ID;
+
+if (!KEYCLOAK_URL || !REALM || !CLIENT_ID) {
+  throw new Error("La configuration Keycloak (EXPO_PUBLIC_KEYCLOAK_URL, EXPO_PUBLIC_KEYCLOAK_REALM, EXPO_PUBLIC_KEYCLOAK_CLIENT_ID) est manquante dans l'environnement mobile.");
+}
 
 export const keycloakDiscovery = {
   authorizationEndpoint: `${KEYCLOAK_URL}/realms/${REALM}/protocol/openid-connect/auth`,

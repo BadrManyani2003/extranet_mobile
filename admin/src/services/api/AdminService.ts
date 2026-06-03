@@ -44,5 +44,11 @@ export const AdminService = {
     request<any[]>('/admin/roles', { method: 'GET' }),
 
   updateUserRoles: (targetUserId: number, authId: string, roles: any[]) => 
-    request<any>('/admin/users/roles', { method: 'POST', body: JSON.stringify({ targetUserId, authId, roles }) })
+    request<any>('/admin/users/roles', { method: 'POST', body: JSON.stringify({ targetUserId, authId, roles }) }),
+  getSimulationClients: (targetUserId: number) => 
+    request<any[]>('/admin/users/simulation-clients', { method: 'POST', body: JSON.stringify({ targetUserId }) }),
+  addSimulationClient: (targetUserId: number, clientId: number) => 
+    request<any>('/admin/users/simulation-clients/add', { method: 'POST', body: JSON.stringify({ targetUserId, clientId }) }),
+  deleteSimulationClient: (targetUserId: number, clientId: number) => 
+    request<any>('/admin/users/simulation-clients/delete', { method: 'POST', body: JSON.stringify({ targetUserId, clientId }) })
 }

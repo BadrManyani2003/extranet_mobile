@@ -32,7 +32,7 @@ const handleLogout = () => {
         <X v-else class="w-5 h-5" />
       </Button>
       <div class="lg:hidden font-bold text-lg text-slate-900 flex items-center gap-2">
-        <span class="tracking-tight">Extra ibs</span>
+        <span class="tracking-tight">MyAsk</span>
       </div>
     </div>
     

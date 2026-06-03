@@ -14,6 +14,36 @@ const getUsers = asyncHandler(async (req, res) => {
     success(res, result[0] || []);
 });
 
+const getSimulationUsers = asyncHandler(async (req, res) => {
+    const { userId, source, token } = getContext(req);
+    const result = await adminService.getSimulationList(userId, token, source);
+    success(res, result[0] || []);
+});
+
+const getUserSimulationClients = asyncHandler(async (req, res) => {
+    const { userId, source, token } = getContext(req);
+    const { targetUserId } = req.body;
+    if (!targetUserId) throw new Error('ID utilisateur cible manquant.');
+    const result = await adminService.getUserSimulationClients(userId, token, source, targetUserId);
+    success(res, result[0] || []);
+});
+
+const addUserSimulationClient = asyncHandler(async (req, res) => {
+    const { userId, source, token } = getContext(req);
+    const { targetUserId, clientId } = req.body;
+    if (!targetUserId || !clientId) throw new Error('Paramètres manquants.');
+    await adminService.addUserSimulationClient(userId, token, source, targetUserId, clientId);
+    success(res, null, 'Client ajouté aux simulations');
+});
+
+const deleteUserSimulationClient = asyncHandler(async (req, res) => {
+    const { userId, source, token } = getContext(req);
+    const { targetUserId, clientId } = req.body;
+    if (!targetUserId || !clientId) throw new Error('Paramètres manquants.');
+    await adminService.deleteUserSimulationClient(userId, token, source, targetUserId, clientId);
+    success(res, null, 'Client supprimé des simulations');
+});
+
 const saveUser = asyncHandler(async (req, res) => {
     const { userId, source, token } = getContext(req);
     const { id, targetId, idAuth, nom, telephone, email, nature, extranet, mobile } = req.body;
@@ -104,14 +134,18 @@ const updateClientOptions = asyncHandler(async (req, res) => {
     const { clientId, recClt, recAdh } = req.body;
     
     if (!clientId) throw new Error('ID client manquant.');
-    if (!recClt || !recAdh) throw new Error('Options de réclamation manquantes.');
+    if (!recClt || !recAdh) throw new Error('Options de reclamation manquantes.');
 
     await adminService.updateClientOptions(userId, token, source, clientId, recClt, recAdh);
-    success(res, null, 'Options client mises à jour');
+    success(res, null, 'Options client mises a jour');
 });
 
 module.exports = {
     getUsers,
+    getSimulationUsers,
+    getUserSimulationClients,
+    addUserSimulationClient,
+    deleteUserSimulationClient,
     saveUser,
     deleteUser,
     getClients,

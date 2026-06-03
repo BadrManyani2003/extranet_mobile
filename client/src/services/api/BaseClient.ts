@@ -10,12 +10,28 @@ export async function request<T>(endpoint: string, options: RequestInit = {}): P
   const headers = new Headers(options.headers)
 
   if (!headers.has('Content-Type')) headers.set('Content-Type', 'application/json')
-  headers.set('x-source', 'E')
+  if (!headers.has('x-source')) headers.set('x-source', 'E')
 
   if (keycloakService.getAuthenticated()) {
     await keycloakService.updateToken(70)
     const token = keycloakService.getToken() || ''
     headers.set('Authorization', `Bearer ${token}`)
+  }
+
+  const isAdminEndpoint = endpoint.startsWith('/admin')
+  if (!isAdminEndpoint) {
+    try {
+      const impUserStr = sessionStorage.getItem('extranet-impersonated-user')
+      if (impUserStr) {
+        const impUser = JSON.parse(impUserStr)
+        if (impUser && (impUser.id || impUser.Id)) {
+          headers.set('x-impersonation', 'true')
+          headers.set('x-impersonated-user-id', String(impUser.id || impUser.Id))
+        }
+      }
+    } catch (e) {
+      // Ignorer silencieusement l'erreur de parsing
+    }
   }
 
   let url = `${BASE_URL.replace(/\/$/, '')}${endpoint}`
@@ -41,15 +57,22 @@ export async function request<T>(endpoint: string, options: RequestInit = {}): P
   const response = await fetch(url, requestOptions)
 
   if (response.status === 429) {
-    throw new Error('Trop de requêtes. Veuillez patienter quelques minutes.')
+    throw new Error('Trop de requetes. Veuillez patienter quelques minutes.')
   }
 
   if (response.status === 401 || response.status === 403) {
+    const isImpersonating = !!sessionStorage.getItem('extranet-impersonated-user');
+    if (isImpersonating) {
+      sessionStorage.removeItem('extranet-impersonated-user');
+      window.location.href = '/admin/users';
+      throw new Error('Erreur de simulation. Retour a la session admin...');
+    }
+
     if (!logoutPending) {
       logoutPending = true;
       setTimeout(() => keycloakService.logout(), 5000)
     }
-    throw new Error('Session expirée ou accès refusé. Déconnexion automatique...')
+    throw new Error('Session expiree ou acces refuse. Deconnexion automatique...')
   }
 
   const contentType = response.headers.get('content-type')

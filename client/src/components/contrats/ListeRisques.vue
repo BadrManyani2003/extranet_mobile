@@ -23,11 +23,14 @@ const risqueSelectionne = ref<any>(null)
 const estDialogueOuvert = ref(false)
 const chargementDetails = ref(false)
 
+const isSante = computed(() => !!(props.branche && props.branche.toLowerCase().includes('sant')))
+const isAuto = computed(() => !!(props.branche && props.branche.toLowerCase().includes('auto')))
+
 const ouvrirDetails = async (risque: any) => {
   risqueSelectionne.value = risque
   estDialogueOuvert.value = true
   
-  if (props.branche === 'Santé' && !risque.personnesACharge) {
+  if (isSante.value && !risque.personnesACharge) {
     chargementDetails.value = true
     try {
       const data = await api.data.getPersACharge(risque.id)
@@ -38,7 +41,7 @@ const ouvrirDetails = async (risque: any) => {
     } finally {
       chargementDetails.value = false
     }
-  } else if (props.branche !== 'Santé' && !risque.garanties) {
+  } else if (!isSante.value && !risque.garanties) {
     chargementDetails.value = true
     try {
       const data = await api.data.getGaranties(risque.id)
@@ -72,19 +75,18 @@ const risquesFiltres = computed(() => {
 })
 
 const iconeBranche = computed(() => {
-  switch (props.branche) {
-    case 'Automobile': return Car
-    case 'Santé': return HeartPulse
-    case 'Tout Risque Chantier': return HardHat
-    default: return Shield
-  }
+  const b = (props.branche || '').toLowerCase()
+  if (b.includes('auto')) return Car
+  if (b.includes('sant')) return HeartPulse
+  if (b.includes('chantier') || b.includes('tout risque')) return HardHat
+  return Shield
 })
 </script>
 
 <template>
   <div>
     <SectionHeader 
-      :title="branche === 'Santé' ? ($t('risques.adherent') + 's') : (branche === 'Automobile' ? ($t('risques.vehicle') + 's') : $t('risques.title'))" 
+      :title="isSante ? ($t('risques.adherent') + 's') : (isAuto ? ($t('risques.vehicle') + 's') : $t('risques.title'))" 
       :description="$t('risques.subtitle')" 
       :icon="iconeBranche"
       iconClass="text-slate-900" 
@@ -99,12 +101,12 @@ const iconeBranche = computed(() => {
         <table class="w-full text-left border-collapse table-fixed sm:table-auto">
           <thead class="sticky top-0 bg-slate-50 z-10 shadow-sm">
             <tr class="border-b border-slate-200">
-              <template v-if="branche === 'Santé'">
+              <template v-if="isSante">
                 <th class="px-6 py-3 text-[14px] font-bold text-slate-500 uppercase tracking-wider">{{ $t('risques.adherent') }}</th>
                 <th class="px-6 py-3 text-[14px] font-bold text-slate-500 uppercase tracking-wider">{{ $t('risques.membership_num') }}</th>
                 <th class="px-6 py-3 text-[14px] font-bold text-slate-500 uppercase tracking-wider">{{ $t('risques.membership_date') }}</th>
               </template>
-              <template v-else-if="branche === 'Automobile'">
+              <template v-else-if="isAuto">
                 <th class="px-6 py-3 text-[14px] font-bold text-slate-500 uppercase tracking-wider">{{ $t('risques.brand') }}</th>
                 <th class="px-6 py-3 text-[14px] font-bold text-slate-500 uppercase tracking-wider">{{ $t('sinistres.matricule') }}</th>
                 <th class="px-6 py-3 text-[14px] font-bold text-slate-500 uppercase tracking-wider">{{ $t('risques.insured_name') }}</th>
@@ -122,13 +124,13 @@ const iconeBranche = computed(() => {
             <tr v-for="(risque, idx) in risquesFiltres" :key="idx"
               class="border-b border-slate-50 hover:bg-slate-50 transition-colors group">
               
-              <template v-if="branche === 'Santé'">
+              <template v-if="isSante">
                 <td class="px-6 py-3 text-sm font-bold text-slate-800 truncate">{{ risque.nom }}</td>
                 <td class="px-6 py-3 text-sm font-medium text-slate-600 truncate">{{ risque.numAdhesion || '-' }}</td>
                 <td class="px-6 py-3 text-sm text-slate-500">{{ formatDate(risque.dateAdhesion) }}</td>
               </template>
 
-              <template v-else-if="branche === 'Automobile'">
+              <template v-else-if="isAuto">
                 <td class="px-6 py-3 text-sm font-bold text-slate-800 truncate">{{ risque.marque || '-' }}</td>
                 <td class="px-6 py-3 text-sm font-medium text-slate-600 truncate">{{ risque.identifiant || '-' }}</td>
                 <td class="px-6 py-3 text-sm text-slate-500 truncate">{{ risque.assure || '-' }}</td>
@@ -148,7 +150,7 @@ const iconeBranche = computed(() => {
 
               <td class="px-6 py-3 text-right">
                 <Button @click="ouvrirDetails(risque)" variant="outline" size="sm" class="font-bold h-7 text-[14px] px-2">
-                  {{ branche === 'Santé' ? $t('risques.beneficiaries') : $t('contrats.detail_button') }}
+                  {{ isSante ? $t('risques.beneficiaries') : $t('contrats.detail_button') }}
                 </Button>
               </td>
             </tr>
@@ -165,7 +167,7 @@ const iconeBranche = computed(() => {
       <DialogContent class="sm:max-w-[700px] bg-white p-6 shadow-xl border border-slate-200 font-['Outfit']">
         <DialogHeader class="border-b border-slate-100 pb-4 mb-4">
           <DialogTitle class="text-lg font-bold text-slate-900">
-            {{ branche === 'Santé' ? $t('risques.beneficiaries') : $t('contrats.detail_button') }}
+            {{ isSante ? $t('risques.beneficiaries') : $t('contrats.detail_button') }}
           </DialogTitle>
         </DialogHeader>
 
@@ -173,7 +175,7 @@ const iconeBranche = computed(() => {
           <div v-if="chargementDetails" class="py-12 flex flex-col items-center justify-center gap-4">
             <Loader2 class="w-8 h-8 animate-spin text-slate-400" />
             <p class="text-xs text-slate-500 font-medium tracking-widest uppercase italic">
-              {{ branche === 'Santé' ? $t('risques.loading_members') : $t('risques.loading_details') }}
+              {{ isSante ? $t('risques.loading_members') : $t('risques.loading_details') }}
             </p>
           </div>
 
@@ -196,7 +198,7 @@ const iconeBranche = computed(() => {
             </table>
           </div>
 
-          <div v-else-if="branche === 'Santé' && risqueSelectionne.personnesACharge">
+          <div v-else-if="isSante && risqueSelectionne.personnesACharge">
             <table class="w-full text-left">
               <thead>
                 <tr class="border-b border-slate-100">
@@ -207,8 +209,8 @@ const iconeBranche = computed(() => {
               </thead>
               <tbody class="divide-y divide-slate-50">
                 <tr v-for="p in risqueSelectionne.personnesACharge" :key="p.nom">
-                  <td class="py-3 text-sm text-slate-700">{{ p.nom }}</td>
-                  <td class="py-3 text-sm text-slate-500">{{ p.lien }}</td>
+                  <td class="py-3 text-sm text-slate-700 font-bold">{{ p.nom }}</td>
+                  <td class="py-3 text-sm text-slate-500 font-medium">{{ p.lien }}</td>
                   <td class="py-3 text-sm text-slate-500 text-right">{{ formatDate(p.dateNaissance) }}</td>
                 </tr>
               </tbody>

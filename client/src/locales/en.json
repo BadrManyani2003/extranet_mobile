@@ -160,7 +160,14 @@
     "closed_notice": "Ticket closed.",
     "closed_error": "Impossible.",
     "close_ticket": "Close",
-    "reopen_ticket": "Reopen"
+    "reopen_ticket": "Reopen",
+    "toast_fetch_error": "Error during retrieval",
+    "toast_create_success": "Request sent successfully",
+    "toast_status_success": "Status updated successfully",
+    "toast_delete_msg_success": "Message deleted successfully",
+    "toast_delete_rec_success": "Ticket deleted successfully",
+    "not_authorized": "Your profile is not authorized to submit new tickets. Please contact your advisor.",
+    "delete_rec_confirm": "Do you really want to delete this ticket and all of its messages?"
   },
   "commun": {
     "search": "Search",
@@ -196,5 +203,14 @@
   "restricted": {
     "title": "Restricted Access",
     "logout": "Logout"
+  },
+  "admin_users": {
+    "connected_as": "Connected as",
+    "logout": "Logout",
+    "title": "Users",
+    "subtitle": "Select a user to simulate their session.",
+    "search_placeholder": "Search by name or email...",
+    "simulate": "Simulate",
+    "no_users": "No users found"
   }
 }

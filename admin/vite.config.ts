@@ -33,13 +33,7 @@ export default defineConfig(({ mode }) => {
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
-            if (id.includes('vue') || id.includes('keycloak-js')) {
-              return 'vendor';
-            }
-            if (id.includes('lucide-vue-next') || id.includes('reka-ui') || id.includes('class-variance-authority')) {
-              return 'ui';
-            }
-            return 'libs';
+            return 'vendor';
           }
         }
       }

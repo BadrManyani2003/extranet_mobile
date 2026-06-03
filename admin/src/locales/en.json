@@ -48,7 +48,20 @@
     "sync_desc": "Link this account to enable service access.",
     "permissions": "Access Permissions",
     "assign_roles": "Assign roles for",
-    "delete_desc": "This action is permanent and will remove the user from the database."
+    "delete_desc": "This action is permanent and will remove the user from the database.",
+    "simulation": {
+      "title": "Simulatable Clients",
+      "desc": "Manage the list of clients that {name} is authorized to simulate.",
+      "associate_title": "Associate a new client",
+      "associate_desc": "Associate a new company or individual to authorize the simulation of their session.",
+      "select_placeholder": "Select a client...",
+      "search_placeholder": "Search for a client...",
+      "no_client_found": "No client found.",
+      "associate_button": "Associate client",
+      "authorized_clients": "Currently Authorized Clients",
+      "client_count": "{count} client(s)",
+      "no_associated_client": "No associated client. The user cannot simulate any session."
+    }
   },
   "clients": {
     "title": "Client Management",

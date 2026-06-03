@@ -3,6 +3,10 @@ const qry            = require('../sql/qryExtranet');
 const keycloakService = require('./keycloak.service');
 
 const getUsers  = (userId, token, source) => db.execute(qry.getUsers, [userId, token, source]);
+const getSimulationList = (userId, token, source) => db.execute(qry.getSimulationList, [userId, token, source]);
+const getUserSimulationClients = (userId, token, source, targetUserId) => db.execute(qry.getUserSimulationClients, [userId, token, source, targetUserId]);
+const addUserSimulationClient = (userId, token, source, targetUserId, clientId) => db.execute(qry.addUserSimulationClient, [userId, token, source, targetUserId, clientId]);
+const deleteUserSimulationClient = (userId, token, source, targetUserId, clientId) => db.execute(qry.deleteUserSimulationClient, [userId, token, source, targetUserId, clientId]);
 const saveUser  = (userId, token, source, targetId, authId, nom, tel, email, nature, extranet, mobile) =>
     db.execute(qry.saveUser, [userId, token, source, targetId, authId, nom, tel, email, nature, extranet, mobile]);
 
@@ -52,7 +56,7 @@ const syncKeycloak = async (userId, token, source, id) => {
     if (!userToSync) throw new Error("Utilisateur local introuvable.");
 
     const { Nom, Email, Id_Auth } = userToSync;
-    if (!Email) throw new Error("L'utilisateur n'a pas d'adresse e-mail configurée.");
+    if (!Email) throw new Error("L'utilisateur n'a pas d'adresse e-mail configuree.");
 
     let keycloakUserId = Id_Auth;
 
@@ -91,6 +95,10 @@ const updateUserRoles = async (userId, token, source, targetUserId, authId, role
 
 module.exports = {
     getUsers,
+    getSimulationList,
+    getUserSimulationClients,
+    addUserSimulationClient,
+    deleteUserSimulationClient,
     saveUser,
     deleteUser,
     getClients,

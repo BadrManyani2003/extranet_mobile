@@ -1,6 +1,13 @@
 import keycloak from '../keycloak'
 
-const BASE_URL = import.meta.env.VITE_API_URL
+function getBaseUrl(): string {
+  const baseUrl = (window as any).APP_ENV?.VITE_API_URL || import.meta.env.VITE_API_URL;
+  if (!baseUrl) {
+    throw new Error("La configuration de l'API (VITE_API_URL) est manquante dans l'environnement.");
+  }
+  return baseUrl;
+}
+
 let logoutPending = false;
 
 export interface ApiResponse<T = any> {
@@ -11,7 +18,8 @@ export interface ApiResponse<T = any> {
 }
 
 export async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  if (!BASE_URL) {
+  const baseUrl = getBaseUrl();
+  if (!baseUrl) {
     throw new Error('Configuration API manquante.');
   }
 
@@ -25,7 +33,7 @@ export async function request<T>(endpoint: string, options: RequestInit = {}): P
     if (token) headers.set('Authorization', `Bearer ${token}`)
   }
 
-  let url = `${BASE_URL.replace(/\/$/, '')}${endpoint}`
+  let url = `${baseUrl.replace(/\/$/, '')}${endpoint}`
 
   if (options.method === 'GET' && options.body) {
     try {
@@ -79,3 +87,4 @@ export async function request<T>(endpoint: string, options: RequestInit = {}): P
 
   return result as T;
 }
+// Force reload for IDE TS Server

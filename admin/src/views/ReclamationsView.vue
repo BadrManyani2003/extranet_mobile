@@ -96,7 +96,7 @@ const handleSendMessage = async (text: string) => {
   const tempMsg = {
     id: Date.now(),
     message: text,
-    envoyeur: 'Conseiller IBS',
+    envoyeur: 'Conseiller MyAsk',
     nature: 'Admin',
     dateMessage: new Date().toISOString()
   }
@@ -241,7 +241,7 @@ onMounted(() => {
 
     <!-- Modal Confirmation Suppression -->
     <Dialog v-model:open="isDeleteDialogOpen">
-      <DialogContent class="sm:max-w-[400px] rounded-[2rem] shadow-2xl p-0 overflow-hidden border-none font-['Outfit']">
+      <DialogContent class="w-[92%] sm:max-w-[400px] rounded-[2rem] shadow-2xl p-0 overflow-hidden border-none font-['Outfit']">
         <DialogHeader class="p-8 bg-white text-center">
           <div class="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
             <Trash2 class="w-8 h-8" />
@@ -265,7 +265,7 @@ onMounted(() => {
 
     <!-- Modal Confirmation Suppression Réclamation -->
     <Dialog v-model:open="isDeleteRecDialogOpen">
-      <DialogContent class="sm:max-w-[400px] rounded-[2rem] shadow-2xl p-0 overflow-hidden border-none font-['Outfit']">
+      <DialogContent class="w-[92%] sm:max-w-[400px] rounded-[2rem] shadow-2xl p-0 overflow-hidden border-none font-['Outfit']">
         <DialogHeader class="p-8 bg-white text-center">
           <div class="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
             <Trash2 class="w-8 h-8" />

@@ -34,7 +34,8 @@ const chargerDonnees = async () => {
   if (chargementDetails.value) return
   chargementDetails.value = true
   try {
-    const fetchRisques = props.police.branche === 'Santé' 
+    const isSante = props.police.branche && props.police.branche.toLowerCase().includes('sant')
+    const fetchRisques = isSante 
       ? api.data.getAdherents(props.police.id) 
       : api.data.getRisques(props.police.id)
 
@@ -50,6 +51,22 @@ const chargerDonnees = async () => {
     quittances.value = resQuittances || []
     stats.value = resStats || {}
     documents.value = resDocs || []
+
+    if (isSante) {
+      await Promise.all(
+        risques.value.map(async (r: any) => {
+          if (!r.personnesACharge) {
+            try {
+              const data = await api.data.getPersACharge(r.id)
+              r.personnesACharge = data || []
+            } catch (e) {
+              console.error("Erreur chargement personnes à charge:", e)
+              r.personnesACharge = []
+            }
+          }
+        })
+      )
+    }
   } catch (error) {
     console.error('Erreur lors du chargement des détails de la police:', error)
   } finally {
@@ -65,17 +82,21 @@ const basculerOnglet = (onglet: string) => {
   ongletActif.value = ongletActif.value === onglet ? '' : onglet
 }
 
-const obtenirElementsGrille = (p: any) => [
-  { id: 'numero', title: t('contrats.num'), type: 'static', value: p.police, icon: FileText, colorClass: 'bg-slate-100 text-slate-500' },
-  { id: 'branche', title: t('contrats.branche'), type: 'static', value: p.branche, icon: Tag, colorClass: 'bg-slate-100 text-slate-900' },
-  { id: 'echeance', title: t('contrats.echeance'), type: 'static', value: formatDate(p.dateEcheance), icon: CalendarDays, colorClass: 'bg-slate-50 text-slate-600' },
-  { id: 'risque', title: p.branche === 'Santé' ? (t('risques.adherent') + 's') : (p.branche === 'Automobile' ? (t('risques.vehicle') + 's') : t('contrats.risques')), type: 'action', value: formatNumber(risques.value.length), icon: Shield, defaultColor: 'bg-slate-100 text-slate-800' },  
-  { id: 'sinistres', title: t('contrats.sinistres'), type: 'action', value: formatNumber(sinistres.value.length), icon: LifeBuoy, defaultColor: 'bg-slate-100 text-slate-800' },
-  { id: 'sinistres-encours', title: t('contrats.sinistres_encours'), type: 'action', value: formatNumber(sinistres.value.filter((s: any) => s.statut === 'En cours' || s.statut === 'E').length), icon: Clock, defaultColor: 'bg-slate-100 text-slate-800' },
-  { id: 'prime', title: t('contrats.prime_annuelle'), type: 'action', value: formatCurrency(stats.value.primeAnnuelle || 0), icon: Wallet, defaultColor: 'bg-slate-200 text-slate-900' },
-  { id: 'impayes', title: t('contrats.impayes'), type: 'action', value: formatCurrency(stats.value.impayes || 0), icon: Receipt, defaultColor: (stats.value.impayes || 0) > 0 ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-400', isRedAlert: (stats.value.impayes || 0) > 0 },
-  { id: 'documents', title: t('contrats.documents'), type: 'action', value: formatNumber(documents.value.length), icon: FileText, defaultColor: 'bg-slate-100 text-slate-800' }
-]
+const obtenirElementsGrille = (p: any) => {
+  const isSante = p.branche && p.branche.toLowerCase().includes('sant')
+  const isAuto = p.branche && p.branche.toLowerCase().includes('auto')
+  return [
+    { id: 'numero', title: t('contrats.num'), type: 'static', value: p.police, icon: FileText, colorClass: 'bg-slate-100 text-slate-500' },
+    { id: 'branche', title: t('contrats.branche'), type: 'static', value: p.branche, icon: Tag, colorClass: 'bg-slate-100 text-slate-900' },
+    { id: 'echeance', title: t('contrats.echeance'), type: 'static', value: formatDate(p.dateEcheance), icon: CalendarDays, colorClass: 'bg-slate-50 text-slate-600' },
+    { id: 'risque', title: isSante ? (t('risques.adherent') + 's') : (isAuto ? (t('risques.vehicle') + 's') : t('contrats.risques')), type: 'action', value: formatNumber(risques.value.length), icon: Shield, defaultColor: 'bg-slate-100 text-slate-800' },  
+    { id: 'sinistres', title: t('contrats.sinistres'), type: 'action', value: formatNumber(sinistres.value.length), icon: LifeBuoy, defaultColor: 'bg-slate-100 text-slate-800' },
+    { id: 'sinistres-encours', title: t('contrats.sinistres_encours'), type: 'action', value: formatNumber(sinistres.value.filter((s: any) => s.statut === 'En cours' || s.statut === 'E').length), icon: Clock, defaultColor: 'bg-slate-100 text-slate-800' },
+    { id: 'prime', title: t('contrats.prime_annuelle'), type: 'action', value: formatCurrency(stats.value.primeAnnuelle || 0), icon: Wallet, defaultColor: 'bg-slate-200 text-slate-900' },
+    { id: 'impayes', title: t('contrats.impayes'), type: 'action', value: formatCurrency(stats.value.impayes || 0), icon: Receipt, defaultColor: (stats.value.impayes || 0) > 0 ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-400', isRedAlert: (stats.value.impayes || 0) > 0 },
+    { id: 'documents', title: t('contrats.documents'), type: 'action', value: formatNumber(documents.value.length), icon: FileText, defaultColor: 'bg-slate-100 text-slate-800' }
+  ]
+}
 
 const gererMiseAJourRecherche = (onglet: string, requete: string) => {
   emit('update:searchQuery', { policeId: props.police.id, onglet, requete })
