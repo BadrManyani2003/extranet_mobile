@@ -105,7 +105,7 @@ const handleSendMessage = async (text: string) => {
   try { 
     await api.admin.replyToReclamation(selectedTicket.value.id, text)
     toast.success("Réponse envoyée")
-    selectedTicket.value.statut = 'Traité'
+    selectedTicket.value.statut = 'En cours'
     // Rafraîchir pour obtenir les données finales du serveur
     const freshMessages = await api.data.getMessages(selectedTicket.value.id)
     messages.value = freshMessages
@@ -121,7 +121,7 @@ const handleStatusUpdate = async (statut: string) => {
   if (!selectedTicket.value) return
   try {
     await api.admin.updateStatus(selectedTicket.value.id, statut)
-    selectedTicket.value.statut = statut === 'E' ? 'En cours' : (statut === 'T' ? 'Traité' : 'Clôturé')
+    selectedTicket.value.statut = statut === 'E' ? 'En cours' : 'Clôturé'
     toast.success("Statut mis à jour")
   } catch (e: any) {
     toast.error(e.message)
@@ -210,9 +210,9 @@ onMounted(() => {
         <div class="flex-1">
           <div class="flex items-center gap-3">
             <h2 class="text-xl font-black text-slate-900 line-clamp-1">{{ selectedTicket.sujet }}</h2>
-            <Badge :class="selectedTicket.statut === 'En cours' ? 'bg-orange-50 text-orange-600' : 'bg-emerald-50 text-emerald-600'" 
+            <Badge :class="selectedTicket.statut === 'En cours' ? 'bg-orange-50 text-orange-600' : 'bg-slate-50 text-slate-400 border-slate-100'" 
               class="rounded-lg text-[14px] font-black uppercase tracking-widest px-2 py-0.5 border-none shadow-none">
-              {{ selectedTicket.statut }}
+              {{ selectedTicket.statut === 'En cours' ? 'En cours' : 'Clôturé' }}
             </Badge>
           </div>
           <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">

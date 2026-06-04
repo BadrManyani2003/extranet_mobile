@@ -395,6 +395,7 @@ BEGIN
         a.NumAdhesion AS numAdhesion,
         a.Matricule AS matricule,
         a.DateNaissance AS dateNaissance,
+        a.DateAdhesion AS dateAdhesion,
         a.Actif AS actif,
         a.Telephone AS telephone,
         a.FK_User_Id AS fkUserId,
@@ -528,13 +529,11 @@ BEGIN
         CASE r.Statut 
             WHEN 'E' THEN 'En cours' 
             WHEN 'C' THEN 'Clôturé' 
-            WHEN 'T' THEN 'Traité' 
             ELSE r.Statut 
         END AS statut,
         CASE r.Statut 
             WHEN 'E' THEN 'warning' 
             WHEN 'C' THEN 'success' 
-            WHEN 'T' THEN 'info' 
             ELSE 'neutral' 
         END AS statut_variant,
         CASE WHEN r.Statut = 'E' THEN 1 ELSE 0 END AS is_active,
@@ -672,8 +671,9 @@ BEGIN
         INSERT INTO dbo.ReclamationsDet (FK_Reclamation_Id, FK_User_Id, Nature, Message)
         VALUES (@FK_Reclamation_Id, @FK_User_Id, @UserNature, @Message);
 
+        -- On garde toujours le statut 'En cours' lors d'un nouveau message
         UPDATE dbo.ReclamationsIdt 
-        SET Statut = CASE WHEN @Source IN ('A', 'E', 'M') THEN 'T' ELSE 'E' END, 
+        SET Statut = 'E', 
             DateStatut = GETDATE() 
         WHERE Id = @FK_Reclamation_Id;
         
@@ -701,10 +701,23 @@ BEGIN
         RETURN;
     END
 
+    -- Valider que le statut est uniquement 'E' (En cours) ou 'C' (Clôturé)
+    IF @Statut NOT IN ('E', 'C')
+    BEGIN
+        RAISERROR('Statut invalide. Valeurs acceptées : E (En cours), C (Clôturé)', 16, 1);
+        RETURN;
+    END
+
     DECLARE @UserNature CHAR(1);
     SELECT @UserNature = Nature FROM dbo.sysUser WHERE Id = @FK_User_Id;
 
-    IF @UserNature = 'A' AND EXISTS (SELECT 1 FROM dbo.ReclamationsIdt WHERE Id = @FK_Reclamation_Id)
+    -- Admin peut modifier n'importe quelle réclamation
+    -- Tout utilisateur peut modifier le statut de SA propre réclamation
+    IF EXISTS (
+        SELECT 1 FROM dbo.ReclamationsIdt 
+        WHERE Id = @FK_Reclamation_Id 
+        AND (@UserNature = 'A' OR FK_User_Client = @FK_User_Id)
+    )
     BEGIN
         UPDATE dbo.ReclamationsIdt 
         SET Statut = @Statut, 
@@ -1549,7 +1562,8 @@ BEGIN
         RETURN;
     END
 
-    -- Get all users associated with the clients mapped to the logged-in user
+    -- Retourne uniquement les users liés à des clients ENTREPRISES (Particulier='N')
+    -- Exclut les adhérents et les clients particuliers (Particulier='O')
     SELECT DISTINCT
         u.Id AS id,
         u.Id_Auth AS idAuth,
@@ -1573,34 +1587,7 @@ BEGIN
     INNER JOIN dbo.UserSimulationClients usc ON c.Id = usc.fk_client_id
     WHERE usc.fk_user_id = @FK_User_Id
       AND uxc.Actif = 'O'
-    
-    UNION
-    
-    SELECT DISTINCT
-        u.Id AS id,
-        u.Id_Auth AS idAuth,
-        u.token,
-        u.Nom AS nom,
-        u.Telephone AS telephone,
-        u.Email AS email,
-        u.Nature AS nature,
-        u.Extranet AS extranet,
-        u.Mobile AS mobile,
-        u.CreatedAt AS createdAt,
-        u.UpdatedAt AS updatedAt,
-        STUFF((
-            SELECT ', ' + r.Role
-            FROM dbo.Roles r
-            WHERE r.FK_User_Id = u.Id
-            FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 2, '') AS roles
-    FROM dbo.sysUser u
-    INNER JOIN dbo.Adherents a ON u.Id = a.FK_User_Id
-    INNER JOIN dbo.Polices p ON a.FK_Police_Id = p.Id
-    INNER JOIN dbo.Clients c ON p.Fk_Client_Id = c.Id
-    INNER JOIN dbo.UserSimulationClients usc ON c.Id = usc.fk_client_id
-    WHERE usc.fk_user_id = @FK_User_Id
-      AND a.Actif = 'O'
-      
+      AND c.Particulier = 'N'  -- Uniquement les clients ENTREPRISES
     ORDER BY nom;
 END
 GO
@@ -1652,6 +1639,12 @@ BEGIN
     IF EXISTS (SELECT 1 FROM dbo.UserSimulationClients WHERE fk_user_id = @Target_User_Id AND fk_client_id = @FK_Client_Id)
     BEGIN
         RAISERROR('Ce client est deja associe a cet utilisateur pour la simulation', 16, 1);
+        RETURN;
+    END
+    -- Verifier que le client est bien une entreprise (Particulier='N')
+    IF NOT EXISTS (SELECT 1 FROM dbo.Clients WHERE Id = @FK_Client_Id AND Particulier = 'N')
+    BEGIN
+        RAISERROR('La simulation est uniquement disponible pour les clients entreprises (Particulier=N)', 16, 1);
         RETURN;
     END
     INSERT INTO dbo.UserSimulationClients (fk_user_id, fk_client_id)

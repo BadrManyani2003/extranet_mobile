@@ -6,18 +6,33 @@ const keycloakConfig = require('../config/keycloak');
 const authService = require('../services/auth.service');
 const keycloakService = require('../services/keycloak.service');
 
+console.log(`[Auth Init] URL JWKS configuree pour le backend : ${keycloakConfig.jwksUri}`);
+
 const client = jwksClient({
     jwksUri: keycloakConfig.jwksUri,
     cache: true,
     cacheMaxEntries: 5,
     cacheMaxAge: 600000,
     rateLimit: true,
-    jwksRequestsPerMinute: 10
+    jwksRequestsPerMinute: 10,
+    handleSigningKeyError: (err) => {
+        console.error('❌ [JWKS-RSA] Erreur lors de la recuperation de la cle de signature:', err.message);
+    }
 });
 
 function getKey(header, callback) {
+    console.log(`[JWT Verify] En-tete du token recu :`, JSON.stringify(header));
+    
+    if (!header || !header.kid) {
+        console.error("❌ [Auth Middleware] Le token JWT ne contient pas de 'kid' dans son en-tete.");
+        return callback(new Error("Le token JWT ne contient pas de parametre 'kid' dans son en-tete."));
+    }
+
     client.getSigningKey(header.kid, (err, key) => {
-        if (err) return callback(err);
+        if (err) {
+            console.error(`❌ [JWKS-RSA] Echec de la recuperation de la cle pour le kid "${header.kid}":`, err.message);
+            return callback(err);
+        }
         callback(null, key.getPublicKey());
     });
 }
@@ -107,6 +122,7 @@ module.exports = async (req, res, next) => {
         next();
 
     } catch (err) {
+        console.error('❌ [Auth Middleware] Echec de validation du token:', err.message);
         let message = 'Token invalide.';
         if (err.name === 'TokenExpiredError') message = 'Session expiree.';
         if (err.name === 'JsonWebTokenError') message = `Erreur de signature: ${err.message}`;

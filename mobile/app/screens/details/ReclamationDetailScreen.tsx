@@ -27,6 +27,8 @@ const ReclamationDetailScreen = () => {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [newMessage, setNewMessage] = useState('');
+  const [currentStatut, setCurrentStatut] = useState<string>(reclamation.statut || 'En cours');
+  const [updatingStatus, setUpdatingStatus] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [messageToDelete, setMessageToDelete] = useState<number | null>(null);
   const scrollViewRef = useRef<ScrollView>(null);
@@ -53,12 +55,26 @@ const ReclamationDetailScreen = () => {
     try {
       await reclamationsAPI.addMessage(reclamation.id, newMessage);
       setNewMessage('');
+      // Refresh & keep status in sync
+      setCurrentStatut('En cours');
       await fetchDetails();
       setTimeout(() => scrollViewRef.current?.scrollToEnd({ animated: true }), 100);
     } catch (error) {
       console.error("Erreur envoi message:", error);
     } finally {
       setSending(false);
+    }
+  };
+
+  const handleUpdateStatus = async (newStatus: 'E' | 'C') => {
+    setUpdatingStatus(true);
+    try {
+      await reclamationsAPI.updateStatus(reclamation.id, newStatus);
+      setCurrentStatut(newStatus === 'E' ? 'En cours' : 'Clôturé');
+    } catch (error) {
+      console.error("Erreur mise à jour statut:", error);
+    } finally {
+      setUpdatingStatus(false);
     }
   };
 
@@ -113,7 +129,7 @@ const ReclamationDetailScreen = () => {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
-        {/* Unified Advisor Pulse Status Header */}
+        {/* Status Header */}
         <Box 
           padding="m" 
           backgroundColor="cardBackground" 
@@ -164,7 +180,44 @@ const ReclamationDetailScreen = () => {
             </Box>
           </Box>
 
-          <StatusBadge label={reclamation.statut} variant={reclamation.statut_variant || 'neutral'} size="small" />
+          {/* Status Badge + Action Buttons */}
+          <Box flexDirection="row" alignItems="center" style={{ gap: 8 }}>
+            <StatusBadge label={currentStatut} variant={currentStatut === 'En cours' ? 'warning' : 'success'} size="small" />
+            {/* Toggle Status Button */}
+            {currentStatut === 'En cours' || currentStatut === 'E' ? (
+              <TouchableOpacity
+                onPress={() => handleUpdateStatus('C')}
+                disabled={updatingStatus}
+                style={{
+                  backgroundColor: '#f1f5f9',
+                  paddingHorizontal: rsp.scale(10),
+                  paddingVertical: rsp.scale(5),
+                  borderRadius: rsp.scale(8),
+                  opacity: updatingStatus ? 0.5 : 1
+                }}
+              >
+                <Text style={{ fontSize: rsp.normalize(11), fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                  Clôturer
+                </Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                onPress={() => handleUpdateStatus('E')}
+                disabled={updatingStatus}
+                style={{
+                  backgroundColor: '#fff7ed',
+                  paddingHorizontal: rsp.scale(10),
+                  paddingVertical: rsp.scale(5),
+                  borderRadius: rsp.scale(8),
+                  opacity: updatingStatus ? 0.5 : 1
+                }}
+              >
+                <Text style={{ fontSize: rsp.normalize(11), fontWeight: '800', color: '#ea580c', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                  Réouvrir
+                </Text>
+              </TouchableOpacity>
+            )}
+          </Box>
         </Box>
 
         <ScrollView 
@@ -300,7 +353,7 @@ const ReclamationDetailScreen = () => {
         </ScrollView>
 
         {/* Floating Input Pill Bar */}
-        {reclamation.statut !== 'Clôturé' && reclamation.statut !== 'C' ? (
+        {currentStatut !== 'Clôturé' && currentStatut !== 'C' ? (
           <Box 
             padding="m" 
             flexDirection="row" 

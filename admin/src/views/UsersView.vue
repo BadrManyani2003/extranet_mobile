@@ -159,8 +159,10 @@ const clientDropdownRef = ref<HTMLElement | null>(null)
 
 const filteredClientsForSimulation = computed(() => {
   const query = clientSearchQuery.value.toLowerCase().trim()
-  if (!query) return allClients.value
-  return allClients.value.filter(c => 
+  // Uniquement les clients ENTREPRISES (Particulier='N') pour la simulation
+  const entreprises = allClients.value.filter(c => c.particulier === 'N')
+  if (!query) return entreprises
+  return entreprises.filter(c => 
     (c.raisonSociale || '').toLowerCase().includes(query) || 
     (c.email || '').toLowerCase().includes(query)
   )

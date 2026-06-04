@@ -142,7 +142,7 @@ const handleStatusUpdate = async (statut: string) => {
   if (!selectedTicket.value) return
   try {
     await api.data.updateStatut(selectedTicket.value.id, statut)
-    selectedTicket.value.statut = statut === 'E' ? 'En cours' : (statut === 'T' ? 'Traité' : 'Clôturé')
+    selectedTicket.value.statut = statut === 'E' ? 'En cours' : 'Clôturé'
     toast.success(t('reclamations.toast_status_success'))
   } catch (e: any) {
     toast.error(e.message)
@@ -241,9 +241,9 @@ onMounted(() => {
           <div class="flex-1">
             <div class="flex items-center gap-3">
               <h2 class="text-xl font-black text-slate-900 line-clamp-1">{{ selectedTicket.sujet }}</h2>
-              <Badge :class="(selectedTicket.statut === 'En cours' || selectedTicket.statut === 'E') ? 'bg-orange-50 text-orange-600 border-orange-100' : (selectedTicket.statut === 'T' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-slate-50 text-slate-400 border-slate-100')" 
+              <Badge :class="(selectedTicket.statut === 'En cours' || selectedTicket.statut === 'E') ? 'bg-orange-50 text-orange-600 border-orange-100' : 'bg-slate-50 text-slate-400 border-slate-100'" 
                 class="rounded-lg text-[14px] font-black uppercase tracking-widest px-2 py-0.5 border shrink-0 shadow-none">
-                {{ (selectedTicket.statut === 'E' || selectedTicket.statut === 'En cours') ? 'En cours' : (selectedTicket.statut === 'T' ? 'Traité' : 'Clôturé') }}
+                {{ (selectedTicket.statut === 'E' || selectedTicket.statut === 'En cours') ? 'En cours' : 'Clôturé' }}
               </Badge>
             </div>
             <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">

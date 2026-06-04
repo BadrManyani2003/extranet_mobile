@@ -30,9 +30,9 @@ const emit = defineEmits(['select'])
           class="group p-5 bg-white border border-slate-100 rounded-2xl hover:border-slate-900/20 hover:shadow-md transition-all cursor-pointer flex items-center justify-between"
         >
           <div class="flex items-center gap-4 min-w-0 flex-1">
-            <Badge :class="(rec.statut === 'En cours' || rec.statut === 'E') ? 'bg-orange-50 text-orange-600 border-orange-100' : (rec.statut === 'T' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-slate-50 text-slate-400 border-slate-100')" 
+            <Badge :class="(rec.statut === 'En cours' || rec.statut === 'E') ? 'bg-orange-50 text-orange-600 border-orange-100' : 'bg-slate-50 text-slate-400 border-slate-100'" 
               class="rounded-lg px-2.5 py-1 text-[14px] font-black uppercase tracking-widest border shrink-0">
-              {{ (rec.statut === 'E' || rec.statut === 'En cours') ? 'En cours' : (rec.statut === 'T' ? 'Traité' : 'Clôturé') }}
+              {{ (rec.statut === 'E' || rec.statut === 'En cours') ? 'En cours' : 'Clôturé' }}
             </Badge>
             
             <div class="flex flex-col min-w-0">
