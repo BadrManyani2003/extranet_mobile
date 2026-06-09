@@ -25,6 +25,7 @@ const chargementDetails = ref(false)
 
 const isSante = computed(() => !!(props.branche && props.branche.toLowerCase().includes('sant')))
 const isAuto = computed(() => !!(props.branche && props.branche.toLowerCase().includes('auto')))
+const isAT = computed(() => !!(props.branche && (props.branche.toLowerCase() === 'at' || props.branche.toLowerCase().includes('accident') || props.branche.toLowerCase().includes('travail'))))
 
 const ouvrirDetails = async (risque: any) => {
   risqueSelectionne.value = risque
@@ -111,11 +112,15 @@ const iconeBranche = computed(() => {
                 <th class="px-6 py-3 text-[14px] font-bold text-slate-500 uppercase tracking-wider">{{ $t('sinistres.matricule') }}</th>
                 <th class="px-6 py-3 text-[14px] font-bold text-slate-500 uppercase tracking-wider">{{ $t('risques.insured_name') }}</th>
               </template>
+              <template v-else-if="isAT">
+                <th class="px-6 py-3 text-[14px] font-bold text-slate-500 uppercase tracking-wider">{{ $t('risques.insured_name') }}</th>
+                <th class="px-6 py-3 text-[14px] font-bold text-slate-500 uppercase tracking-wider">{{ $t('risques.id') }}</th>
+              </template>
               <template v-else>
                 <th class="px-6 py-3 text-[14px] font-bold text-slate-500 uppercase tracking-wider">{{ $t('risques.guarantee') }}</th>
                 <th class="px-6 py-3 text-[14px] font-bold text-slate-500 uppercase tracking-wider">{{ $t('risques.id') }}</th>
               </template>
-              <th class="px-6 py-3 text-[14px] font-bold text-slate-500 uppercase tracking-wider text-right w-24">
+              <th v-if="!isAT" class="px-6 py-3 text-[14px] font-bold text-slate-500 uppercase tracking-wider text-right w-24">
                 {{ $t('commun.actions') }}
               </th>
             </tr>
@@ -136,6 +141,11 @@ const iconeBranche = computed(() => {
                 <td class="px-6 py-3 text-sm text-slate-500 truncate">{{ risque.assure || '-' }}</td>
               </template>
               
+              <template v-else-if="isAT">
+                <td class="px-6 py-3 text-sm font-bold text-slate-800 truncate">{{ risque.nom }}</td>
+                <td class="px-6 py-3 text-sm font-medium text-slate-600 truncate">{{ risque.identifiant || '-' }}</td>
+              </template>
+              
               <template v-else>
                 <td class="px-6 py-3 text-sm font-bold text-slate-800 truncate">
                   <div class="flex flex-col">
@@ -148,7 +158,7 @@ const iconeBranche = computed(() => {
                 </td>
               </template>
 
-              <td class="px-6 py-3 text-right">
+              <td v-if="!isAT" class="px-6 py-3 text-right">
                 <Button @click="ouvrirDetails(risque)" variant="outline" size="sm" class="font-bold h-7 text-[14px] px-2">
                   {{ isSante ? $t('risques.beneficiaries') : $t('contrats.detail_button') }}
                 </Button>
@@ -159,7 +169,7 @@ const iconeBranche = computed(() => {
       </div>
 
       <div v-else class="text-center p-12 text-slate-500 italic">
-        {{ $t('risques.empty') }}
+        {{ isAT ? $t('contrats.ensemble_personnel') : $t('risques.empty') }}
       </div>
     </CardContent>
 

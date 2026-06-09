@@ -21,8 +21,6 @@ const client = jwksClient({
 });
 
 function getKey(header, callback) {
-    console.log(`[JWT Verify] En-tete du token recu :`, JSON.stringify(header));
-    
     if (!header || !header.kid) {
         console.error("❌ [Auth Middleware] Le token JWT ne contient pas de 'kid' dans son en-tete.");
         return callback(new Error("Le token JWT ne contient pas de parametre 'kid' dans son en-tete."));

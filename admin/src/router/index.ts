@@ -18,11 +18,12 @@ const router = createRouter({
       path: '/',
       component: MainLayout,
       children: [
-        { path: '',           redirect: '/users' },
-        { path: 'users',      name: 'users',      component: UsersView },
-        { path: 'clients',    name: 'clients',    component: ClientsView },
-        { path: 'adherents',  name: 'adherents',  component: AdherentsView },
-        { path: 'reclamations', name: 'reclamations', component: () => import('../views/ReclamationsView.vue') }
+        { path: '',              redirect: '/users' },
+        { path: 'users',         name: 'users',         component: UsersView },
+        { path: 'clients',       name: 'clients',       component: ClientsView },
+        { path: 'adherents',     name: 'adherents',     component: AdherentsView },
+        { path: 'reclamations',  name: 'reclamations',  component: () => import('../views/ReclamationsView.vue') },
+        { path: 'documents',     name: 'documents',     component: () => import('../views/DocumentsView.vue') }
       ]
     }
   ]

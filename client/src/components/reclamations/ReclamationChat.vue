@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, nextTick, onMounted } from 'vue'
-import { User, ShieldCheck, Send, History, Trash2, Clock } from 'lucide-vue-next'
+import { User, ShieldCheck, UserCheck, Send, History, Trash2, Clock } from 'lucide-vue-next'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Button } from '@/components/ui/button'
 
@@ -71,13 +71,13 @@ const formatDate = (date: string) => {
     <ScrollArea ref="scrollAreaRef" class="flex-1">
       <div class="p-6 md:p-10 min-h-full flex flex-col justify-end">
         <div v-if="loading && messages.length === 0" class="flex flex-col items-center justify-center h-64 gap-4">
-          <div class="w-10 h-10 border-4 border-slate-200 border-t-slate-900 rounded-full animate-spin"></div>
-          <p class="text-[14px] font-black uppercase tracking-widest text-slate-400">Chargement...</p>
+          <div class="w-10 h-10 border-4 border-slate-200 border-t-primary rounded-full animate-spin"></div>
+          <p class="text-[14px] font-black uppercase tracking-widest text-slate-400">{{ $t('commun.loading') }}</p>
         </div>
 
         <div v-else-if="messages.length === 0" class="flex flex-col items-center justify-center h-64 gap-6 opacity-40">
           <History class="w-16 h-16 text-slate-300" />
-          <p class="text-xs font-black uppercase tracking-widest text-slate-400">{{ $t('commun.no_results', 'Aucun message') }}</p>
+          <p class="text-xs font-black uppercase tracking-widest text-slate-400">{{ $t('reclamations.no_messages') }}</p>
         </div>
 
         <div v-else class="max-w-4xl mx-auto w-full space-y-1">
@@ -92,11 +92,12 @@ const formatDate = (date: string) => {
               <!-- Avatar -->
               <div class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm transition-all duration-500"
                 :class="[
-                  isSelf(msg) ? 'bg-slate-900 text-white' : 'bg-white border border-slate-200 text-slate-400',
+                  isSelf(msg) ? 'bg-primary text-primary-foreground' : 'bg-white border border-slate-200 text-slate-400',
                   isSameGroup(msg, messages[index+1]) ? 'opacity-0 scale-50 pointer-events-none' : 'opacity-100 scale-100'
                 ]"
               >
-                <ShieldCheck v-if="(msg.nature === 'Admin' || msg.nature === 'A')" class="w-4 h-4" />
+                <ShieldCheck v-if="(msg.nature === 'Admin' || msg.nature === 'A' || msg.nature === 'P')" class="w-4 h-4" />
+                <UserCheck v-else-if="msg.nature === 'E'" class="w-4 h-4 text-blue-600" />
                 <User v-else class="w-4 h-4" />
               </div>
 
@@ -106,7 +107,7 @@ const formatDate = (date: string) => {
                   <div class="px-5 py-3.5 text-sm font-bold leading-relaxed shadow-sm transition-all duration-300"
                     :class="[
                       isSelf(msg) 
-                        ? 'bg-slate-900 text-white selection:bg-white/20' 
+                        ? 'bg-primary text-primary-foreground selection:bg-white/20' 
                         : 'bg-white text-slate-700 border border-slate-100',
                       isSelf(msg)
                         ? (isSameGroup(msg, messages[index-1]) ? 'rounded-2xl rounded-tr-md' : 'rounded-2xl rounded-tr-none')
@@ -130,8 +131,8 @@ const formatDate = (date: string) => {
                 <!-- Footer info -->
                 <div v-if="!isSameGroup(msg, messages[index+1])" 
                   class="flex items-center gap-1.5 text-[9px] sm:text-[10px] font-black text-slate-300 mt-2 uppercase tracking-widest px-1">
-                  <span v-if="isSelf(msg)" class="text-slate-400">VOUS</span>
-                  <span v-else class="text-slate-900">{{ msg.envoyeur || 'Conseiller MyAsk' }}</span>
+                  <span v-if="isSelf(msg)" class="text-slate-400">{{ $t('commun.you') }}</span>
+                  <span v-else class="text-primary">{{ msg.envoyeur || (msg.nature === 'E' ? 'Expert MyAsk' : 'Conseiller MyAsk') }}</span>
                   <span class="w-1 h-1 rounded-full bg-slate-200"></span>
                   <Clock class="w-2.5 h-2.5" />
                   <span>{{ formatDate(msg.dateMessage) }}</span>
@@ -150,22 +151,22 @@ const formatDate = (date: string) => {
         <div v-if="selectedTicket?.statut === 'Clôturé' || selectedTicket?.statut === 'C'" 
           class="flex items-center justify-center gap-3 p-4 bg-slate-100 text-slate-400 rounded-2xl border border-dashed border-slate-200">
           <ShieldCheck class="w-4 h-4" />
-          <p class="text-[14px] font-black uppercase tracking-[0.2em] text-center">Discussion clôturée</p>
+          <p class="text-[14px] font-black uppercase tracking-[0.2em] text-center">{{ $t('reclamations.discussion_closed') }}</p>
         </div>
         
         <div v-else class="relative group">
-          <div class="relative flex items-center gap-4 bg-slate-50 border border-slate-100 rounded-[2rem] p-2 pl-6 focus-within:bg-white focus-within:border-slate-300 focus-within:shadow-2xl focus-within:shadow-slate-200/50 transition-all duration-500">
+          <div class="relative flex items-center gap-4 bg-slate-50 border border-slate-100 rounded-[2rem] p-2 pl-6 focus-within:bg-white focus-within:border-slate-300 focus-within:shadow-2xl transition-all duration-500">
             <input 
               v-model="nouveauMessage"
               type="text"
-              :placeholder="$t('reclamations.message_placeholder', 'Écrire un message...')"
+              :placeholder="$t('reclamations.write_message_placeholder')"
               @keyup.enter="handleSend"
               class="flex-1 bg-transparent border-none outline-none text-sm font-bold text-slate-900 placeholder:text-slate-400 py-4"
             />
             <Button 
               @click="handleSend"
               :disabled="!nouveauMessage.trim()"
-              class="w-12 h-12 rounded-full bg-slate-900 hover:bg-black shadow-lg shadow-slate-200 shrink-0 transition-all duration-300 active:scale-90"
+              class="w-12 h-12 rounded-full bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 shrink-0 transition-all duration-300 active:scale-90"
             >
               <Send class="w-5 h-5 text-white" />
             </Button>

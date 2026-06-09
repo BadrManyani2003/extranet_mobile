@@ -13,9 +13,9 @@ CLIENT_EXTRANET="client_extranet"
 CLIENT_MOBILE="client_mobile"
 CLIENT_API="client_api"
 
-REDIRECT_ADMIN="http://localhost:5173/*"
-REDIRECT_EXTRANET="http://localhost:5174/*"
-REDIRECT_MOBILE="assurplus://*"
+REDIRECT_ADMIN="\"http://localhost:5173/*\",\"http://192.168.20.110:8003/*\""
+REDIRECT_EXTRANET="\"http://localhost:5174/*\",\"http://192.168.20.110:8004/*\""
+REDIRECT_MOBILE="\"assurplus://*\""
 
 # Modifier ce chemin selon votre installation de Keycloak sur Linux/macOS
 KCADM_PATH="/opt/keycloak/bin/kcadm.sh"
@@ -77,7 +77,7 @@ CREATE_CLIENT() {
     if [ "$EXISTS" -gt 0 ]; then
         echo "Le client $NAME existe deja (IGNORER)."
     else
-        "$KCADM_PATH" create clients -r "$REALM_NAME" -s clientId="$NAME" -s enabled=true -s publicClient="$PUBLIC" -s "redirectUris=[\"$REDIRECT\"]" -s "webOrigins=[\"*\"]" -s standardFlowEnabled=true >/dev/null 2>&1
+        "$KCADM_PATH" create clients -r "$REALM_NAME" -s clientId="$NAME" -s enabled=true -s publicClient="$PUBLIC" -s "redirectUris=[$REDIRECT]" -s "webOrigins=[\"*\"]" -s standardFlowEnabled=true >/dev/null 2>&1
         echo "Le client $NAME a ete cree avec succes."
     fi
 }
@@ -92,7 +92,7 @@ if [ "$API_EXISTS" -gt 0 ]; then
     echo "Client API OK (existe deja)."
 else
     echo "Creation du client API..."
-    "$KCADM_PATH" create clients -r "$REALM_NAME" -s clientId="$CLIENT_API" -s enabled=true -s publicClient=false -s serviceAccountsEnabled=true -s clientAuthenticatorType=client-secret >/dev/null 2>&1
+    "$KCADM_PATH" create clients -r "$REALM_NAME" -s clientId="$CLIENT_API" -s enabled=true -s publicClient=false -s serviceAccountsEnabled=true -s clientAuthenticatorType=client-secret -s secret="mL1QMYDIhfgbrIJGCvwYW872GUa2PNV0" >/dev/null 2>&1
     if [ $? -eq 0 ]; then
         echo "Client API OK."
     fi

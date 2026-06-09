@@ -9,6 +9,7 @@ import { api } from '@/lib/api'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import * as XLSX from 'xlsx-js-style'
 
+const { t } = useI18n()
 const quittances = ref<any[]>([])
 const loading = ref(true)
 
@@ -27,7 +28,6 @@ const fetchAllQuittances = async () => {
 const exportToExcel = () => {
   if (!quittances.value.length) return
 
-  const { t } = useI18n()
   const headers = [
     t('quittances.num'), t('contrats.num'), t('contrats.branche'), t('quittances.from'), t('quittances.to'), t('quittances.total'), t('quittances.unpaid')
   ]
@@ -77,7 +77,7 @@ const exportToExcel = () => {
   ]
 
   const wb = XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(wb, ws, 'Relevé Global')
+  XLSX.utils.book_append_sheet(wb, ws, t('vue_releve_global.title'))
 
   XLSX.writeFile(wb, `Releve_Global_${new Date().toISOString().split('T')[0]}.xlsx`)
 }
@@ -103,7 +103,7 @@ onMounted(() => {
         :disabled="!quittances.length"
       >
         <FileDown class="w-5 h-5 text-slate-900" />
-        {{ $t('commun.download', 'Télécharger') }}
+        {{ $t('commun.download') }}
       </Button>
     </template>
 
@@ -148,7 +148,7 @@ onMounted(() => {
               </TableCell>
 
               <TableCell class="text-right py-4 px-6">
-                <span :class="item.montantImpaye > 0 ? 'text-orange-600 font-black' : 'text-emerald-600 font-bold'" class="text-sm">
+                <span :class="item.montantImpaye > 0 ? 'text-red-600 font-black' : 'text-emerald-600 font-bold'" class="text-sm">
                   {{ formatCurrency(item.montantImpaye) }}
                 </span>
               </TableCell>

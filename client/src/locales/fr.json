@@ -44,6 +44,9 @@
     "sinistres": "Sinistres",
     "sinistres_encours": "Sinistres en cours",
     "risques": "Risques assurés",
+    "assures": "Les Assurés",
+    "ensemble_personnel": "Ensemble de personnel",
+    "liste_nominative": "Liste nominative",
     "statut": "Statut",
     "branche": "Branche",
     "echeance": "Échéance",
@@ -53,7 +56,8 @@
     "documents": "Documents",
     "desc_docs": "Pièces jointes.",
     "search_docs": "Rechercher un document...",
-    "empty_docs": "Aucun document trouvé."
+    "empty_docs": "Aucun document trouvé.",
+    "download_simulation": "Téléchargement de : {name}"
   },
   "risques": {
     "title": "Risques assurés",
@@ -70,6 +74,7 @@
     "capital": "Capital",
     "deductible": "Franchise",
     "brand": "Marque",
+    "victime": "Assuré",
     "insured_name": "Assuré",
     "membership_num": "Adhésion",
     "membership_date": "Date d'adhésion",
@@ -106,7 +111,41 @@
     "franchise": "Franchise",
     "indemnite": "Indemnité",
     "nom": "Nom",
-    "empty": "Aucun."
+    "empty": "Aucun.",
+    "upload_doc_btn": "Charger un document",
+    "upload_doc_title": "Charger un document",
+    "upload_doc_desc": "Sélectionnez un fichier et précisez son type pour l'associer à ce sinistre.",
+    "upload_doc_type_label": "Saisir le type de document",
+    "upload_doc_type_placeholder": "Saisir le type de document (Ex : Constat, Facture...)",
+    "upload_doc_file_label": "Fichier (PDF, Image)",
+    "upload_doc_confirm": "Charger",
+    "upload_doc_success": "Document chargé avec succès.",
+    "upload_doc_error": "Erreur lors du chargement.",
+    "upload_doc_size_error": "Le fichier est trop volumineux (max 20 Mo).",
+    "upload_doc_required": "Veuillez sélectionner un fichier et saisir un type.",
+    "ref_sinistre": "Réf. Sinistre",
+    "date_sinistre": "Date Accident",
+    "lieu": "Lieu de l'accident",
+    "type_sinistre": "Type d'accident",
+    "circonstances": "Circonstances",
+    "lesion": "Lésions",
+    "etape": "Situation de l'assuré",
+    "itt": "ITT (jours)",
+    "ipp_estime": "IPP Estimée",
+    "ipp_traitant": "IPP Médecin Traitant",
+    "ipp_conseil": "IPP Médecin Conseil",
+    "ipp_retenu": "IPP Retenue",
+    "frais_medicaux": "Frais Médicaux",
+    "frais_transport": "Frais de Transport",
+    "indem_jrn": "Indem. Journalières",
+    "nature_indem": "Nature Indemnité",
+    "montant_indem": "Rachat / Rente",
+    "lesions": "Lésions",
+    "incapacities": "ITT/IPP",
+    "disability_rates": "ITT/IPP",
+    "pbistime": "Participation aux bénéfices estimée",
+    "bp": "Bons de pharmacie",
+    "bpconsome": "Bons de pharmacie consommés"
   },
   "quittances": {
     "title_prime": "Quittances",
@@ -117,7 +156,7 @@
     "num": "Quittance",
     "from": "Du",
     "to": "Au",
-    "total": "Total",
+    "total": "Prime Totale",
     "unpaid": "Impayé",
     "paid_badge": "Réglée",
     "unpaid_badge": "Impayée",
@@ -167,7 +206,12 @@
     "toast_delete_msg_success": "Message supprimé",
     "toast_delete_rec_success": "Réclamation supprimée",
     "not_authorized": "Votre profil n'est pas autorisé à émettre de nouvelles réclamations. Veuillez contacter votre conseiller.",
-    "delete_rec_confirm": "Voulez-vous vraiment supprimer cette réclamation et tous ses messages ?"
+    "delete_rec_confirm": "Voulez-vous vraiment supprimer cette réclamation et tous ses messages ?",
+    "placeholder": "Rechercher...",
+    "all_natures": "Toutes les natures",
+    "write_message_placeholder": "Écrire un message...",
+    "discussion_closed": "Discussion clôturée",
+    "no_messages": "Aucun message"
   },
   "commun": {
     "search": "Recherche",
@@ -185,7 +229,12 @@
     "confirm": "Confirmer",
     "sync": "Synchroniser",
     "link": "Lier",
-    "unlink": "Délier"
+    "unlink": "Délier",
+    "you": "Vous",
+    "document": "Document",
+    "loading": "Chargement...",
+    "search_placeholder": "Rechercher...",
+    "total_count": "{count} au total"
   },
   "statuts": {
     "actif": "Actif",
@@ -211,6 +260,8 @@
     "subtitle": "Sélectionnez un utilisateur pour simuler sa session.",
     "search_placeholder": "Rechercher par nom ou email...",
     "simulate": "Simuler",
-    "no_users": "Aucun utilisateur trouvé"
+    "no_users": "Aucun utilisateur trouvé",
+    "leave_simulation": "Quitter la simulation",
+    "simulation_mode": "Vous êtes actuellement en mode simulation : {name}"
   }
 }

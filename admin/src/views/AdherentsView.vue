@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { User, UserPlus, CheckCircle2, Link } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
@@ -9,6 +10,8 @@ import { api } from '@/lib/api'
 import { toast } from '@/components/ui/sonner'
 import { formatDate } from '@/lib/utils'
 
+const { t } = useI18n()
+
 const adherents = ref<any[]>([])
 const loading = ref(true)
 const linkDialogOpen = ref(false)
@@ -17,14 +20,14 @@ const selectedAdherentId = ref<number | null>(null)
 const fetchAdherents = async () => {
   loading.value = true
   try { adherents.value = await api.admin.getAdherents() } 
-  catch (e: any) { toast.error(e.message || "Erreur de chargement") } 
+  catch (e: any) { toast.error(e.message || t('adherents.toast_load_error')) } 
   finally { loading.value = false }
 }
 
 const handleCreateUser = async (adherentId: number) => {
   try {
     await api.admin.createUserFromAdherent(adherentId)
-    toast.success('Accès Mobile créé')
+    toast.success(t('adherents.toast_create_success'))
     fetchAdherents()
   } catch (e: any) { toast.error(e.message) }
 }
@@ -38,7 +41,7 @@ const handleLinkUser = async (userId: number) => {
   if (!selectedAdherentId.value) return
   try {
     await api.admin.linkUserToAdherent(selectedAdherentId.value, userId)
-    toast.success('Utilisateur lié')
+    toast.success(t('adherents.toast_link_success'))
     linkDialogOpen.value = false
     fetchAdherents()
   } catch (e: any) { toast.error(e.message) }
@@ -71,7 +74,7 @@ onMounted(fetchAdherents)
             <TableCell class="font-bold text-slate-400 py-4">{{ adherent.matricule || '-' }}</TableCell>
             <TableCell>
               <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-slate-900 group-hover:text-white transition-all shadow-sm">
+                <div class="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-primary group-hover:text-primary-foreground transition-all shadow-sm">
                   <User class="w-5 h-5" />
                 </div>
                 <span class="font-bold text-slate-900 tracking-tight">{{ adherent.nom }}</span>
@@ -89,7 +92,7 @@ onMounted(fetchAdherents)
             </TableCell>
             <TableCell class="text-right">
               <div v-if="!adherent.fkUserId" class="flex justify-end gap-1">
-                <Button variant="ghost" size="sm" class="h-9 gap-2 premium-button text-slate-600 hover:bg-slate-900 hover:text-white" @click="handleCreateUser(adherent.id)">
+                <Button variant="ghost" size="sm" class="h-9 gap-2 premium-button text-slate-600 hover:bg-primary hover:text-primary-foreground" @click="handleCreateUser(adherent.id)">
                   <UserPlus class="w-4 h-4" /> {{ $t('users.add_button') }}
                 </Button>
                 <Button variant="ghost" size="sm" class="h-9 gap-2 premium-button text-emerald-600 hover:bg-emerald-50" @click="openLinkDialog(adherent.id)">

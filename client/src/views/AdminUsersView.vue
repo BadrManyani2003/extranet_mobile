@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { Search, LogOut, UserX } from 'lucide-vue-next'
 import { api } from '@/lib/api'
 import { useFetch } from '@/composables/useFetch'
 import { useUserStore } from '@/store/user'
@@ -41,7 +42,7 @@ onMounted(fetchUsers)
     <!-- Header strip -->
     <div class="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-full bg-slate-900 text-white flex items-center justify-center text-sm font-bold select-none">
+        <div class="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold select-none">
           {{ adminName.charAt(0).toUpperCase() }}
         </div>
         <div>
@@ -53,9 +54,7 @@ onMounted(fetchUsers)
         @click="handleLogout"
         class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
-        </svg>
+        <LogOut class="w-4 h-4" />
         {{ $t('admin_users.logout') }}
       </button>
     </div>
@@ -67,14 +66,12 @@ onMounted(fetchUsers)
 
       <!-- Search -->
       <div class="relative mb-6">
-        <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-        </svg>
+        <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
         <input
           v-model="search"
           type="text"
           :placeholder="$t('admin_users.search_placeholder')"
-          class="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition"
+          class="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
         />
       </div>
 
@@ -102,7 +99,7 @@ onMounted(fetchUsers)
           </div>
           <button
             @click="handleSimulate(user)"
-            class="ml-4 shrink-0 px-4 py-2 text-sm font-semibold bg-slate-900 text-white rounded-lg hover:bg-slate-700 active:scale-95 transition-all"
+            class="ml-4 shrink-0 px-4 py-2 text-sm font-semibold bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 active:scale-95 transition-all"
           >
             {{ $t('admin_users.simulate') }}
           </button>
@@ -111,9 +108,7 @@ onMounted(fetchUsers)
 
       <!-- Empty state -->
       <div v-else class="text-center py-16 text-gray-400">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 mx-auto mb-3 opacity-30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-        </svg>
+        <UserX class="w-10 h-10 mx-auto mb-3 opacity-30" />
         <p class="text-sm">{{ $t('admin_users.no_users') }}</p>
       </div>
     </div>

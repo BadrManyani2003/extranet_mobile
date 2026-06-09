@@ -17,7 +17,7 @@ const statusKey = computed(() => {
 })
 
 const translatedStatus = computed(() => {
-  const key = `status.${statusKey.value}`
+  const key = `statuts.${statusKey.value}`
   return te(key) ? t(key) : props.status
 })
 

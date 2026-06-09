@@ -11,7 +11,7 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
+    --background: 199 80% 98.5%;
     --foreground: 0 0% 3.9%;
 
     --muted: 0 0% 96.1%;
@@ -26,8 +26,8 @@
     --border: 0 0% 89.8%;
     --input: 0 0% 89.8%;
 
-    --primary: 0 0% 9%;
-    --primary-foreground: 0 0% 98%;
+    --primary: 199 89% 48%;
+    --primary-foreground: 0 0% 100%;
 
     --secondary: 0 0% 96.1%;
     --secondary-foreground: 0 0% 9%;
@@ -59,8 +59,8 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 199 92% 60%;
+    --primary-foreground: 0 0% 9%;
 
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
@@ -105,10 +105,10 @@
   }
   
   .glass-card {
-    @apply bg-white border border-slate-200 rounded-[2.5rem] shadow-xl shadow-slate-200/50 overflow-hidden;
+    @apply bg-white border border-slate-200/60 rounded-[2.5rem] shadow-[0_20px_50px_rgba(14,165,233,0.06)] overflow-hidden;
   }
 
   .premium-button {
-    @apply rounded-xl font-black uppercase tracking-widest text-[12px] transition-all duration-200;
+    @apply rounded-xl font-black uppercase tracking-widest text-[12px] transition-all duration-200 bg-primary text-primary-foreground hover:bg-primary/90 shadow-md hover:shadow-lg;
   }
 }

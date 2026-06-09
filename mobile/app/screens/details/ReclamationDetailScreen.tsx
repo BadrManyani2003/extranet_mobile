@@ -318,7 +318,7 @@ const ReclamationDetailScreen = () => {
                   {/* Sender Name if not Me */}
                   {!isMe && (
                     <Text variant="caption" color="primary" fontWeight="bold" fontSize={rsp.normalize(11)} marginBottom="xxs">
-                      {msg.envoyeur || (msg.nature === 'Admin' ? t('Expert') : t('Client'))}
+                      {msg.envoyeur || (msg.nature === 'Admin' || msg.nature === 'A' ? t('Support') : (msg.nature === 'E' ? t('Expert') : t('Client')))}
                     </Text>
                   )}
 

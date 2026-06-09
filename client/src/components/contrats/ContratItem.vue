@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { FileText, Tag, Users, Shield, LifeBuoy, Wallet, AlertCircle, CheckCircle2, CreditCard, FileCheck, CalendarDays, Clock, Receipt, Building2 } from 'lucide-vue-next'
+import { FileText, Tag, Users, Shield, LifeBuoy, Wallet, AlertCircle, CheckCircle2, CreditCard, FileCheck, CalendarDays, Clock, Receipt, Building2, Car, HeartPulse, Briefcase, Factory } from 'lucide-vue-next'
 import { AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion'
 import { Card } from '@/components/ui/card'
 import StatusBadge from '@/components/shared/StatusBadge.vue'
 import ListeRisques from './ListeRisques.vue'
 import ListeSinistres from './ListeSinistres.vue'
+import ListeSinistresAT from './ListeSinistresAT.vue'
 import ListeQuittances from './ListeQuittances.vue'
 import ListeDocuments from './ListeDocuments.vue'
 import { useI18n } from 'vue-i18n'
@@ -21,6 +22,11 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits(['update:searchQuery'])
+
+const isSante = props.police.branche && props.police.branche.toLowerCase().includes('sant')
+const isAuto = props.police.branche && props.police.branche.toLowerCase().includes('auto')
+const isAT = props.police.branche && (props.police.branche.toLowerCase() === 'at' || props.police.branche.toLowerCase().includes('accident') || props.police.branche.toLowerCase().includes('travail'))
+const isIARD = props.police.branche && props.police.branche.toLowerCase().includes('iard')
 
 const ongletActif = ref('')
 const risques = ref<any[]>([])
@@ -40,11 +46,11 @@ const chargerDonnees = async () => {
       : api.data.getRisques(props.police.id)
 
     const [resRisques, resSinistres, resQuittances, resStats, resDocs] = await Promise.all([
-      fetchRisques,
-      api.data.getSinistres(props.police.id),
-      api.data.getQuittances(props.police.id),
-      api.data.getStatsByPolice(props.police.id),
-      api.data.getDocuments(props.police.id)
+      fetchRisques.catch(e => { console.error("Erreur lors du chargement des risques/adhérents:", e); return []; }),
+      api.data.getSinistres(props.police.id).catch(e => { console.error("Erreur lors du chargement des sinistres:", e); return []; }),
+      api.data.getQuittances(props.police.id).catch(e => { console.error("Erreur lors du chargement des quittances:", e); return []; }),
+      api.data.getStatsByPolice(props.police.id).catch(e => { console.error("Erreur lors du chargement des statistiques de police:", e); return {}; }),
+      api.data.getDocuments(props.police.id).catch(e => { console.error("Erreur lors du chargement des documents:", e); return []; })
     ])
     risques.value = resRisques || []
     sinistres.value = resSinistres || []
@@ -83,19 +89,37 @@ const basculerOnglet = (onglet: string) => {
 }
 
 const obtenirElementsGrille = (p: any) => {
-  const isSante = p.branche && p.branche.toLowerCase().includes('sant')
-  const isAuto = p.branche && p.branche.toLowerCase().includes('auto')
-  return [
+  
+  const elements = [
     { id: 'numero', title: t('contrats.num'), type: 'static', value: p.police, icon: FileText, colorClass: 'bg-slate-100 text-slate-500' },
     { id: 'branche', title: t('contrats.branche'), type: 'static', value: p.branche, icon: Tag, colorClass: 'bg-slate-100 text-slate-900' },
     { id: 'echeance', title: t('contrats.echeance'), type: 'static', value: formatDate(p.dateEcheance), icon: CalendarDays, colorClass: 'bg-slate-50 text-slate-600' },
-    { id: 'risque', title: isSante ? (t('risques.adherent') + 's') : (isAuto ? (t('risques.vehicle') + 's') : t('contrats.risques')), type: 'action', value: formatNumber(risques.value.length), icon: Shield, defaultColor: 'bg-slate-100 text-slate-800' },  
+    { 
+      id: 'risque', 
+      title: isAT ? t('contrats.assures') : (isSante ? (t('risques.adherent') + 's') : (isAuto ? (t('risques.vehicle') + 's') : t('contrats.risques'))), 
+      type: 'action', 
+      value: isAT 
+        ? (risques.value.length > 0 ? t('contrats.liste_nominative') : t('contrats.ensemble_personnel')) 
+        : formatNumber(risques.value.length), 
+      icon: isAuto ? Car : (isSante ? HeartPulse : (isAT ? Briefcase : (isIARD ? Factory : Shield))), 
+      defaultColor: 'bg-slate-100 text-slate-800' 
+    },  
     { id: 'sinistres', title: t('contrats.sinistres'), type: 'action', value: formatNumber(sinistres.value.length), icon: LifeBuoy, defaultColor: 'bg-slate-100 text-slate-800' },
     { id: 'sinistres-encours', title: t('contrats.sinistres_encours'), type: 'action', value: formatNumber(sinistres.value.filter((s: any) => s.statut === 'En cours' || s.statut === 'E').length), icon: Clock, defaultColor: 'bg-slate-100 text-slate-800' },
     { id: 'prime', title: t('contrats.prime_annuelle'), type: 'action', value: formatCurrency(stats.value.primeAnnuelle || 0), icon: Wallet, defaultColor: 'bg-slate-200 text-slate-900' },
-    { id: 'impayes', title: t('contrats.impayes'), type: 'action', value: formatCurrency(stats.value.impayes || 0), icon: Receipt, defaultColor: (stats.value.impayes || 0) > 0 ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-400', isRedAlert: (stats.value.impayes || 0) > 0 },
+    { id: 'impayes', title: t('contrats.impayes'), type: 'action', value: formatCurrency(stats.value.impayes || 0), icon: Receipt, defaultColor: (stats.value.impayes || 0) > 0 ? 'bg-red-50 text-red-500' : 'bg-slate-100 text-slate-400', isRedAlert: (stats.value.impayes || 0) > 0 },
     { id: 'documents', title: t('contrats.documents'), type: 'action', value: formatNumber(documents.value.length), icon: FileText, defaultColor: 'bg-slate-100 text-slate-800' }
   ]
+
+  if (isAT) {
+    elements.push(
+      { id: 'pbistime', title: t('sinistres.pbistime'), type: 'static', value: formatCurrency(p.PBistime || stats.value.PBistime || 0), icon: Wallet, colorClass: 'bg-slate-100 text-slate-500' },
+      { id: 'bp', title: t('sinistres.bp'), type: 'static', value: formatCurrency(p.bp || stats.value.bp || 0), icon: Receipt, colorClass: 'bg-slate-100 text-slate-500' },
+      { id: 'bpconsome', title: t('sinistres.bpconsome'), type: 'static', value: formatCurrency(p.bpconsome || stats.value.bpconsome || 0), icon: Receipt, colorClass: 'bg-slate-100 text-slate-500' }
+    )
+  }
+
+  return elements
 }
 
 const gererMiseAJourRecherche = (onglet: string, requete: string) => {
@@ -106,13 +130,13 @@ const gererMiseAJourRecherche = (onglet: string, requete: string) => {
 <template>
   <AccordionItem 
     :value="`police-${police.id}`"
-    class="bg-white border border-slate-200/60 rounded-2xl shadow-[0_2px_10px_-3px_rgba(0,0,0,0.07)] overflow-hidden transition-all duration-300 hover:shadow-[0_4px_20px_-5px_rgba(0,0,0,0.1)]"
+    class="bg-white border border-slate-200/60 rounded-2xl shadow-[0_4px_15px_-3px_rgba(14,165,233,0.08)] overflow-hidden transition-all duration-300 hover:shadow-[0_10px_25px_-5px_rgba(14,165,233,0.15)]"
   >
     <AccordionTrigger class="hover:no-underline px-5 py-5 transition-all group data-[state=open]:bg-slate-50/50">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between w-full pr-2 sm:pr-4 text-left gap-4">
         <div class="flex items-start sm:items-center gap-4">
-          <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-slate-900/10 text-slate-900 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-300 shadow-sm">
-            <FileText class="w-6 h-6 sm:w-7 sm:h-7" />
+          <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-300 shadow-sm">
+            <component :is="isAuto ? Car : (isSante ? HeartPulse : (isAT ? Briefcase : (isIARD ? Factory : FileText)))" class="w-6 h-6 sm:w-7 sm:h-7" />
           </div>
           <div class="flex-1 min-w-0">
             <div class="flex flex-wrap items-center gap-2 sm:gap-3">
@@ -131,7 +155,7 @@ const gererMiseAJourRecherche = (onglet: string, requete: string) => {
     <AccordionContent class="px-5 pb-5 pt-0 bg-slate-100/50">
       <div class="border-t border-slate-100 pt-5 mt-1">
         <div v-if="chargementDetails && risques.length === 0" class="py-12 flex flex-col items-center justify-center gap-4">
-          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-900"></div>
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           <p class="text-sm text-slate-500 font-medium tracking-tight">{{ $t('commun.search') }}...</p>
         </div>
         <div v-else>
@@ -151,15 +175,15 @@ const gererMiseAJourRecherche = (onglet: string, requete: string) => {
               <button v-else-if="item.type === 'action'"
                 @click="basculerOnglet(item.id)"
                 class="flex items-center gap-3 p-4 rounded-xl border transition-all duration-300 text-left group relative overflow-hidden"
-                :class="[ongletActif === item.id ? `bg-white shadow-md border-slate-900/30 ring-1 ring-slate-900/10` : 'bg-white border-slate-200/60 hover:border-slate-900/40 hover:shadow-sm']"
+                :class="[ongletActif === item.id ? (item.isRedAlert ? 'bg-white shadow-md border-red-500/30 ring-1 ring-red-500/10' : 'bg-white shadow-md border-primary/30 ring-1 ring-primary/10') : 'bg-white border-slate-200/60 hover:border-primary/40 hover:shadow-sm']"
               >
                 <div class="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 transition-all duration-300"
-                  :class="ongletActif === item.id ? (item.id === 'impayes' ? 'bg-slate-600 text-white shadow-lg shadow-slate-200' : 'bg-slate-900 text-white shadow-lg shadow-slate-200') : `${item.defaultColor} group-hover:scale-110`">
+                  :class="ongletActif === item.id ? (item.isRedAlert ? 'bg-red-500 text-white shadow-lg shadow-red-500/20' : 'bg-primary text-primary-foreground shadow-lg shadow-primary/20') : `${item.defaultColor} group-hover:scale-110`">
                   <component :is="item.icon" class="w-4.5 h-4.5" />
                 </div>
                 <div class="flex-1">
                   <p class="text-[14px] text-slate-400 font-bold uppercase tracking-widest leading-none mb-1">{{ item.title }}</p>
-                  <p class="text-sm font-bold transition-colors" :class="ongletActif === item.id ? (item.id === 'impayes' ? 'text-slate-600' : 'text-slate-900') : (item.isRedAlert ? 'text-slate-900' : 'text-slate-800')">{{ item.value }}</p>
+                  <p class="text-sm font-bold transition-colors" :class="ongletActif === item.id ? (item.isRedAlert ? 'text-red-600' : 'text-primary') : (item.isRedAlert ? 'text-red-600 font-black' : 'text-slate-800')">{{ item.value }}</p>
                 </div>
               </button>
             </template>
@@ -174,13 +198,21 @@ const gererMiseAJourRecherche = (onglet: string, requete: string) => {
                 :searchQuery="detailedSearchQueries[`${police.id}-risque`] || ''"
                 @update:searchQuery="gererMiseAJourRecherche('risque', $event)"
               />
-              <ListeSinistres 
-                v-else-if="ongletActif === 'sinistres' || ongletActif === 'sinistres-encours'" 
+              <ListeSinistresAT 
+                v-if="(ongletActif === 'sinistres' || ongletActif === 'sinistres-encours') && (police.branche && (police.branche.toLowerCase() === 'at' || police.branche.toLowerCase().includes('accident') || police.branche.toLowerCase().includes('travail')))" 
                 :sinistres="sinistres"
                 :risques="risques"
                 :branche="police.branche"
                 :activeTab="ongletActif"
-                :getStatusBadge="getStatusBadge"
+                :searchQuery="detailedSearchQueries[`${police.id}-${ongletActif}`] || ''"
+                @update:searchQuery="gererMiseAJourRecherche(ongletActif, $event)"
+              />
+              <ListeSinistres 
+                v-else-if="(ongletActif === 'sinistres' || ongletActif === 'sinistres-encours')" 
+                :sinistres="sinistres"
+                :risques="risques"
+                :branche="police.branche"
+                :activeTab="ongletActif"
                 :searchQuery="detailedSearchQueries[`${police.id}-${ongletActif}`] || ''"
                 @update:searchQuery="gererMiseAJourRecherche(ongletActif, $event)"
               />

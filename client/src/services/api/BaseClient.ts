@@ -1,10 +1,17 @@
 import keycloakService from '../keycloak'
 
-const BASE_URL = import.meta.env.VITE_API_URL
+function getBaseUrl(): string {
+  const baseUrl = (window as any).APP_ENV?.VITE_API_URL || import.meta.env.VITE_API_URL;
+  if (!baseUrl) {
+    throw new Error("La configuration de l'API (VITE_API_URL) est manquante dans l'environnement.");
+  }
+  return baseUrl;
+}
+
 let logoutPending = false;
 
 export async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  if (!BASE_URL) throw new Error('Configuration API manquante.');
+  const baseUrl = getBaseUrl();
 
   const method  = options.method || 'POST'
   const headers = new Headers(options.headers)
@@ -34,7 +41,7 @@ export async function request<T>(endpoint: string, options: RequestInit = {}): P
     }
   }
 
-  let url = `${BASE_URL.replace(/\/$/, '')}${endpoint}`
+  let url = `${baseUrl.replace(/\/$/, '')}${endpoint}`
   let requestOptions: RequestInit = { ...options, method, headers }
 
   if (method === 'GET' && options.body) {

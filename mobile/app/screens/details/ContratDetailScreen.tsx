@@ -9,12 +9,15 @@ import { Theme } from '../../theme/theme';
 import { useTheme } from '@shopify/restyle';
 import { dataAPI, quittancesAPI } from '../../api';
 import { rsp } from '../../utils/responsive';
+import { useTranslation } from '../../utils/i18n';
 
 const ContratDetailScreen = () => {
+  const { t } = useTranslation();
   const theme = useTheme<Theme>();
   const route = useRoute<any>();
   const navigation = useNavigation<any>();
   const { police } = route.params;
+  const isAT = police.branche && (police.branche.toLowerCase() === 'at' || police.branche.toLowerCase().includes('accident') || police.branche.toLowerCase().includes('travail'));
 
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -75,6 +78,18 @@ const ContratDetailScreen = () => {
     fetchData();
   };
 
+  const translateRisqueNom = (nom: string) => {
+    if (!nom) return '';
+    const lower = nom.toLowerCase().trim();
+    if (lower === 'ensemble de personnel' || lower === 'ensemble de parsonelle' || lower.includes('personnel') || lower.includes('parsonelle')) {
+      return t('Ensemble de personnel');
+    }
+    if (lower === 'liste nominative' || lower.includes('nominative')) {
+      return t('Liste nominative');
+    }
+    return nom;
+  };
+
   const formatDate = (dateStr: string) => {
     if (!dateStr) return '--/--/----';
     const date = new Date(dateStr);
@@ -93,27 +108,29 @@ const ContratDetailScreen = () => {
       >
         <Box height={20} />
         {/* Informations Générales */}
-        <Section title="Informations du Contrat" icon="information-circle-outline">
-          <InfoRow label="Branche" value={police.branche} icon="shield-checkmark-outline" />
-          <InfoRow label="Compagnie" value={police.compagnie} icon="business-outline" />
-          <InfoRow label="Date d'échéance" value={formatDate(police.dateEcheance)} icon="calendar-outline" />
-          <InfoRow label="Statut" value={police.statut} icon="stats-chart-outline" valueColor={police.statut_variant === 'success' ? 'success' : 'warning'} isLast={true} />
+        <Section title={t("Informations du Contrat")} icon="information-circle-outline">
+          <InfoRow label={t("Branche")} value={police.branche} icon="shield-checkmark-outline" />
+          <InfoRow label={t("Compagnie")} value={police.compagnie} icon="business-outline" />
+          <InfoRow label={t("Date d'échéance")} value={formatDate(police.dateEcheance)} icon="calendar-outline" />
+          <InfoRow label={t("Statut")} value={police.statut} icon="stats-chart-outline" valueColor={police.statut_variant === 'success' ? 'success' : 'warning'} isLast={true} />
         </Section>
 
         {/* Stats Section */}
         {stats && (
-          <Section title="Résumé Financier" icon="analytics-outline">
+          <Section title={t("Résumé Financier")} icon="analytics-outline">
             <Box flexDirection="row" justifyContent="space-around" paddingVertical="m">
-              <Box alignItems="center">
-                <Text variant="caption" color="textTertiary">Risques</Text>
-                <Text variant="title" color="text" fontSize={20}>{stats.nbRisques || 0}</Text>
+              <Box alignItems="center" flex={1}>
+                <Text variant="caption" color="textTertiary">{isAT ? t("Assurés") : t("Risques")}</Text>
+                <Text variant="title" color="text" fontSize={isAT ? 13 : 20} textAlign="center" numberOfLines={1}>
+                  {isAT ? (risques.length > 0 ? t('Liste nominative') : t('Ensemble de personnel')) : (stats.nbRisques || 0)}
+                </Text>
               </Box>
-              <Box alignItems="center">
-                <Text variant="caption" color="textTertiary">Impayés</Text>
+              <Box alignItems="center" flex={1}>
+                <Text variant="caption" color="textTertiary">{t("Impayés")}</Text>
                 <Text variant="title" color="error" fontSize={20}>{stats.impayes || 0}</Text>
               </Box>
-              <Box alignItems="center">
-                <Text variant="caption" color="textTertiary">Sinistres</Text>
+              <Box alignItems="center" flex={1}>
+                <Text variant="caption" color="textTertiary">{t("Sinistres")}</Text>
                 <Text variant="title" color="warning" fontSize={20}>{stats.nbSinistres || 0}</Text>
               </Box>
             </Box>
@@ -122,7 +139,7 @@ const ContratDetailScreen = () => {
 
         {/* Risques Section */}
         {risques.length > 0 && (
-          <Section title="Objets Assurés (Risques)" icon="shield-outline">
+          <Section title={isAT ? t("Assurés") : t("Objets Assurés (Risques)")} icon="shield-outline">
             {risques.map((risque, index) => {
               const isExpanded = expandedRisqueId === risque.id;
               const gList = garantiesMap[risque.id] || [];
@@ -134,19 +151,28 @@ const ContratDetailScreen = () => {
                   borderBottomWidth={index === risques.length - 1 ? 0 : 1}
                   borderColor="borderLight"
                 >
-                  <TouchableOpacity activeOpacity={0.7} onPress={() => toggleRisque(risque.id)}>
+                  {isAT ? (
                     <Box padding="l" flexDirection="row" justifyContent="space-between" alignItems="center">
                       <Box flex={1}>
                         <Text variant="body" fontWeight="700">{risque.nom}</Text>
-                        <Text variant="caption" color="textTertiary">{risque.identifiant} • {risque.description}</Text>
-                      </Box>
-                      <Box style={{ transform: [{ rotate: isExpanded ? '90deg' : '0deg' }] }}>
-                        <Icon name="chevron-forward" size={20} color={theme.colors.textTertiary} />
+                        <Text variant="caption" color="textTertiary">{t("Identifiant")}: {risque.identifiant || '-'}</Text>
                       </Box>
                     </Box>
-                  </TouchableOpacity>
+                  ) : (
+                    <TouchableOpacity activeOpacity={0.7} onPress={() => toggleRisque(risque.id)}>
+                      <Box padding="l" flexDirection="row" justifyContent="space-between" alignItems="center">
+                        <Box flex={1}>
+                          <Text variant="body" fontWeight="700">{risque.nom}</Text>
+                          <Text variant="caption" color="textTertiary">{risque.identifiant} • {risque.description}</Text>
+                        </Box>
+                        <Box style={{ transform: [{ rotate: isExpanded ? '90deg' : '0deg' }] }}>
+                          <Icon name="chevron-forward" size={20} color={theme.colors.textTertiary} />
+                        </Box>
+                      </Box>
+                    </TouchableOpacity>
+                  )}
 
-                  {isExpanded && (
+                  {!isAT && isExpanded && (
                     <Box backgroundColor="background" paddingHorizontal="m" paddingBottom="m">
                       {isLoadingG ? (
                         <ActivityIndicator size="small" color={theme.colors.primary} style={{ marginVertical: 10 }} />
@@ -167,13 +193,13 @@ const ContratDetailScreen = () => {
                               </Box>
                               <Box flex={1} alignItems="flex-end">
                                 <Text variant="caption" color="primary" fontWeight="700">{g.capital > 0 ? `${g.capital}` : '-'}</Text>
-                                {(g.franchise && g.franchise != '0' && g.franchise != 0) && <Text variant="caption" color="textTertiary" fontSize={9}>Franchise: {g.franchise}</Text>}
+                                {(g.franchise && g.franchise != '0' && g.franchise != 0) && <Text variant="caption" color="textTertiary" fontSize={9}>{t("Franchise: ")}{g.franchise}</Text>}
                               </Box>
                             </Box>
                           ))}
                         </Box>
                       ) : (
-                        <Text variant="caption" color="textTertiary" textAlign="center" marginVertical="s">Aucune garantie spécifique</Text>
+                        <Text variant="caption" color="textTertiary" textAlign="center" marginVertical="s">{t("Aucune garantie spécifique")}</Text>
                       )}
                     </Box>
                   )}
@@ -187,7 +213,7 @@ const ContratDetailScreen = () => {
 
         {/* Dernières Quittances */}
         {quittances.length > 0 && (
-          <Section title="Dernières Quittances" icon="receipt-outline">
+          <Section title={t("Dernières Quittances")} icon="receipt-outline">
             {quittances.slice(0, 3).map((q, index) => (
               <TouchableOpacity 
                 key={q.id} 
@@ -214,7 +240,7 @@ const ContratDetailScreen = () => {
             ))}
             {quittances.length > 3 && (
               <TouchableOpacity onPress={() => navigation.navigate('Quittances', { policeId: police.id })}>
-                <Text variant="bodySmall" color="primary" textAlign="center" padding="m" fontWeight="700">Voir toutes les quittances</Text>
+                <Text variant="bodySmall" color="primary" textAlign="center" padding="m" fontWeight="700">{t("Voir toutes les quittances")}</Text>
               </TouchableOpacity>
             )}
           </Section>

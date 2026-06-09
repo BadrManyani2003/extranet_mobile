@@ -16,7 +16,7 @@ const emit = defineEmits(['update:modelValue'])
     <Input 
       :modelValue="modelValue" 
       @update:modelValue="emit('update:modelValue', $event)"
-      :placeholder="placeholder || 'Recherche'" 
+      :placeholder="placeholder || $t('commun.search')" 
       class="pl-10 pr-10 rounded-xl border-slate-200 focus:ring-slate-900/10 w-full"
     />
     <button 

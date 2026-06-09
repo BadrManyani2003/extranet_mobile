@@ -13,6 +13,7 @@ IF OBJECT_ID('dbo.ReclamationsIdt', 'U') IS NOT NULL DROP TABLE dbo.Reclamations
 IF OBJECT_ID('dbo.UserSimulationClients', 'U') IS NOT NULL DROP TABLE dbo.UserSimulationClients;
 IF OBJECT_ID('dbo.PolDocument', 'U') IS NOT NULL DROP TABLE dbo.PolDocument;
 IF OBJECT_ID('dbo.Garanties', 'U') IS NOT NULL DROP TABLE dbo.Garanties;
+IF OBJECT_ID('dbo.sinComplement', 'U') IS NOT NULL DROP TABLE dbo.sinComplement;
 IF OBJECT_ID('dbo.Sinistres', 'U') IS NOT NULL DROP TABLE dbo.Sinistres;
 IF OBJECT_ID('dbo.Quittances', 'U') IS NOT NULL DROP TABLE dbo.Quittances;
 IF OBJECT_ID('dbo.PersACharge', 'U') IS NOT NULL DROP TABLE dbo.PersACharge;
@@ -145,6 +146,9 @@ CREATE TABLE dbo.Polices
     Statut CHAR(1) NULL,
     Module VARCHAR(100) NULL,
     DateEffet DATE NULL,
+    PBistime DECIMAL(18,2) NULL,
+    bp DECIMAL(18,2) NULL,
+    bpconsome DECIMAL(18,2) NULL,
     CreatedAt DATETIME2 NOT NULL  DEFAULT GETDATE(),
     UpdatedAt DATETIME2 NULL,
     CONSTRAINT PK_Polices PRIMARY KEY CLUSTERED (Id),
@@ -278,6 +282,24 @@ CREATE TABLE dbo.PolDocument
 );
 GO
 
+IF OBJECT_ID('dbo.StdDocument', 'U') IS NOT NULL DROP TABLE dbo.StdDocument;
+GO
+
+CREATE TABLE dbo.StdDocument
+(
+    Id            INT            NOT NULL IDENTITY(1,1),
+    Nature        VARCHAR(50)    NOT NULL,                       
+    Identifiant   INT            NOT NULL,                       
+    Type          VARCHAR(255)   NOT NULL,                      
+    Document      VARBINARY(MAX) NOT NULL,                       
+    Transfere     CHAR(1)        NOT NULL DEFAULT 'N',           
+    FK_User_Id    INT            NOT NULL,                       
+    DateCreation  DATETIME2      NOT NULL DEFAULT GETDATE(),
+    CONSTRAINT PK_StdDocument PRIMARY KEY CLUSTERED (Id),
+    CONSTRAINT FK_StdDocument_User FOREIGN KEY (FK_User_Id) REFERENCES dbo.sysUser(Id)
+);
+GO
+
 CREATE TABLE dbo.ReclamationsIdt
 (
     Id INT NOT NULL IDENTITY(1,1),
@@ -304,6 +326,33 @@ CREATE TABLE dbo.ReclamationsDet
     CONSTRAINT PK_ReclamationsDet PRIMARY KEY CLUSTERED (Id),
     CONSTRAINT FK_ReclamDet_Reclamation FOREIGN KEY (FK_Reclamation_Id) REFERENCES dbo.ReclamationsIdt(Id) ON DELETE CASCADE,
     CONSTRAINT FK_ReclamDet_User FOREIGN KEY (FK_User_Id) REFERENCES dbo.sysUser(Id)
+);
+GO
+
+CREATE TABLE dbo.sinComplement
+(
+    id INT NOT NULL IDENTITY(1,1),
+    fk_sinistre_id INT NOT NULL,
+    Ref_Sinistre INT NULL,
+    Date_Sinistre DATE NULL,
+    Victime VARCHAR(255) NULL,
+    Lieu VARCHAR(255) NULL,
+    Type_Sinistre VARCHAR(255) NULL,
+    Circonstances VARCHAR(max) NULL,
+    Lesion VARCHAR(255) NULL,
+    Etape VARCHAR(255) NULL,
+    ITT VARCHAR(255) NULL,
+    IPP_Estime DECIMAL(18,2) NULL,
+    IPP_Traitant DECIMAL(18,2) NULL,
+    IPP_Conseil DECIMAL(18,2) NULL,
+    IPP_Retenu DECIMAL(18,2) NULL,
+    Frais_Medicaux DECIMAL(18,2) NULL,
+    Frais_Transport DECIMAL(18,2) NULL,
+    Indem_Jrn DECIMAL(18,2) NULL,
+    Nature_indem VARCHAR(255) NULL,
+    Montant_indem DECIMAL(18,2) NULL,
+    CONSTRAINT PK_sinComplement PRIMARY KEY CLUSTERED (id),
+    CONSTRAINT FK_sinComplement_Sinistre FOREIGN KEY (fk_sinistre_id) REFERENCES dbo.Sinistres(Id) ON DELETE CASCADE
 );
 GO
 
@@ -334,4 +383,11 @@ CREATE NONCLUSTERED INDEX IX_ReclamationsIdt_User ON dbo.ReclamationsIdt(FK_User
 CREATE NONCLUSTERED INDEX IX_ReclamationsIdt_Statut ON dbo.ReclamationsIdt(Statut);
 CREATE NONCLUSTERED INDEX IX_ReclamationsDet_Reclamation ON dbo.ReclamationsDet(FK_Reclamation_Id);
 CREATE NONCLUSTERED INDEX IX_PolDocument_Police ON dbo.PolDocument(fk_police_id);
+CREATE NONCLUSTERED INDEX IX_StdDocument_Nature ON dbo.StdDocument(Nature);
+CREATE NONCLUSTERED INDEX IX_StdDocument_Identifiant ON dbo.StdDocument(Nature, Identifiant);
+CREATE NONCLUSTERED INDEX IX_StdDocument_User ON dbo.StdDocument(FK_User_Id);
+CREATE NONCLUSTERED INDEX IX_StdDocument_DateCreation ON dbo.StdDocument(DateCreation);
+CREATE NONCLUSTERED INDEX IX_sinComplement_Sinistre ON dbo.sinComplement(fk_sinistre_id);
 GO
+
+

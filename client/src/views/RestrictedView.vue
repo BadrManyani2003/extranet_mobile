@@ -13,8 +13,8 @@ const handleLogout = () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-slate-50 flex items-center justify-center p-4 font-['Outfit']">
-    <div class="max-w-md w-full bg-white rounded-[2.5rem] shadow-2xl shadow-slate-200/60 overflow-hidden border border-slate-100">
+  <div class="min-h-screen bg-background flex items-center justify-center p-4 font-['Outfit']">
+    <div class="max-w-md w-full bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-slate-100">
       <div class="p-10 text-center">
         <h1 class="text-3xl font-black text-slate-900 mb-8 tracking-tight">{{ $t('restricted.title') }}</h1>
         
@@ -24,7 +24,7 @@ const handleLogout = () => {
             @click="userStore.stopImpersonation"
             class="flex items-center justify-center gap-3 w-full py-4 px-6 bg-amber-500 hover:bg-amber-600 text-amber-950 rounded-2xl font-bold transition-all duration-300 shadow-lg shadow-amber-100 hover:shadow-amber-200 group"
           >
-            Quitter la simulation
+            {{ $t('admin_users.leave_simulation') }}
           </button>
           
           <button 

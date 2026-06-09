@@ -10,14 +10,15 @@ const props = defineProps<{
 }>()
 
 const statusKey = computed(() => {
-  const s = props.status.toLowerCase()
+  const s = props.status.toLowerCase().trim()
   if (s === 'en cours') return 'en_cours'
   if (s === 'en attente') return 'en_attente'
+  if (s === 'clôturé' || s === 'cloture' || s === 'cloturé') return 'cloture'
   return s
 })
 
 const translatedStatus = computed(() => {
-  const key = `status.${statusKey.value}`
+  const key = `statuts.${statusKey.value}`
   return te(key) ? t(key) : props.status
 })
 

@@ -41,7 +41,7 @@ const quittancesFiltrees = computed(() => {
     />
     
     <CardContent class="p-0 flex-1 overflow-hidden">
-      <div v-if="quittancesFiltrees.length > 0" class="max-h-[350px] overflow-y-auto px-4 pb-8 pt-4 scrollbar-thin scrollbar-thumb-slate-200">
+      <div v-if="quittancesFiltrees.length > 0" class="max-h-[360px] overflow-y-auto px-4 pb-8 pt-4 scrollbar-thin scrollbar-thumb-slate-200">
         <div class="space-y-3">
           <div v-for="quit in quittancesFiltrees" :key="quit.numero" 
             class="bg-white border border-slate-200 rounded-xl p-4 transition-all hover:shadow-sm hover:border-slate-300"
@@ -49,7 +49,9 @@ const quittancesFiltrees = computed(() => {
             <div class="grid grid-cols-1 md:grid-cols-5 items-center gap-4">
               
               <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400">
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center transition-colors"
+                  :class="quit.montantImpaye > 0 ? 'bg-red-50 text-red-500' : 'bg-slate-50 text-slate-400'"
+                >
                   <FileText class="w-4 h-4" />
                 </div>
                 <div>
@@ -83,7 +85,7 @@ const quittancesFiltrees = computed(() => {
               <div class="flex items-center justify-end gap-4">
                 <div class="text-right">
                   <p class="text-[14px] font-bold uppercase tracking-widest leading-none mb-1 text-slate-400">{{ $t('quittances.unpaid') }}</p>
-                  <p class="text-sm font-black" :class="quit.montantImpaye > 0 ? 'text-slate-900 underline' : 'text-slate-900'">
+                  <p class="text-sm font-black" :class="quit.montantImpaye > 0 ? 'text-red-600 font-black' : 'text-slate-900'">
                     {{ formatCurrency(quit.montantImpaye) }}
                   </p>
                 </div>

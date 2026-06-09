@@ -1,6 +1,7 @@
-import { DataService } from '../services/api/DataService'
+import { DataService }      from '../services/api/DataService'
 import { ReclamationService } from '../services/api/ReclamationService'
-import { AdminService } from '../services/api/AdminService'
+import { AdminService }      from '../services/api/AdminService'
+import { DocumentService }   from '../services/api/DocumentService'
 
 /**
  * API Facade
@@ -12,5 +13,6 @@ export const api = {
     ...DataService,
     ...ReclamationService
   },
-  admin: AdminService
-}
+  admin:    AdminService,
+  document: DocumentService
+}

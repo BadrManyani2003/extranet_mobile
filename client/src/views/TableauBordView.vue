@@ -126,10 +126,10 @@ onMounted(() => {
   <PageContainer :title="$t('tableau_bord.title')" :subtitle="$t('tableau_bord.subtitle')">
     <div v-if="loading" class="flex flex-col items-center justify-center min-h-[400px] gap-4">
       <div class="relative">
-        <Loader2 class="w-12 h-12 animate-spin text-slate-900" />
-        <div class="absolute inset-0 blur-xl bg-slate-900/20 animate-pulse rounded-full"></div>
+        <Loader2 class="w-12 h-12 animate-spin text-primary" />
+        <div class="absolute inset-0 blur-xl bg-primary/20 animate-pulse rounded-full"></div>
       </div>
-      <p class="text-xs font-black text-slate-400 uppercase tracking-[0.2em] animate-pulse">Chargement...</p>
+      <p class="text-xs font-black text-slate-400 uppercase tracking-[0.2em] animate-pulse">{{ $t('commun.loading') }}</p>
     </div>
 
     <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">

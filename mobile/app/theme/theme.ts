@@ -3,8 +3,8 @@ import { createTheme } from '@shopify/restyle';
 import { rsp } from '../utils/responsive';
 
 const palette = {
-  primary:      '#075985',
-  primaryLight: '#0EA5E9',
+  primary:      '#0EA5E9',
+  primaryLight: '#38BDF8',
   primaryBg:    '#F0F9FF',
 
   secondary:    '#0284C7',

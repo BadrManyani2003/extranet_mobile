@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { FileText, AlertCircle, BarChart3, LifeBuoy, Shield } from 'lucide-vue-next'
+import { FileSpreadsheet, AlertCircle, TrendingUp, MessageSquare, Shield } from 'lucide-vue-next'
 import Sidebar from './Sidebar.vue'
 import Header from './Header.vue'
 import { useUserStore } from '../store/user'
@@ -42,14 +42,14 @@ const navItems = computed(() => {
 
   // Relevé Global is only visible for Client and Expert, or in simulation mode
   if (keycloak.hasRole('client') || keycloak.hasRole('expert') || userStore.impersonatedUser) {
-    items.push({ nom: 'navigation.global_statement', chemin: '/releve-global', icone: FileText })
+    items.push({ nom: 'navigation.global_statement', chemin: '/releve-global', icone: FileSpreadsheet })
   }
 
   // Dashboard and Reclamations are visible to all authorized roles
-  items.push({ nom: 'navigation.dashboard', chemin: '/statistiques', icone: BarChart3 })
+  items.push({ nom: 'navigation.dashboard', chemin: '/statistiques', icone: TrendingUp })
   
   if (String(userStore.activeUser?.reclamation || '').trim().toUpperCase() === 'O') {
-    items.push({ nom: 'navigation.reclamation', chemin: '/reclamations', icone: LifeBuoy })
+    items.push({ nom: 'navigation.reclamation', chemin: '/reclamations', icone: MessageSquare })
   }
 
   return items
@@ -57,14 +57,14 @@ const navItems = computed(() => {
 </script>
 
 <template>
-  <div v-if="isLoading" class="min-h-screen bg-slate-50 flex items-center justify-center">
-    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-900"></div>
+  <div v-if="isLoading" class="min-h-screen bg-background flex items-center justify-center">
+    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
   </div>
-  <div v-else-if="hasAccess" class="min-h-screen bg-slate-50 flex font-['Outfit'] flex-col">
+  <div v-else-if="hasAccess" class="min-h-screen bg-background flex font-['Outfit'] flex-col">
     <div v-if="userStore.impersonatedUser" class="bg-amber-500 text-amber-950 px-4 py-2 flex items-center justify-center gap-4 z-50 font-semibold shadow-md">
-      <span>Vous êtes actuellement en mode simulation : {{ userStore.activeUser?.nom || userStore.activeUser?.Nom || userStore.activeUser?.name || 'Utilisateur' }}</span>
+      <span>{{ $t('admin_users.simulation_mode', { name: userStore.activeUser?.nom || userStore.activeUser?.Nom || userStore.activeUser?.name || 'Utilisateur' }) }}</span>
       <button @click="userStore.stopImpersonation()" class="px-3 py-1 bg-amber-950 text-amber-50 rounded-lg text-sm hover:bg-amber-900 transition-colors">
-        Quitter la simulation
+        {{ $t('admin_users.leave_simulation') }}
       </button>
     </div>
     <div class="flex flex-1 min-h-0">
@@ -87,7 +87,7 @@ const navItems = computed(() => {
         @toggle="toggleMenu"
       />
 
-      <div class="flex-1 overflow-y-auto bg-slate-50/30">
+      <div class="flex-1 overflow-y-auto bg-background/40">
         <div class="mx-auto py-10 px-6 sm:px-12 w-full">
           <router-view />
         </div>

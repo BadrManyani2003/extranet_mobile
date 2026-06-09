@@ -44,6 +44,9 @@
     "sinistres": "Claims",
     "sinistres_encours": "Ongoing Claims",
     "risques": "Garanties",
+    "assures": "Insured",
+    "ensemble_personnel": "All staff",
+    "liste_nominative": "Staff list",
     "statut": "Status",
     "branche": "Branch",
     "echeance": "Due date",
@@ -53,7 +56,8 @@
     "documents": "Documents",
     "desc_docs": "Attachments.",
     "search_docs": "Search for a document...",
-    "empty_docs": "No documents found."
+    "empty_docs": "No documents found.",
+    "download_simulation": "Downloading: {name}"
   },
   "risques": {
     "title": "Coverage",
@@ -70,6 +74,7 @@
     "capital": "Capital",
     "deductible": "Excess",
     "brand": "Brand",
+    "victime": "Victim",
     "insured_name": "Insured",
     "membership_num": "Member ID",
     "membership_date": "Membership Date",
@@ -106,7 +111,41 @@
     "franchise": "Excess",
     "indemnite": "Indemnity",
     "nom": "Name",
-    "empty": "None."
+    "empty": "None.",
+    "upload_doc_btn": "Upload a document",
+    "upload_doc_title": "Upload a document",
+    "upload_doc_desc": "Select a file and specify its type to attach it to this claim.",
+    "upload_doc_type_label": "Enter document type",
+    "upload_doc_type_placeholder": "Enter document type (e.g. Report, Invoice...)",
+    "upload_doc_file_label": "File (PDF, Image)",
+    "upload_doc_confirm": "Upload",
+    "upload_doc_success": "Document uploaded successfully.",
+    "upload_doc_error": "Upload failed.",
+    "upload_doc_size_error": "File is too large (max 20 MB).",
+    "upload_doc_required": "Please select a file and enter a document type.",
+    "ref_sinistre": "Claim Ref.",
+    "date_sinistre": "Accident Date",
+    "lieu": "Accident Location",
+    "type_sinistre": "Accident Type",
+    "circonstances": "Circumstances",
+    "lesion": "Injury Seat",
+    "etape": "Procedure Step",
+    "itt": "ITT (days)",
+    "ipp_estime": "Est. IPP",
+    "ipp_traitant": "Treating Doctor IPP",
+    "ipp_conseil": "Advisor Doctor IPP",
+    "ipp_retenu": "Retained IPP",
+    "frais_medicaux": "Medical Costs",
+    "frais_transport": "Transport Costs",
+    "indem_jrn": "Daily Allowance",
+    "nature_indem": "Indemnity Nature",
+    "montant_indem": "Indemnity Amount",
+    "lesions": "Injuries",
+    "incapacities": "Disabilities",
+    "disability_rates": "Disability Rates",
+    "pbistime": "Estimated profit sharing",
+    "bp": "Pharmacy vouchers",
+    "bpconsome": "Consumed pharmacy vouchers"
   },
   "quittances": {
     "title_prime": "Receipts",
@@ -167,7 +206,12 @@
     "toast_delete_msg_success": "Message deleted successfully",
     "toast_delete_rec_success": "Ticket deleted successfully",
     "not_authorized": "Your profile is not authorized to submit new tickets. Please contact your advisor.",
-    "delete_rec_confirm": "Do you really want to delete this ticket and all of its messages?"
+    "delete_rec_confirm": "Do you really want to delete this ticket and all of its messages ?",
+    "placeholder": "Search...",
+    "all_natures": "All categories",
+    "write_message_placeholder": "Write a message...",
+    "discussion_closed": "Ticket closed",
+    "no_messages": "No messages"
   },
   "commun": {
     "search": "Search",
@@ -185,7 +229,12 @@
     "confirm": "Confirm",
     "sync": "Sync",
     "link": "Link",
-    "unlink": "Unlink"
+    "unlink": "Unlink",
+    "you": "You",
+    "document": "Document",
+    "loading": "Loading...",
+    "search_placeholder": "Search...",
+    "total_count": "{count} total"
   },
   "statuts": {
     "actif": "Active",
@@ -211,6 +260,8 @@
     "subtitle": "Select a user to simulate their session.",
     "search_placeholder": "Search by name or email...",
     "simulate": "Simulate",
-    "no_users": "No users found"
+    "no_users": "No users found",
+    "leave_simulation": "Leave simulation",
+    "simulation_mode": "You are currently in simulation mode: {name}"
   }
 }

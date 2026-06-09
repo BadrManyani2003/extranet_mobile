@@ -2,13 +2,20 @@ import Keycloak from 'keycloak-js';
 
 class KeycloakService {
   private static instance: KeycloakService;
-  private keycloak: Keycloak;
+  private keycloak!: Keycloak;
   private isInitialized: boolean = false;
 
   private constructor() {
-    const url      = import.meta.env.VITE_KEYCLOAK_URL;
-    const realm    = import.meta.env.VITE_KEYCLOAK_REALM;
-    const clientId = import.meta.env.VITE_KEYCLOAK_CLIENT_ID;
+    // Le constructeur est vide car l'instanciation de Keycloak est différée après le chargement du .env
+  }
+
+  private initKeycloak(): void {
+    if (this.keycloak) return;
+
+    const env      = (window as any).APP_ENV || {};
+    const url      = env.VITE_KEYCLOAK_URL || import.meta.env.VITE_KEYCLOAK_URL;
+    const realm    = env.VITE_KEYCLOAK_REALM || import.meta.env.VITE_KEYCLOAK_REALM;
+    const clientId = env.VITE_KEYCLOAK_CLIENT_ID || import.meta.env.VITE_KEYCLOAK_CLIENT_ID;
 
     if (!url || !realm || !clientId) {
       throw new Error("La configuration Keycloak (VITE_KEYCLOAK_URL, VITE_KEYCLOAK_REALM, VITE_KEYCLOAK_CLIENT_ID) est manquante dans l'environnement.");
@@ -25,6 +32,7 @@ class KeycloakService {
   }
 
   public async init(onAuthenticated: () => void): Promise<void> {
+    this.initKeycloak();
     if (this.isInitialized) return;
 
     try {

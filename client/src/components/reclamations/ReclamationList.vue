@@ -32,7 +32,7 @@ const emit = defineEmits(['select'])
           <div class="flex items-center gap-4 min-w-0 flex-1">
             <Badge :class="(rec.statut === 'En cours' || rec.statut === 'E') ? 'bg-orange-50 text-orange-600 border-orange-100' : 'bg-slate-50 text-slate-400 border-slate-100'" 
               class="rounded-lg px-2.5 py-1 text-[14px] font-black uppercase tracking-widest border shrink-0">
-              {{ (rec.statut === 'E' || rec.statut === 'En cours') ? 'En cours' : 'Clôturé' }}
+              {{ (rec.statut === 'E' || rec.statut === 'En cours') ? $t('statuts.en_cours') : $t('statuts.clôturé') }}
             </Badge>
             
             <div class="flex flex-col min-w-0">

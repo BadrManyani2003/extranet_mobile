@@ -23,6 +23,8 @@ const risqueSelectionne = ref<any>(null)
 const estDialogueOuvert = ref(false)
 const chargementDetails = ref(false)
 
+const isAT = computed(() => !!(props.branche && (props.branche.toLowerCase() === 'at' || props.branche.toLowerCase().includes('accident') || props.branche.toLowerCase().includes('travail'))))
+
 const ouvrirDetails = async (risque: any) => {
   risqueSelectionne.value = risque
   estDialogueOuvert.value = true
@@ -84,7 +86,7 @@ const iconeBranche = computed(() => {
 
     <CardContent class="p-0">
       <div v-if="risquesFiltres.length > 0"
-        class="max-h-[350px] overflow-y-auto border-b border-slate-100 scrollbar-thin scrollbar-thumb-slate-200">
+        class="max-h-[360px] overflow-y-auto border-b border-slate-100 scrollbar-thin scrollbar-thumb-slate-200">
         <table class="w-full text-left border-collapse table-fixed sm:table-auto">
           <thead class="sticky top-0 bg-slate-50 z-10 shadow-sm">
             <tr class="border-b border-slate-200">
@@ -93,11 +95,15 @@ const iconeBranche = computed(() => {
                 <th class="px-6 py-3 text-[14px] font-bold text-slate-500 uppercase tracking-wider">{{ $t('risques.membership_num') }}</th>
                 <th class="px-6 py-3 text-[14px] font-bold text-slate-500 uppercase tracking-wider">{{ $t('risques.birth_date') }}</th>
               </template>
+              <template v-else-if="isAT">
+                <th class="px-6 py-3 text-[14px] font-bold text-slate-500 uppercase tracking-wider">{{ $t('risques.insured_name') }}</th>
+                <th class="px-6 py-3 text-[14px] font-bold text-slate-500 uppercase tracking-wider">{{ $t('risques.id') }}</th>
+              </template>
               <template v-else>
                 <th class="px-6 py-3 text-[14px] font-bold text-slate-500 uppercase tracking-wider">{{ $t('risques.designation') }}</th>
                 <th class="px-6 py-3 text-[14px] font-bold text-slate-500 uppercase tracking-wider">{{ $t('risques.id') }}</th>
               </template>
-              <th class="px-6 py-3 text-[14px] font-bold text-slate-500 uppercase tracking-wider text-right w-24">
+              <th v-if="!isAT" class="px-6 py-3 text-[14px] font-bold text-slate-500 uppercase tracking-wider text-right w-24">
                 {{ $t('commun.actions') }}
               </th>
             </tr>
@@ -112,6 +118,11 @@ const iconeBranche = computed(() => {
                 <td class="px-6 py-3 text-sm text-slate-500">{{ formatDate(risque.dateNaissance) }}</td>
               </template>
 
+              <template v-else-if="isAT">
+                <td class="px-6 py-3 text-sm font-bold text-slate-800 truncate">{{ risque.nom }}</td>
+                <td class="px-6 py-3 text-sm font-medium text-slate-600 truncate">{{ risque.identifiant || '-' }}</td>
+              </template>
+
               <template v-else>
                 <td class="px-6 py-3 text-sm font-bold text-slate-800 truncate">
                   <div class="flex flex-col">
@@ -124,7 +135,7 @@ const iconeBranche = computed(() => {
                 </td>
               </template>
 
-              <td class="px-6 py-3 text-right">
+              <td v-if="!isAT" class="px-6 py-3 text-right">
                 <Button @click="ouvrirDetails(risque)" variant="outline" size="sm" class="font-bold h-7 text-[14px] px-2">
                   {{ branche === 'Santé' ? $t('risques.beneficiaries') : $t('contrats.detail_button') }}
                 </Button>
@@ -135,7 +146,7 @@ const iconeBranche = computed(() => {
       </div>
 
       <div v-else class="text-center p-12 text-slate-500 italic">
-        {{ $t('risques.empty') }}
+        {{ isAT ? $t('contrats.ensemble_personnel') : $t('risques.empty') }}
       </div>
     </CardContent>
 
@@ -150,7 +161,7 @@ const iconeBranche = computed(() => {
         <div v-if="risqueSelectionne">
           <div v-if="chargementDetails" class="py-12 flex flex-col items-center justify-center gap-4">
             <Loader2 class="w-8 h-8 animate-spin text-slate-400" />
-            <p class="text-xs text-slate-500 font-medium tracking-widest uppercase italic">Chargement des membres...</p>
+            <p class="text-xs text-slate-500 font-medium tracking-widest uppercase italic">{{ $t('risques.loading_members') }}</p>
           </div>
 
           <div v-else-if="risqueSelectionne.garanties">

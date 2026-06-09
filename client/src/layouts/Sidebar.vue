@@ -35,13 +35,13 @@ const handleItemClick = () => {
 
 <template>
   <aside :class="[
-    'fixed lg:static inset-y-0 left-0 z-50 bg-white border-r border-slate-200 transition-all duration-300 ease-in-out flex flex-col shadow-xl lg:shadow-none font-[\'Outfit\']',
+    'fixed lg:static inset-y-0 left-0 z-50 bg-white border-r border-slate-200 transition-all duration-300 ease-in-out flex flex-col shadow-[0_20px_50px_rgba(14,165,233,0.04)] lg:shadow-none font-[\'Outfit\']',
     isSidebarOpen ? 'w-72 translate-x-0' : 'w-20 lg:w-20 -translate-x-full lg:translate-x-0'
   ]">
     <div class="h-20 flex items-center justify-between border-b border-slate-100 bg-white shrink-0 transition-all duration-300" :class="isSidebarOpen ? 'px-6' : 'px-4'">
       <div class="flex items-center gap-3 transition-all duration-300" :class="{ 'mx-auto': !isSidebarOpen }">
         <div
-          class="w-9 h-9 rounded-xl bg-slate-900 text-white flex items-center justify-center shadow-lg shadow-slate-200 shrink-0 transform hover:scale-105 transition-transform">
+          class="w-9 h-9 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-lg shadow-primary/20 shrink-0 transform hover:scale-105 transition-transform">
           <LayoutDashboard class="w-5 h-5" />
         </div>
         <span v-if="isSidebarOpen"
@@ -68,7 +68,7 @@ const handleItemClick = () => {
         <router-link v-else :to="element.chemin!"
           @click="handleItemClick"
           class="flex items-center rounded-xl font-bold transition-all duration-200 group relative"
-          active-class="bg-slate-100 text-slate-900 shadow-sm ring-1 ring-slate-200/50"
+          active-class="bg-primary/10 text-primary shadow-sm ring-1 ring-primary/20"
           :class="[
             route.path === element.chemin ? '' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700',
             isSidebarOpen ? 'gap-3 px-4 py-3 w-full' : 'justify-center w-11 h-11 mx-auto px-0'
@@ -84,7 +84,7 @@ const handleItemClick = () => {
 
     <div class="border-t border-slate-100 bg-slate-50/50 transition-all duration-300" :class="isSidebarOpen ? 'p-5' : 'py-5 px-3'">
       <Button variant="ghost" @click="handleLogout"
-        class="text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-xl font-bold transition-all group overflow-hidden"
+        class="text-slate-500 hover:text-primary hover:bg-primary/5 rounded-xl font-bold transition-all group overflow-hidden"
         :class="isSidebarOpen ? 'w-full justify-start gap-3 px-4 py-6' : 'w-11 h-11 justify-center mx-auto p-0'">
         <LogOut class="w-5 h-5 shrink-0 transition-transform group-hover:-translate-x-1" />
         <span v-if="isSidebarOpen" class="whitespace-nowrap animate-in fade-in slide-in-from-left-2 duration-300">

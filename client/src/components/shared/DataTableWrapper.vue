@@ -51,7 +51,7 @@ const handleSearch = () => {
       </div>
       <div class="flex items-center gap-3">
         <slot name="extra-actions"></slot>
-        <Button v-if="addButtonLabel" class="rounded-2xl h-12 px-6 gap-2 bg-slate-900 shadow-xl shadow-slate-200" @click="$emit('add')">
+        <Button v-if="addButtonLabel" class="rounded-2xl h-12 px-6 gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-xl shadow-primary/20" @click="$emit('add')">
           <Plus class="w-5 h-5" /> {{ addButtonLabel }}
         </Button>
       </div>
@@ -59,20 +59,20 @@ const handleSearch = () => {
 
     <div class="flex items-center gap-4">
       <div class="relative flex-1 max-w-sm group">
-        <Search class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
+        <Search class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-primary transition-colors" />
         <input 
           v-model="searchQuery"
           type="text" 
-          :placeholder="searchPlaceholder || 'Rechercher...'" 
-          class="w-full bg-white border border-slate-200 rounded-2xl py-3.5 pl-12 pr-4 text-sm font-bold focus:ring-4 focus:ring-slate-900/5 focus:border-slate-900 outline-none transition-all shadow-sm"
+          :placeholder="searchPlaceholder || $t('commun.search_placeholder')" 
+          class="w-full bg-white border border-slate-200 rounded-2xl py-3.5 pl-12 pr-4 text-sm font-bold focus:ring-4 focus:ring-primary/5 focus:border-primary outline-none transition-all shadow-sm"
           @input="handleSearch"
         />
       </div>
     </div>
 
-    <div class="border border-slate-200 rounded-[2rem] bg-white shadow-xl shadow-slate-200/50 overflow-hidden">
+    <div class="border border-slate-200 rounded-[2rem] bg-white shadow-xl overflow-hidden">
       <div v-if="loading" class="flex items-center justify-center p-24">
-        <Loader2 class="w-8 h-8 animate-spin text-slate-900" />
+        <Loader2 class="w-8 h-8 animate-spin text-primary" />
       </div>
       <template v-else>
         <div class="overflow-x-auto w-full">
@@ -81,7 +81,7 @@ const handleSearch = () => {
 
         <div class="border-t border-slate-100 p-6 flex items-center justify-between bg-slate-50/30">
           <p class="text-xs text-slate-400 font-black uppercase tracking-widest">
-            {{ filteredItems.length }} total
+            {{ $t('commun.total_count', { count: filteredItems.length }) }}
           </p>
           <div class="flex items-center gap-3">
             <Button variant="outline" size="sm" :disabled="currentPage === 1" class="rounded-xl h-10 w-10 border-slate-200" @click="currentPage--">

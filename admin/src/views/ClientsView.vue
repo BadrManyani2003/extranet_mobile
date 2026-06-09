@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Building2, UserPlus, CheckCircle2, Link, X, MessageSquare } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
@@ -9,6 +10,8 @@ import UserLinkDialog from '@/components/shared/UserLinkDialog.vue'
 import ConfirmModal from '@/components/shared/ConfirmModal.vue'
 import { api } from '@/lib/api'
 import { toast } from '@/components/ui/sonner'
+
+const { t } = useI18n()
 
 const clients = ref<any[]>([])
 const loading = ref(true)
@@ -21,14 +24,14 @@ const selectedClientId = ref<number | null>(null)
 const fetchClients = async () => {
   loading.value = true
   try { clients.value = await api.admin.getClients() } 
-  catch (e: any) { toast.error(e.message || "Erreur de chargement") } 
+  catch (e: any) { toast.error(e.message || t('clients.toast_load_error')) } 
   finally { loading.value = false }
 }
 
 const handleCreateUser = async (clientId: number) => {
   try {
     await api.admin.createUserFromClient(clientId)
-    toast.success('Compte client créé')
+    toast.success(t('clients.toast_create_success'))
     fetchClients()
   } catch (e: any) { toast.error(e.message) }
 }
@@ -42,7 +45,7 @@ const handleLinkUser = async (userId: number) => {
   if (!selectedClientId.value) return
   try {
     await api.admin.linkUserToClient(selectedClientId.value, userId)
-    toast.success('Utilisateur lié')
+    toast.success(t('clients.toast_link_success'))
     linkDialogOpen.value = false
     fetchClients()
   } catch (e: any) { toast.error(e.message) }
@@ -58,7 +61,7 @@ const confirmUnlinkUser = async () => {
   unlinking.value = true
   try {
     await api.admin.unlinkUserFromClient(pendingUnlinkData.value.clientId, parseInt(pendingUnlinkData.value.userId))
-    toast.success('Liaison supprimée')
+    toast.success(t('clients.toast_unlink_success'))
     fetchClients()
   } catch (e: any) {
     toast.error(e.message)
@@ -90,10 +93,10 @@ const toggleClientOption = async (client: any, optionKey: 'recClt' | 'recAdh') =
   
   try {
     await api.admin.updateClientOptions(client.id, newRecClt, newRecAdh)
-    toast.success('Options de réclamation mises à jour')
+    toast.success(t('clients.toast_options_update_success'))
     client[optionKey] = client[optionKey] === 'O' ? 'N' : 'O'
   } catch (e: any) {
-    toast.error(e.message || "Erreur de mise à jour")
+    toast.error(e.message || t('clients.toast_options_update_error'))
   }
 }
 
@@ -130,7 +133,7 @@ onUnmounted(() => {
           <TableRow v-for="client in items" :key="client.id" class="group hover:bg-slate-50/50 transition-colors border-b border-slate-50">
             <TableCell class="py-4">
               <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-slate-900 group-hover:text-white transition-all shadow-sm">
+                <div class="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-primary group-hover:text-primary-foreground transition-all shadow-sm">
                   <Building2 class="w-5 h-5" />
                 </div>
                 <span class="font-bold text-slate-900 tracking-tight">{{ client.raisonSociale }}</span>
@@ -158,7 +161,7 @@ onUnmounted(() => {
             </TableCell>
             <TableCell class="text-right">
               <div class="flex justify-end gap-1 items-center">
-                <Button variant="ghost" size="sm" class="h-9 gap-2 premium-button text-slate-600 hover:bg-slate-900 hover:text-white" @click="handleCreateUser(client.id)">
+                <Button variant="ghost" size="sm" class="h-9 gap-2 premium-button text-slate-600 hover:bg-primary hover:text-primary-foreground" @click="handleCreateUser(client.id)">
                   <UserPlus class="w-4 h-4" /> {{ $t('users.add_button') }}
                 </Button>
                 <Button variant="ghost" size="sm" class="h-9 gap-2 premium-button text-emerald-600 hover:bg-emerald-50" @click="openLinkDialog(client.id)">
@@ -173,13 +176,13 @@ onUnmounted(() => {
                   
                   <div v-if="activeDropdownId === client.id" @click.stop class="absolute right-0 mt-2 w-64 origin-top-right rounded-2xl bg-white border border-slate-100 shadow-2xl p-4 z-50 space-y-3">
                     <div class="text-left font-black text-[10px] uppercase tracking-widest text-slate-400 pb-2 border-b border-slate-100">
-                      Options Réclamations
+                      {{ $t('clients.options_title') }}
                     </div>
                     
                     <div class="flex items-center justify-between gap-3 py-1">
                       <div class="flex flex-col text-left">
-                        <span class="text-xs font-bold text-slate-800">Support Client</span>
-                        <span class="text-[10px] font-medium text-slate-400">Permettre les tickets client</span>
+                        <span class="text-xs font-bold text-slate-800">{{ $t('clients.support_client') }}</span>
+                        <span class="text-[10px] font-medium text-slate-400">{{ $t('clients.support_client_desc') }}</span>
                       </div>
                       <button 
                         @click="toggleClientOption(client, 'recClt')"
@@ -191,8 +194,8 @@ onUnmounted(() => {
 
                     <div class="flex items-center justify-between gap-3 py-1">
                       <div class="flex flex-col text-left">
-                        <span class="text-xs font-bold text-slate-800">Support Adhérent</span>
-                        <span class="text-[10px] font-medium text-slate-400">Permettre les tickets adhérent</span>
+                        <span class="text-xs font-bold text-slate-800">{{ $t('clients.support_adherent') }}</span>
+                        <span class="text-[10px] font-medium text-slate-400">{{ $t('clients.support_adherent_desc') }}</span>
                       </div>
                       <button 
                         @click="toggleClientOption(client, 'recAdh')"

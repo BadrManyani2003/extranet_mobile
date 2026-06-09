@@ -2,6 +2,9 @@
 import { Calendar, MessageSquare, User } from 'lucide-vue-next'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 defineProps<{
   reclamations: any[]
@@ -21,7 +24,7 @@ const emit = defineEmits(['select'])
 
       <div v-else-if="reclamations.length === 0" class="flex flex-col items-center justify-center h-64 text-center p-12 opacity-50">
         <MessageSquare class="w-10 h-10 text-slate-200 mb-4" />
-        <p class="text-xs font-black uppercase tracking-widest text-slate-400">Aucun résultat</p>
+        <p class="text-xs font-black uppercase tracking-widest text-slate-400">{{ $t('commun.no_results') }}</p>
       </div>
 
       <div v-else class="space-y-3">
@@ -32,7 +35,7 @@ const emit = defineEmits(['select'])
           <div class="flex items-center gap-4 min-w-0 flex-1">
             <Badge :class="(rec.statut === 'En cours' || rec.statut === 'E') ? 'bg-orange-50 text-orange-600 border-orange-100' : 'bg-slate-50 text-slate-400 border-slate-100'" 
               class="rounded-lg px-2.5 py-1 text-[14px] font-black uppercase tracking-widest border shrink-0">
-              {{ (rec.statut === 'E' || rec.statut === 'En cours') ? 'En cours' : 'Clôturé' }}
+              {{ (rec.statut === 'E' || rec.statut === 'En cours') ? $t('reclamations.en_cours') : $t('reclamations.cloture') }}
             </Badge>
             
             <div class="flex flex-col min-w-0">

@@ -23,6 +23,9 @@ const props = defineProps<{
 
 const emit = defineEmits(['update:searchQuery'])
 
+const isSante = computed(() => !!(props.branche && props.branche.toLowerCase().includes('sant')))
+const isAT = computed(() => !!(props.branche && (props.branche.toLowerCase() === 'at' || props.branche.toLowerCase().includes('accident') || props.branche.toLowerCase().includes('travail'))))
+
 const obtenirInfoRisque = (sin: any) => {
   if (!props.risques) return null
   return props.risques.find(r => 
@@ -54,14 +57,14 @@ const sinistresFiltres = computed(() => {
       :title="$t('sinistres.title')"
       :description="activeTab === 'sinistres-encours' ? $t('sinistres.desc_ongoing') : $t('sinistres.desc_all')"
       :icon="activeTab === 'sinistres-encours' ? Clock : AlertCircle"
-      :iconClass="activeTab === 'sinistres-encours' ? 'text-slate-600' : 'text-slate-900'"
+      :iconClass="activeTab === 'sinistres-encours' ? 'text-slate-600' : 'text-primary'"
       :searchModel="searchQuery"
       :searchPlaceholder="$t('sinistres.search')"
       @update:searchModel="emit('update:searchQuery', $event)"
     />
     
     <CardContent class="p-0 flex-1 overflow-hidden">
-      <div v-if="sinistresFiltres.length > 0" class="max-h-[350px] overflow-y-auto px-4 pb-8 pt-2 scrollbar-thin scrollbar-thumb-slate-200">
+      <div v-if="sinistresFiltres.length > 0" class="max-h-[390px] overflow-y-auto px-4 pb-8 pt-2 scrollbar-thin scrollbar-thumb-slate-200">
         <Accordion type="single" collapsible class="w-full space-y-3 pt-4">
           <AccordionItem 
             v-for="sin in sinistresFiltres" 
@@ -72,7 +75,7 @@ const sinistresFiltres = computed(() => {
             <AccordionTrigger class="px-5 py-4 hover:no-underline group">
               <div class="flex flex-col sm:flex-row sm:items-center justify-between w-full text-left gap-4">
                 <div class="flex items-center gap-4">
-                  <div class="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-slate-900 group-hover:text-white transition-colors">
+                  <div class="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                     <Shield class="w-5 h-5" />
                   </div>
                   <div>
@@ -88,7 +91,9 @@ const sinistresFiltres = computed(() => {
 
                 <div class="flex items-center gap-8 pr-4">
                   <div class="flex flex-col items-end">
-                    <span class="text-[14px] text-slate-400 uppercase font-bold tracking-widest leading-none mb-1">{{ $t('sinistres.object') }}</span>
+                    <span class="text-[14px] text-slate-400 uppercase font-bold tracking-widest leading-none mb-1">
+                      {{ isSante ? $t('risques.adherent') : (isAT ? $t('risques.victime') : $t('sinistres.object')) }}
+                    </span>
                     <span class="text-xs font-black text-slate-900 truncate max-w-[150px]">{{ sin.objet }}</span>
                     <span v-if="sin.identifiant" class="text-[14px] text-slate-500 font-bold mt-0.5">{{ sin.identifiant }}</span>
                   </div>
@@ -101,7 +106,7 @@ const sinistresFiltres = computed(() => {
                 
                 <div class="bg-white/60 p-4 rounded-2xl border border-slate-200/60 flex flex-col gap-3">
                    <h4 class="text-[14px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                     <Info class="w-3.5 h-3.5 text-slate-900" /> {{ $t('sinistres.status_title') }}
+                     <Info class="w-3.5 h-3.5 text-primary" /> {{ $t('sinistres.status_title') }}
                    </h4>
                    <div class="space-y-4">
                      <div>
@@ -109,10 +114,12 @@ const sinistresFiltres = computed(() => {
                        <StatusBadge :status="sin.statut" class="mt-1" />
                      </div>
                       <div>
-                        <p class="text-[14px] font-bold text-slate-400 uppercase mb-1">{{ $t('sinistres.identified_risk') }}</p>
+                        <p class="text-[14px] font-bold text-slate-400 uppercase mb-1">
+                          {{ isSante ? $t('risques.adherent') : (isAT ? $t('risques.victime') : $t('sinistres.identified_risk')) }}
+                        </p>
                         <div class="flex items-center gap-2 mt-1">
                           <div class="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400">
-                            <component :is="branche === 'Santé' ? User : Shield" class="w-4 h-4" />
+                            <component :is="isSante || isAT ? User : Shield" class="w-4 h-4" />
                           </div>
                           <div>
                             <p class="text-xs font-black text-slate-800">{{ sin.objet }}</p>
@@ -125,17 +132,17 @@ const sinistresFiltres = computed(() => {
 
                 <div class="bg-white/60 p-4 rounded-2xl border border-slate-200/60 flex flex-col gap-3">
                    <h4 class="text-[14px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                     <Wallet class="w-3.5 h-3.5 text-slate-900" /> {{ $t('sinistres.financial_title') }}
+                     <Wallet class="w-3.5 h-3.5 text-primary" /> {{ $t('sinistres.financial_title') }}
                    </h4>
 
                    <div class="space-y-4">
                      <div class="grid grid-cols-2 gap-4">
                        <div>
                          <p class="text-[14px] font-bold text-slate-400 uppercase">
-                           {{ branche === 'Santé' ? $t('sinistres.costs') : $t('sinistres.damages') }}
+                           {{ isSante ? $t('sinistres.costs') : $t('sinistres.damages') }}
                          </p>
                          <p class="text-sm font-black text-slate-800">
-                           {{ formatCurrency(branche === 'Santé' ? sin.mtFrais : sin.mtDommage) }}
+                           {{ formatCurrency(isSante ? sin.mtFrais : sin.mtDommage) }}
                          </p>
                        </div>
                        <div>
@@ -144,8 +151,8 @@ const sinistresFiltres = computed(() => {
                        </div>
                      </div>
                      <div class="pt-3 border-t border-slate-100 flex justify-between items-center">
-                       <p class="text-[14px] font-black text-slate-900 uppercase">{{ $t('sinistres.indemnite') }}</p>
-                       <p class="text-lg font-black text-slate-900">{{ formatCurrency(sin.mtRembourse) }}</p>
+                       <p class="text-[14px] font-black text-primary uppercase">{{ $t('sinistres.indemnite') }}</p>
+                       <p class="text-lg font-black text-primary">{{ formatCurrency(sin.mtRembourse) }}</p>
                      </div>
                    </div>
                 </div>

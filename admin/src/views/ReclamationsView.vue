@@ -1,14 +1,17 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ChevronLeft } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import ReclamationList from '@/components/shared/ReclamationList.vue'
 import ReclamationChat from '@/components/shared/ReclamationChat.vue'
+import ConfirmModal from '@/components/shared/ConfirmModal.vue'
 import { api } from '@/lib/api'
 import { toast } from '@/components/ui/sonner'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Trash2 } from 'lucide-vue-next'
+
+const { t } = useI18n()
 
 const reclamations = ref<any[]>([])
 const selectedTicket = ref<any>(null)
@@ -21,6 +24,8 @@ const currentUser = ref<any>(null)
 const isDeleteDialogOpen = ref(false)
 const isDeleteRecDialogOpen = ref(false)
 const messageToDeleteId = ref<number | null>(null)
+const isDeletingMessage = ref(false)
+const isDeletingTicket = ref(false)
 
 let pollingInterval: any = null
 
@@ -60,7 +65,7 @@ const fetchReclamations = async () => {
   loading.value = true
   try { reclamations.value = await api.admin.getReclamations() } 
   catch (e: any) { 
-    toast.error(e.message || "Erreur lors de la récupération")
+    toast.error(e.message || t('reclamations.toast_load_error'))
     console.error(e) 
   } 
   finally { loading.value = false }
@@ -104,7 +109,7 @@ const handleSendMessage = async (text: string) => {
   
   try { 
     await api.admin.replyToReclamation(selectedTicket.value.id, text)
-    toast.success("Réponse envoyée")
+    toast.success(t('reclamations.toast_reply_success'))
     selectedTicket.value.statut = 'En cours'
     // Rafraîchir pour obtenir les données finales du serveur
     const freshMessages = await api.data.getMessages(selectedTicket.value.id)
@@ -122,7 +127,7 @@ const handleStatusUpdate = async (statut: string) => {
   try {
     await api.admin.updateStatus(selectedTicket.value.id, statut)
     selectedTicket.value.statut = statut === 'E' ? 'En cours' : 'Clôturé'
-    toast.success("Statut mis à jour")
+    toast.success(t('reclamations.toast_status_update_success'))
   } catch (e: any) {
     toast.error(e.message)
   }
@@ -135,27 +140,33 @@ const handleDeleteMessage = (messageId: number) => {
 
 const confirmDelete = async () => {
   if (!selectedTicket.value || !messageToDeleteId.value) return
+  isDeletingMessage.value = true
   try {
     await api.admin.deleteMessage(messageToDeleteId.value, selectedTicket.value.id)
     messages.value = messages.value.filter(m => m.id !== messageToDeleteId.value)
-    toast.success("Message supprimé")
+    toast.success(t('reclamations.toast_delete_message_success'))
     isDeleteDialogOpen.value = false
     messageToDeleteId.value = null
   } catch (e: any) {
     toast.error(e.message)
+  } finally {
+    isDeletingMessage.value = false
   }
 }
 
 const confirmDeleteReclamation = async () => {
   if (!selectedTicket.value) return
+  isDeletingTicket.value = true
   try {
     await api.admin.deleteReclamation(selectedTicket.value.id)
-    toast.success("Réclamation supprimée")
+    toast.success(t('reclamations.toast_delete_ticket_success'))
     isDeleteRecDialogOpen.value = false
     selectedTicket.value = null
     await fetchReclamations()
   } catch (e: any) {
     toast.error(e.message)
+  } finally {
+    isDeletingTicket.value = false
   }
 }
 
@@ -180,7 +191,7 @@ onMounted(() => {
             <input 
               v-model="searchQuery"
               type="text" 
-              :placeholder="$t('reclamations.placeholder', 'Rechercher...')" 
+              :placeholder="$t('reclamations.placeholder')" 
               class="w-full h-12 bg-slate-50 border border-slate-200 rounded-2xl px-6 text-sm font-bold outline-none focus:ring-4 focus:ring-slate-900/5 focus:border-slate-900 transition-all"
             />
           </div>
@@ -212,16 +223,16 @@ onMounted(() => {
             <h2 class="text-xl font-black text-slate-900 line-clamp-1">{{ selectedTicket.sujet }}</h2>
             <Badge :class="selectedTicket.statut === 'En cours' ? 'bg-orange-50 text-orange-600' : 'bg-slate-50 text-slate-400 border-slate-100'" 
               class="rounded-lg text-[14px] font-black uppercase tracking-widest px-2 py-0.5 border-none shadow-none">
-              {{ selectedTicket.statut === 'En cours' ? 'En cours' : 'Clôturé' }}
+              {{ selectedTicket.statut === 'En cours' ? $t('reclamations.en_cours') : $t('reclamations.cloture') }}
             </Badge>
           </div>
           <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">
-            Client: {{ selectedTicket.client }} • {{ $t('reclamations.ticket_num') }} #{{ selectedTicket.id }} • {{ $t('reclamations.opened_on') }} {{ new Date(selectedTicket.dateReclamation).toLocaleDateString() }}
+            {{ $t('reclamations.client_prefix') }}{{ selectedTicket.client }} • {{ $t('reclamations.ticket_num') }} #{{ selectedTicket.id }} • {{ $t('reclamations.opened_on') }} {{ new Date(selectedTicket.dateReclamation).toLocaleDateString() }}
           </p>
         </div>
         <div class="flex gap-2 items-center">
-          <Button v-if="selectedTicket.statut !== 'En cours' && selectedTicket.statut !== 'E'" size="sm" variant="outline" @click="handleStatusUpdate('E')" class="rounded-xl border-orange-200 text-orange-600 hover:bg-orange-50 font-bold text-[14px] uppercase tracking-wider">{{ $t('statuts.en_cours', 'En cours') }}</Button>
-          <Button v-if="selectedTicket.statut !== 'Clôturé' && selectedTicket.statut !== 'C'" size="sm" variant="outline" @click="handleStatusUpdate('C')" class="rounded-xl border-slate-200 text-slate-600 hover:bg-slate-50 font-bold text-[14px] uppercase tracking-wider">{{ $t('reclamations.close_ticket', 'Clôturer') }}</Button>
+          <Button v-if="selectedTicket.statut !== 'En cours' && selectedTicket.statut !== 'E'" size="sm" variant="outline" @click="handleStatusUpdate('E')" class="rounded-xl border-orange-200 text-orange-600 hover:bg-orange-50 font-bold text-[14px] uppercase tracking-wider">{{ $t('reclamations.en_cours') }}</Button>
+          <Button v-if="selectedTicket.statut !== 'Clôturé' && selectedTicket.statut !== 'C'" size="sm" variant="outline" @click="handleStatusUpdate('C')" class="rounded-xl border-slate-200 text-slate-600 hover:bg-slate-50 font-bold text-[14px] uppercase tracking-wider">{{ $t('reclamations.close_ticket') }}</Button>
           <Button size="icon" variant="ghost" @click="isDeleteRecDialogOpen = true" class="rounded-xl h-10 w-10 text-slate-400 hover:text-red-500 hover:bg-red-50 shrink-0 transition-colors">
             <Trash2 class="w-5 h-5" />
           </Button>
@@ -239,53 +250,26 @@ onMounted(() => {
       />
     </template>
 
-    <!-- Modal Confirmation Suppression -->
-    <Dialog v-model:open="isDeleteDialogOpen">
-      <DialogContent class="w-[92%] sm:max-w-[400px] rounded-[2rem] shadow-2xl p-0 overflow-hidden border-none font-['Outfit']">
-        <DialogHeader class="p-8 bg-white text-center">
-          <div class="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Trash2 class="w-8 h-8" />
-          </div>
-          <DialogTitle class="text-xl font-black text-slate-900 tracking-tight">{{ $t('commun.delete') }} ?</DialogTitle>
-          <DialogDescription class="text-slate-500 font-medium mt-2">
-            {{ $t('reclamations.message_deleted', 'Voulez-vous vraiment supprimer ce message ?') }}
-          </DialogDescription>
-        </DialogHeader>
+    <!-- Dialogs extraits -->
+    <ConfirmModal
+      :open="isDeleteDialogOpen"
+      variant="danger"
+      :title="$t('commun.delete') + ' ?'"
+      :description="$t('reclamations.message_deleted')"
+      :loading="isDeletingMessage"
+      @close="isDeleteDialogOpen = false"
+      @confirm="confirmDelete"
+    />
 
-        <DialogFooter class="p-8 bg-slate-50/50 flex gap-3 sm:justify-center">
-          <Button variant="ghost" @click="isDeleteDialogOpen = false" class="flex-1 h-12 rounded-xl font-bold text-slate-500 hover:bg-white">
-            {{ $t('commun.cancel') }}
-          </Button>
-          <Button @click="confirmDelete" class="flex-1 h-12 rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold shadow-lg shadow-red-100">
-            {{ $t('commun.delete') }}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-
-    <!-- Modal Confirmation Suppression Réclamation -->
-    <Dialog v-model:open="isDeleteRecDialogOpen">
-      <DialogContent class="w-[92%] sm:max-w-[400px] rounded-[2rem] shadow-2xl p-0 overflow-hidden border-none font-['Outfit']">
-        <DialogHeader class="p-8 bg-white text-center">
-          <div class="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Trash2 class="w-8 h-8" />
-          </div>
-          <DialogTitle class="text-xl font-black text-slate-900 tracking-tight">{{ $t('commun.delete') }} ?</DialogTitle>
-          <DialogDescription class="text-slate-500 font-medium mt-2">
-            Voulez-vous vraiment supprimer cette réclamation et tous ses messages ?
-          </DialogDescription>
-        </DialogHeader>
-
-        <DialogFooter class="p-8 bg-slate-50/50 flex gap-3 sm:justify-center">
-          <Button variant="ghost" @click="isDeleteRecDialogOpen = false" class="flex-1 h-12 rounded-xl font-bold text-slate-500 hover:bg-white">
-            {{ $t('commun.cancel') }}
-          </Button>
-          <Button @click="confirmDeleteReclamation" class="flex-1 h-12 rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold shadow-lg shadow-red-100">
-            {{ $t('commun.delete') }}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <ConfirmModal
+      :open="isDeleteRecDialogOpen"
+      variant="danger"
+      :title="$t('commun.delete') + ' ?'"
+      :description="$t('reclamations.delete_ticket_confirm')"
+      :loading="isDeletingTicket"
+      @close="isDeleteRecDialogOpen = false"
+      @confirm="confirmDeleteReclamation"
+    />
   </div>
 </template>
 

@@ -48,7 +48,7 @@ const handleLogout = () => {
       <div class="flex items-center gap-3">
         <div class="flex items-center gap-3 bg-slate-50 px-4 py-2 rounded-xl border border-slate-100 shadow-sm">
           <span class="hidden sm:inline text-base font-bold text-slate-700">{{ userStore.userName }}</span>
-          <div class="w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center shadow-md shadow-slate-200">
+          <div class="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-md shadow-primary/20">
             <User class="w-4 h-4" />
           </div>
         </div>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Users, Building2, UserCircle, LifeBuoy } from 'lucide-vue-next'
+import { Users, Building2, UserCheck, MessageSquare, FolderOpen } from 'lucide-vue-next'
 import Sidebar from './Sidebar.vue'
 import Header from './Header.vue'
 
@@ -11,9 +11,11 @@ const navItems = [
   { section: 'navigation.sections.admin' },
   { nom: 'navigation.users', chemin: '/users', icone: Users },
   { nom: 'navigation.clients', chemin: '/clients', icone: Building2 },
-  { nom: 'navigation.adherents', chemin: '/adherents', icone: UserCircle },
+  { nom: 'navigation.adherents', chemin: '/adherents', icone: UserCheck },
   { section: 'navigation.sections.support' },
-  { nom: 'navigation.reclamations', chemin: '/reclamations', icone: LifeBuoy },
+  { nom: 'navigation.reclamations', chemin: '/reclamations', icone: MessageSquare },
+  { section: 'navigation.sections.documents' },
+  { nom: 'navigation.documents', chemin: '/documents', icone: FolderOpen },
 ]
 </script>
 
