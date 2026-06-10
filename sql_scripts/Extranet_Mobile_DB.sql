@@ -351,6 +351,14 @@ CREATE TABLE dbo.sinComplement
     Indem_Jrn DECIMAL(18,2) NULL,
     Nature_indem VARCHAR(255) NULL,
     Montant_indem DECIMAL(18,2) NULL,
+    FRS_MED DECIMAL(18,2) NULL,
+    FRS_TRNS DECIMAL(18,2) NULL,
+    HONR_MED DECIMAL(18,2) NULL,
+    IPP_EVA DECIMAL(18,2) NULL,
+    Salaire DECIMAL(18,2) NULL,
+    AGE INT NULL,
+    CCR_EV DECIMAL(18,2) NULL,
+    COUT_TOT DECIMAL(18,2) NULL,
     CONSTRAINT PK_sinComplement PRIMARY KEY CLUSTERED (id),
     CONSTRAINT FK_sinComplement_Sinistre FOREIGN KEY (fk_sinistre_id) REFERENCES dbo.Sinistres(Id) ON DELETE CASCADE
 );
